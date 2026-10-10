@@ -1,6 +1,6 @@
 # Hoja de ruta: previsualización, orden de páginas y temas visuales
 
-**Estado:** hoja de ruta documentada el 10 de octubre de 2026; la primera implementación de previsualización está integrada en la rama de trabajo.  
+**Estado:** hoja de ruta de producto documentada el 10 de octubre de 2026; la revisión interactiva inicial está implementada y en validación automatizada/manual.  
 **Alcance:** mejorar la experiencia de selección, orden y revisión del PDF final; corregir el estado vacío de la interfaz; establecer una base visual coherente y accesible.
 
 ## Resumen ejecutivo
@@ -28,22 +28,21 @@ La acción principal debe seguir siendo clara: agregar archivos, elegir páginas
 
 ### D2. Las miniaturas deben ayudar a identificar, no solo ahorrar espacio
 
-La vista de ordenamiento ofrecerá tamaños de miniatura predecibles (por ejemplo, pequeño, mediano y grande), zoom o ampliación de la página seleccionada y una vista detallada accesible con un clic. El tamaño elegido no debe cambiar el orden ni perder la selección.
+La vista de ordenamiento ofrece tres tamaños de miniatura (pequeño, mediano y grande), una vista detallada de la página seleccionada y un botón para abrirla ampliada. Cambiar el tamaño no debe cambiar el orden ni perder la selección; esta invariancia debe seguir cubierta por pruebas.
 
 Cada miniatura debe comunicar, cuando haya espacio, información que ayude a reconocerla: número dentro del documento final, archivo de origen y número de página original. Estos datos deben seguir disponibles en la vista detallada aunque la miniatura sea pequeña. Los rótulos no deben tapar una parte importante del contenido de la página.
 
 ### D3. La previsualización previa a exportar debe permitir corregir el documento
 
-Añadir una etapa de **Revisar documento** antes de crear el PDF final. No será una imagen estática ni una confirmación decorativa. La persona podrá:
+La aplicación ya incorpora la etapa de **Revisar documento** antes de crear el PDF final. No es una imagen estática: la secuencia que se ordena y confirma es la que alimenta la exportación. La primera entrega permite:
 
 - ver una página a un tamaño cómodo, con controles de acercar, alejar y ajustar a página;
 - recorrer la secuencia final y comprender de qué archivo/página procede cada hoja;
 - mover una página a otra posición desde la propia revisión, mediante arrastre y alternativas explícitas como «Mover antes/después»;
-- quitar una página de la secuencia sin volver al selector inicial;
 - volver a la selección o cancelar sin perder el trabajo;
 - confirmar el total y el orden de las páginas antes de exportar.
 
-La misma fuente de estado de la aplicación debe alimentar las miniaturas, la secuencia final y la exportación. Esto reduce el riesgo de que la vista previa muestre un orden distinto del que se escribe en el archivo. La acción «Crear PDF» se habilitará después de que la secuencia esté lista y validada.
+La misma secuencia ordenada alimenta la vista previa y el exportador. Todavía no se puede quitar una página desde esta vista, ni existe un control de deshacer/rehacer; ambas mejoras quedan pendientes. «Continuar a guardar» aparece como confirmación final y abre el selector de destino.
 
 ### D4. Integrar edición en la revisión por capas
 
@@ -123,7 +122,9 @@ Estas referencias sirven como principios y comparación funcional. No implican c
 - Implementar zoom, ajustar a página y navegación entre páginas en la vista detallada.
 - Generar miniaturas y vistas pesadas fuera del hilo de interfaz y usar caché limitada.
 
-**Implementado inicialmente:** tres tamaños de miniatura; vista detallada de la selección con posición en el documento final y procedencia; botón para abrir una vista ampliada; renderizado fuera del hilo de interfaz.\n\n**Pendiente:** comprobar la legibilidad con documentos reales, el cambio de tamaño en distintas resoluciones y el comportamiento con archivos muy largos.
+**Implementado inicialmente:** tres tamaños de miniatura; vista detallada de la selección con posición en el documento final y procedencia; botón para abrir una vista ampliada; renderizado fuera del hilo de interfaz.
+
+**Pendiente:** comprobar la legibilidad con documentos reales, el cambio de tamaño en distintas resoluciones y el comportamiento con archivos muy largos.
 
 ### P2 — Revisión interactiva antes de exportar (primera implementación)
 
@@ -133,7 +134,9 @@ Estas referencias sirven como principios y comparación funcional. No implican c
 - Mantener sincronizados orden, selección, previsualización y exportación.
 - Añadir, cuando el modelo actual lo permita sin deuda técnica, deshacer/rehacer para movimientos y eliminaciones.
 
-**Implementado inicialmente:** «Crear PDF final» abre la revisión antes de elegir el destino si el orden aún no se revisó; la secuencia ordenada confirmada alimenta directamente el exportador. Si el usuario acaba de aplicar el orden desde la pantalla de organización, no se repite el diálogo.\n\n**Pendiente:** permitir quitar páginas desde esa vista, añadir deshacer/rehacer y ejecutar pruebas manuales en Windows y macOS.
+**Implementado inicialmente:** «Crear PDF final» abre la revisión antes de elegir el destino si el orden aún no se revisó; la secuencia ordenada confirmada alimenta directamente el exportador. Si el usuario acaba de aplicar el orden desde la pantalla de organización, no se repite el diálogo.
+
+**Pendiente:** permitir quitar páginas desde esa vista, añadir deshacer/rehacer y ejecutar pruebas manuales en Windows y macOS.
 
 ### P3 — Tema del sistema, Claro y Oscuro
 
