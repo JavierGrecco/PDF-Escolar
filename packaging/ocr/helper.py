@@ -219,11 +219,15 @@ def run_ocr(
             if not temporary_output.is_file() or temporary_output.stat().st_size == 0:
                 raise CompanionError("El reconocimiento no generó un PDF válido.")
 
+            document = None
             try:
-                with pdfium.PdfDocument(str(temporary_output)) as document:
-                    page_count = len(document)
+                document = pdfium.PdfDocument(str(temporary_output))
+                page_count = len(document)
             except Exception as exc:
                 raise CompanionError("El resultado OCR no es un PDF válido.") from exc
+            finally:
+                if document is not None:
+                    document.close()
 
             if page_count == 0:
                 raise CompanionError("El PDF resultante no contiene páginas.")
