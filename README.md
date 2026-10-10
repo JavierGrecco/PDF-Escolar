@@ -78,8 +78,9 @@ Ya incorporé en el código principal:
 - Una vista detallada de la página seleccionada, con su posición final, el archivo de origen y el número de página original.
 - Una ventana para ampliar la página y examinarla con más detalle.
 - Una revisión interactiva del orden final antes de elegir dónde guardar el PDF.
+- Ventanas que ajustan su tamaño al espacio disponible; «Herramientas PDF» permite desplazarse por las opciones sin perder los botones de acción.
 
-Estas mejoras pasaron las pruebas automatizadas y las compilaciones de validación de Windows y macOS, pero **todavía no forman parte de la beta descargable**. Antes de anunciarlas como una nueva versión, falta completar la comprobación visual con documentos reales y diferentes escalados de pantalla.
+Las pruebas automatizadas pasaron en Ubuntu, Windows y macOS, y los instaladores de prueba de Windows, Mac Intel y Apple Silicon se compilaron y verificaron correctamente. **Estas mejoras todavía no forman parte de la beta descargable**. Antes de publicarlas en una nueva beta, falta comprobar visualmente su comodidad con documentos reales y distintos escalados de pantalla.
 
 Si querés probar los cambios de interfaz antes de la próxima beta, podés descargar el artefacto temporal **pdf-escolar-windows** en la sección **Artifacts** de la [compilación de validación](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037060). Es solo para Windows, no es una publicación oficial y caduca el 8 de enero de 2027.
 
