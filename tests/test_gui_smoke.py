@@ -12,10 +12,25 @@ try:
     from PySide6.QtWidgets import QApplication
     from pdf_escolar.ui.main_window import MainWindow
 except ImportError as exc:
-    # Ubuntu's hosted runner can omit a Qt system library such as libEGL.
-    # Windows/macOS build jobs still package the GUI and run the test when Qt is available.
-    if sys.platform.startswith("linux"):
-        pytest.skip(f"Qt GUI system libraries are unavailable on this Linux runner: {exc}", allow_module_level=True)
+    # Some Linux runners lack system libraries needed by Qt. Skip only those
+    # known runtime-library errors; application import regressions must fail CI.
+    detail = str(exc)
+    missing_qt_system_library = any(
+        library in detail
+        for library in (
+            "libEGL.so",
+            "libGL.so",
+            "libxkbcommon.so",
+            "libxcb",
+            "libX11.so",
+            "libXrender.so",
+        )
+    )
+    if sys.platform.startswith("linux") and missing_qt_system_library:
+        pytest.skip(
+            f"Qt requires a system library unavailable on this Linux runner: {exc}",
+            allow_module_level=True,
+        )
     raise
 
 
