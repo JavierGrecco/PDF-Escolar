@@ -87,7 +87,6 @@ class PagePickerDialog(QDialog):
         self.thumbnail_timer = QTimer(self)
         self.thumbnail_timer.setSingleShot(True)
         self.thumbnail_timer.timeout.connect(self._start_thumbnail_task)
-        self.finished.connect(self._on_dialog_finished)
         try:
             self.selected_pages = set(parse_page_ranges(current_ranges, total_pages))
         except ValueError:
@@ -342,12 +341,6 @@ class PagePickerDialog(QDialog):
             )
             return
         super().accept()
-
-    @Slot(int)
-    def _on_dialog_finished(self, _result: int) -> None:
-        self.thumbnail_timer.stop()
-        for task in tuple(self.tasks):
-            task.cancel()
 
     def selected_ranges(self) -> str:
         return format_page_ranges(sorted(index + 1 for index in self.selected_pages))
