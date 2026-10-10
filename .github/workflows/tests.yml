@@ -59,7 +59,10 @@ jobs:
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check .
-      - run: python -m pytest -q -rs tests/test_gui_smoke.py -k 'not page_picker and not cancelled_page_picker and not cancelled_page_order and not main_worker'
+      - name: Diagnose basic GUI group
+        run: |
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
   windows:
     runs-on: windows-latest
     steps:
@@ -72,7 +75,10 @@ jobs:
             pyproject.toml
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest -q -rs tests/test_gui_smoke.py -k 'not page_picker and not cancelled_page_picker and not cancelled_page_order and not main_worker'
+      - name: Diagnose basic GUI group
+        run: |
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
   macos:
     runs-on: macos-latest
     steps:
@@ -85,7 +91,10 @@ jobs:
             pyproject.toml
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest -q -rs tests/test_gui_smoke.py -k 'not page_picker and not cancelled_page_picker and not cancelled_page_order and not main_worker'
+      - name: Diagnose basic GUI group
+        run: |
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
 
   macos-intel:
     name: Tests (macOS Intel / Catalina dependency set)
@@ -104,4 +113,6 @@ jobs:
       - name: Check code style
         run: python -m ruff check .
       - name: Test PDF engine and application
-        run: python -m pytest -q -rs tests/test_gui_smoke.py -k 'not page_picker and not cancelled_page_picker and not cancelled_page_order and not main_worker'
+run: |
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
+          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
