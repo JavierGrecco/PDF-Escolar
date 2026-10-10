@@ -20,6 +20,15 @@ def show_notice(
     dialog.exec()
 
 
+def safe_exception_detail(error: object) -> str:
+    """Safely extract a bounded diagnostic for internal error classification."""
+    try:
+        return str(error)[:2000]
+    except Exception:
+        # A broken exception formatter must not break the GUI error path too.
+        return ""
+
+
 def _error_reason(detail: object) -> str:
     """Return a safe classifier input without trusting arbitrary exception values."""
     if not isinstance(detail, str):
