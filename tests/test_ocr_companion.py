@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import stat
-import subprocess
+import sys
 import zipfile
 from pathlib import Path
 from types import SimpleNamespace
@@ -77,7 +77,8 @@ def test_safe_extract_preserves_executable_permissions(tmp_path):
 
     extracted = destination / "PDF-Escolar-OCR" / "PDF-Escolar-OCR"
     assert extracted.read_text(encoding="utf-8") == "binary placeholder"
-    assert extracted.stat().st_mode & stat.S_IXUSR
+    if sys.platform != "win32":
+        assert extracted.stat().st_mode & stat.S_IXUSR
 
 
 def test_run_ocr_uses_temporary_output_and_preserves_existing_file_on_failure(
@@ -89,8 +90,6 @@ def test_run_ocr_uses_temporary_output_and_preserves_existing_file_on_failure(
     helper.write_text("not executed by the mocked subprocess", encoding="utf-8")
     make_pdf(source, 200)
     make_pdf(destination, 800)
-    original_run = ocr_companion.subprocess.run
-
     def failed_run(arguments, **kwargs):
         output = Path(arguments[arguments.index("--output") + 1])
         assert output != destination
@@ -106,7 +105,6 @@ def test_run_ocr_uses_temporary_output_and_preserves_existing_file_on_failure(
         )
 
     assert page_width(destination) == 800
-    monkeypatch.setattr(ocr_companion.subprocess, "run", original_run)
 
 
 def test_run_ocr_publishes_valid_result_only_after_verification(tmp_path, monkeypatch):
