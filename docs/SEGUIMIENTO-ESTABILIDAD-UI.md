@@ -1,5 +1,16 @@
 # Seguimiento de estabilidad de la interfaz
 
+## Actualización de usabilidad — 2026-10-10
+
+- **PR #12:** [simplificar carga y avisos de PDF](https://github.com/JavierGrecco/PDF-Escolar/pull/12), fusionado.
+- **Commit integrado:** [`539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`](https://github.com/JavierGrecco/PDF-Escolar/commit/539cf15734fb4385ab3c705c2bcc3ad23dc1a1de).
+- El área para agregar archivos se compacta al cargar PDF, pero conserva la opción de arrastrar y soltar.
+- Los problemas al abrir múltiples PDF se resumen en una sola advertencia, con detalles técnicos expandibles.
+- Los cambios que invalidan un orden manual ahora lo comunican al usuario.
+- Se añadieron pruebas de regresión para esos estados. La CI del PR pasó en Ubuntu, Windows, macOS y el conjunto de dependencias para macOS Intel; los tres paquetes y su verificación también pasaron.
+- En `main`, la ejecución de pruebas posterior al merge terminó correctamente en las cuatro plataformas. La compilación posterior al merge está en curso; no declarar las descargas actualizadas hasta que termine el job de sincronización.
+
+
 Última actualización: 2026-10-10
 
 Este documento mantiene el estado técnico del trabajo para que pueda retomarse sin depender del historial de conversación.
