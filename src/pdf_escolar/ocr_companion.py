@@ -44,7 +44,12 @@ def platform_support_error() -> str | None:
         return None
 
     if sys.platform == "darwin":
-        if machine not in {"x86_64", "amd64", "arm64", "aarch64"}:
+        if machine in {"x86_64", "amd64"}:
+            return (
+                "El complemento OCR está optimizado para Mac con chip Apple Silicon (M1 o posterior). "
+                "En Mac Intel podés seguir usando las demás herramientas de PDF Escolar."
+            )
+        if machine not in {"arm64", "aarch64"}:
             return "El complemento OCR no está disponible para esta arquitectura de Mac."
         version_parts = platform.mac_ver()[0].split(".")
         try:
@@ -53,7 +58,7 @@ def platform_support_error() -> str | None:
             version = ()
         if not version or version < (14, 0):
             return (
-                "El complemento OCR necesita macOS 14 o posterior. "
+                "El complemento OCR necesita macOS 14 o posterior en equipos Apple Silicon. "
                 "PDF Escolar puede seguir usando sus demás herramientas en este equipo."
             )
         return None
@@ -69,9 +74,7 @@ def expected_asset_name() -> str:
 
     if sys.platform == "win32":
         return "PDF-Escolar-OCR-Windows-x64.zip"
-    machine = platform.machine().lower()
-    arch = "Apple-Silicon" if machine in {"arm64", "aarch64"} else "Intel"
-    return f"PDF-Escolar-OCR-macOS-{arch}.zip"
+    return "PDF-Escolar-OCR-macOS-Apple-Silicon.zip"
 
 
 def _data_root() -> Path:
