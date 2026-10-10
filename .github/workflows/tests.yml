@@ -2,7 +2,23 @@ name: Tests
 
 on:
   push:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "tools/**"
+      - "pyproject.toml"
+      - "requirements*.txt"
+      - ".github/workflows/tests.yml"
+      - ".github/workflows/build.yml"
   pull_request:
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "tools/**"
+      - "pyproject.toml"
+      - "requirements*.txt"
+      - ".github/workflows/tests.yml"
+      - ".github/workflows/build.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -20,6 +36,9 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements*.txt
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check .
       - run: python -m pytest -q
@@ -31,6 +50,9 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements*.txt
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
   macos:
@@ -41,6 +63,9 @@ jobs:
         with:
           python-version: "3.12"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements*.txt
       - run: python -m pip install -e ".[dev]"
       - run: python -m pytest -q
 
@@ -53,6 +78,9 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
+          cache-dependency-path: |
+            pyproject.toml
+            requirements*.txt
       - name: Install project and test dependencies
         run: python -m pip install -e ".[dev]"
       - name: Check code style
