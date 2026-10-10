@@ -77,3 +77,19 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - **Pruebas realizadas:**  
 - **Resultado:** aprobada / fallida  
 - **Errores o pasos para reproducirlos:**  
+
+
+## Herramientas PDF
+
+- [ ] Abrir «Herramientas PDF» desde la ventana principal.
+- [ ] Cancelar la elección del PDF no inicia ninguna operación.
+- [ ] Girar una página 90° a la derecha; confirmar que solo gira la página indicada y que se conserva el contenido vectorial.
+- [ ] Girar páginas 90° a la izquierda y 180°.
+- [ ] Dejar vacía la selección de páginas y confirmar que la herramienta actúa sobre todas las páginas.
+- [ ] Introducir rangos inválidos, repetidos o fuera de límite; se muestra un aviso comprensible y no se reemplaza ningún archivo.
+- [ ] Recortar márgenes de una copia usando distintos valores en milímetros; comprobar visualmente que el contenido no se rasteriza.
+- [ ] Introducir márgenes que eliminen toda el área visible de una página; se cancela la operación y cualquier PDF de salida previo permanece intacto.
+- [ ] Separar un PDF de varias páginas en archivos individuales, incluida una selección en un orden específico.
+- [ ] Intentar separar páginas en una carpeta con nombres de salida existentes; no se reemplaza ningún archivo previo.
+- [ ] Confirmar que el PDF de origen permanece intacto en todas las operaciones.
+- [ ] Cerrar la ventana mientras una operación está en curso; la ventana espera al final de la operación en vez de terminar el trabajo de forma insegura.
