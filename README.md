@@ -10,6 +10,8 @@
 
 Las versiones permanentes se publican en **[Versiones y descargas (Releases)](https://github.com/JavierGrecco/PDF-Escolar/releases)**. Los archivos adjuntos a una versión no caducan automáticamente como los artefactos de prueba de GitHub Actions.
 
+Si una publicación aparece marcada como *pre-release*, es una versión de prueba; no equivale a una versión estable.
+
 **¿No aparece ninguna versión en Releases?** Entonces todavía no hay una publicación estable y podés usar una compilación de prueba. Los artefactos de GitHub Actions para repositorios públicos tienen un límite máximo de conservación de 90 días; no son el lugar adecuado para distribuir una versión permanente.
 
 ### Compilación de prueba (temporal)
@@ -59,7 +61,7 @@ Los documentos se procesan en tu computadora y no se suben a Internet. PDF Escol
 
 Esta sección es solo para mantener o modificar el código fuente. No hace falta seguirla para instalar ni utilizar la aplicación.
 
-Consultá la [guía de preparación del entorno de desarrollo](docs/ENTORNO-DE-DESARROLLO.md).
+Consultá la [guía de preparación del entorno de desarrollo](docs/ENTORNO-DE-DESARROLLO.md). Para el mantenimiento, consultá también [cómo publicar una versión descargable](docs/PUBLICAR-UNA-VERSION.md).
 
 ## Proyecto
 
