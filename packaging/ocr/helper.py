@@ -133,7 +133,7 @@ def check_installation(package_dir: Path | None = None) -> str:
 
     listed_languages = {
         line.strip()
-        for line in languages.stdout.splitlines()
+        for line in (languages.stdout + "\n" + languages.stderr).splitlines()
         if line.strip() and not line.lower().startswith("list of")
     }
     if not SUPPORTED_LANGUAGES.issubset(listed_languages):
