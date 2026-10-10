@@ -2,6 +2,10 @@
 
 ## Objetivo
 
+Evolucionar PDF Escolar desde la selección y combinación de páginas a un espacio visual fácil de usar para preparar documentos educativos y de uso general. Antes de ampliar el editor con regiones y texto, resolver primero la identificación fiable de las páginas y la revisión interactiva del resultado final.
+
+La experiencia de previsualización, el estado vacío, los temas y el orden de implementación se especifican en [Hoja de ruta: previsualización, orden de páginas y temas visuales](EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md). Esa hoja complementa esta visión, no reemplaza ni adelanta el estado real de las funciones.
+
 ## Estado real de la implementación — 10 de octubre de 2026
 
 La hoja de ruta ya tiene una primera base de código integrada:
@@ -28,6 +32,16 @@ No convertir la ventana inicial en un editor profesional recargado. Mantener dos
 2. **Modo Crear documento:** un espacio visual para extraer fragmentos, montar páginas, insertar texto y ajustar el resultado. Solo aparecen las herramientas avanzadas cuando la persona entra en este modo.
 
 La promesa no debe ser «un editor PDF con todos los botones posibles», sino «preparar el documento que necesitás, a tu manera, sin pelearte con el programa».
+
+## Prioridad de producto: revisar antes de componer
+
+La próxima etapa visible para los usuarios debe centrarse en la selección y el orden de páginas, porque el flujo básico ya funciona y la prueba real reportó que algunas miniaturas son demasiado pequeñas para identificar páginas parecidas.
+
+La pantalla de revisión debe compartir el mismo modelo de orden que se usa al exportar. Debe permitir ampliar una página, ver su origen, moverla a otra posición, quitarla y corregir la secuencia en esa misma vista. La previsualización no puede ser una captura decorativa: las acciones disponibles deben modificar realmente el documento de trabajo y el resultado final debe coincidir con lo que se muestra.
+
+Los controles de rotación, recorte visual, exclusión rectangular y texto se incorporarán por etapas. Rotar páginas enteras o recortar márgenes mediante las herramientas actuales no debe confundirse con editar regiones arbitrarias de una página. La implementación de la composición avanzada queda condicionada a la validación del motor PDF, la geometría de CropBox/rotación y la preservación del texto/vector.
+
+El estado vacío y el sistema de temas también son parte de la calidad de la experiencia, pero no deben retrasar la corrección del ordenamiento. La solución de temas propuesta es Sistema por defecto, Claro/Oscuro opcionales y pocas opciones de color de acento solo después de validar contraste. Consultar el documento enlazado para prioridades, fuentes de diseño, accesibilidad y criterios de aceptación.
 
 ## Experiencia de trabajo propuesta
 
