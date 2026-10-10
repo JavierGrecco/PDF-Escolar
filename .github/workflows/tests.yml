@@ -41,7 +41,7 @@ jobs:
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check .
-      - run: python -m pytest -q
+      - run: python -m pytest -q -rs
   windows:
     runs-on: windows-latest
     steps:
@@ -54,7 +54,7 @@ jobs:
             pyproject.toml
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest -q
+      - run: python -m pytest -q -rs
   macos:
     runs-on: macos-latest
     steps:
@@ -67,7 +67,7 @@ jobs:
             pyproject.toml
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
-      - run: python -m pytest -q
+      - run: python -m pytest -q -rs
 
   macos-intel:
     name: Tests (macOS Intel / Catalina dependency set)
@@ -86,4 +86,4 @@ jobs:
       - name: Check code style
         run: python -m ruff check .
       - name: Test PDF engine and application
-        run: python -m pytest -q
+        run: python -m pytest -q -rs
