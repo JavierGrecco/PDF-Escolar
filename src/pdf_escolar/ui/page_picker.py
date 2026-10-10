@@ -15,7 +15,8 @@ from PySide6.QtWidgets import (
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
 from pdf_escolar.pdf_preview import render_page_thumbnail
 from pdf_escolar.ui.messages import safe_exception_detail
-from pdf_escolar.ui.window_geometry import fit_window_to_screen, show_notice
+from pdf_escolar.ui.messages import safe_exception_detail, show_notice
+from pdf_escolar.ui.window_geometry import fit_window_to_screen
 
 
 PAGES_PER_VIEW = 30
