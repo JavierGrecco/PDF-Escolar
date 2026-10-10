@@ -139,8 +139,17 @@ def is_license_candidate(relative: PurePosixPath) -> bool:
         for stem in stems
     ):
         return True
-    # Some Qt frameworks ship their required notices as files such as
-    # qtwebenginecore_licenses.rtf rather than inside a License/ directory.
+    # Qt wheels also ship SPDX-named license texts at the package root,
+    # for example LGPL-3.0-only.txt or GFDL-1.3-no-invariants-only.txt.
+    spdx_prefixes = (
+        "agpl-", "apache-", "bsd-", "cc0-", "cc-by-", "fdl-", "gfdl-",
+        "gpl-", "lgpl-", "mpl-", "isc-", "mit", "qt-gpl-", "zlib-",
+        "openssl-", "unlicense",
+    )
+    if name.startswith(spdx_prefixes):
+        return True
+
+    # Some Qt frameworks ship notices such as qtwebenginecore_licenses.rtf.
     if "_license" in name or "_licence" in name or name.endswith(("_license", "_licence")):
         return True
     return False
