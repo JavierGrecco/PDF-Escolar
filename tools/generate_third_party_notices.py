@@ -184,10 +184,13 @@ def read_text(path: Path) -> str:
             continue
     raise ValueError(f"No se pudo leer el texto de licencia: {path.name}")
 
+_QT_LICENSE_FALLBACK_ROOTS: set[str] = set()
+
+
 def collect_license_files(
     name: str, dist: metadata.Distribution
 ) -> list[tuple[str, str]]:
-    """Read readable text license files recorded in an installed distribution."""
+    """Read text license files recorded in a distribution, with a Qt resource fallback."""
     candidates: dict[str, tuple[str, str]] = {}
     for relative_file in dist.files or ():
         relative_text = str(relative_file).replace("\\", "/")
@@ -205,6 +208,31 @@ def collect_license_files(
             ) from exc
         if content:
             candidates[relative_text] = (relative_text, content)
+
+    # Some Qt wheels ship native framework license resources that are present on
+    # disk but omitted from their .dist-info RECORD. Search the shared Qt package
+    # only when normal metadata collection found no notices, and only once.
+    if not candidates and name.startswith("pyside6"):
+        qt_root = Path(dist.locate_file("PySide6"))
+        root_key = str(qt_root.resolve())
+        if root_key not in _QT_LICENSE_FALLBACK_ROOTS and qt_root.is_dir():
+            _QT_LICENSE_FALLBACK_ROOTS.add(root_key)
+            for absolute in qt_root.rglob("*"):
+                if not absolute.is_file():
+                    continue
+                relative = PurePosixPath(absolute.relative_to(qt_root).as_posix())
+                if not is_license_candidate(relative):
+                    continue
+                relative_text = f"PySide6/{relative.as_posix()}"
+                try:
+                    content = read_text(absolute)
+                except (OSError, ValueError) as exc:
+                    raise RuntimeError(
+                        f"No se pudo incorporar un aviso de Qt ({relative_text}): {exc}"
+                    ) from exc
+                if content:
+                    candidates[relative_text] = (relative_text, content)
+
     return [candidates[key] for key in sorted(candidates)]
 
 
