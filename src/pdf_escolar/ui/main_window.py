@@ -325,7 +325,7 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PDF Escolar")
         self.setMinimumSize(720, 600)
         self.resize(920, 780)
-        self.pool = QThreadPool.globalInstance()
+        self.pool = QThreadPool(self)
         self.documents: dict[str, tuple[DocumentInfo, DocumentCard]] = {}
         self.pending: set[str] = set()
         self.tasks: set[QRunnable] = set()
