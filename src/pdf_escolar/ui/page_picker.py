@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
 from pdf_escolar.pdf_preview import render_page_thumbnail
-from pdf_escolar.ui.messages import show_notice
+from pdf_escolar.ui.messages import safe_exception_detail, show_notice
 
 
 PAGES_PER_VIEW = 30
@@ -55,11 +55,11 @@ class ThumbnailTask(QRunnable):
                         self.signals.ready.emit(page_index, image)
                 except Exception as exc:
                     if not self._cancelled.is_set():
-                        self.signals.failed.emit(page_index, str(exc))
+                        self.signals.failed.emit(page_index, safe_exception_detail(exc))
         except Exception as exc:
             if not self._cancelled.is_set():
                 for page_index in self.page_indexes:
-                    self.signals.failed.emit(page_index, str(exc))
+                    self.signals.failed.emit(page_index, safe_exception_detail(exc))
         finally:
             try:
                 if document is not None:
