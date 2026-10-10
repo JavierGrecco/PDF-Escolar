@@ -4,6 +4,8 @@ on:
   pull_request:
   workflow_dispatch:
   push:
+    branches:
+      - main
     tags:
       - "v*"
 
@@ -61,7 +63,7 @@ jobs:
             dist/PDF-Escolar.exe
             dist/PDF-Escolar-Instalador-*-Windows.exe
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
 
   macos:
     name: macOS disk image (${{ matrix.arch_label }})
@@ -152,7 +154,7 @@ jobs:
             dist/PDF-Escolar-Instalador-*-macOS-${{ matrix.arch_slug }}.dmg
             dist/PDF-Escolar-macOS-*${{ matrix.arch_slug }}.zip
           if-no-files-found: error
-          retention-days: 30
+          retention-days: 90
 
   publish-release:
     name: Publish downloadable installers
