@@ -98,10 +98,6 @@ jobs:
       - name: Install application and packager
         run: python -m pip install -e . pyinstaller
 
-      - name: Use Catalina-compatible Qt on Intel
-        if: matrix.arch_slug == 'Intel'
-        run: python -m pip install "PySide6==6.4.3"
-
       - name: Generate application icon
         run: python tools/create_icon.py
 
