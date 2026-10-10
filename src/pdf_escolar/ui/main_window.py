@@ -815,13 +815,3 @@ class MainWindow(QMainWindow):
             f"Detalle técnico: {detail}")
 
 
-    def closeEvent(self, event) -> None:
-        if self.exporting:
-            QMessageBox.warning(
-                self,
-                "Exportación en curso",
-                "El PDF final todavía se está creando. Esperá a que termine antes de cerrar la aplicación.",
-            )
-            event.ignore()
-            return
-        super().closeEvent(event)
