@@ -1,27 +1,53 @@
 # PDF Escolar
 
-Aplicación de escritorio local para seleccionar páginas de uno o varios PDF y reunirlas en un único documento. Interfaz en español pensada para personas que no quieren lidiar con herramientas técnicas.
+**Elegí páginas de tus libros PDF y guardalas en un solo documento.** Todo funciona localmente en tu computadora.
 
-## Funciones disponibles en esta rama
+PDF Escolar está pensado para personas que quieren resolver esta tarea sin aprender herramientas técnicas.
 
-- Carga de varios archivos PDF con el explorador o arrastrándolos a la ventana.
-- Cantidad de páginas y tamaño de cada archivo.
-- Selección de páginas por rangos, por ejemplo `1-8, 12, 20-25`.
-- Selección visual por miniaturas; se renderizan solo 30 páginas por grupo para controlar memoria y tiempo de carga.
-- Contador de páginas elegidas por archivo y para toda la operación, con aviso visible si un rango no es válido.
-- Controles para marcar/desmarcar el grupo visible.
-- Reordenamiento de los PDF de origen mediante flechas; el orden se refleja en el documento final.
-- Guardado del PDF final con nombre y ubicación elegidos por la persona usuaria.
-- Proceso de exportación en segundo plano, progreso de páginas y verificación de la salida antes de publicarla.
-- Procesamiento local: los PDF no se suben a Internet.
+## Para usar PDF Escolar (sin comandos ni Python)
 
-Dentro de cada archivo, las páginas seleccionadas visualmente se exportan por número ascendente. En modo de rangos, se conserva el orden en que se ingresan los rangos. El reordenamiento manual página por página entre diferentes libros se puede ampliar en una versión posterior.
+**No hace falta abrir Terminal, usar PowerShell, escribir comandos ni instalar Python.** Cuando descargues una versión empaquetada, la aplicación incluye Python y sus dependencias.
 
-## Ejecutar en modo desarrollo
+### Windows
+
+1. Descargá el archivo `PDF-Escolar-Instalador-…-Windows.exe` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+2. Hacé doble clic en el instalador y seguí los pasos. Podés elegir crear un acceso directo en el escritorio.
+3. Abrí **PDF Escolar** desde el menú Inicio o desde el acceso directo.
+
+Las compilaciones de prueba no están firmadas digitalmente y Windows puede mostrar una advertencia de seguridad. La distribución pública requiere firma de código.
+
+### macOS
+
+1. Descargá `PDF-Escolar-Instalador-…-macOS.dmg` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+2. Abrí el archivo descargado y arrastrá **PDF Escolar** a **Aplicaciones**.
+3. Abrí PDF Escolar desde Aplicaciones.
+
+Las compilaciones de prueba no están firmadas ni notarizadas por Apple, por lo que macOS puede mostrar una advertencia. Para una distribución pública fluida se necesita una cuenta Apple Developer y configurar la firma y notarización.
+
+> Si todavía no hay una versión publicada en Releases, se puede consultar [GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions) para ver las compilaciones de prueba. Esos artefactos son para validar el programa, no instaladores finales firmados.
+
+## Cómo se usa
+
+1. **Agregá tus PDF.** Seleccioná uno o varios archivos con el botón o arrastralos a la ventana.
+2. **Elegí las páginas.** En cada documento, pulsá **Elegir visualmente** para ver miniaturas y marcar páginas. También se pueden escribir rangos, por ejemplo `1-8, 12, 20-25`.
+3. **Ordená los archivos.** Usá las flechas para cambiar qué libro aparece primero en el documento final.
+4. **Creá el PDF.** Pulsá **Crear PDF final** y elegí dónde guardarlo. Al terminar, podés abrir la carpeta del resultado.
+
+Los documentos se procesan en la computadora: no se suben a Internet. Los PDF originales permanecen intactos.
+
+## Sobre archivos grandes
+
+La aplicación procesa archivos locales y crea las miniaturas en grupos pequeños para evitar convertir un libro entero en imágenes de una sola vez. El tiempo de proceso depende del tamaño del libro, la cantidad de páginas seleccionadas y la computadora disponible. También necesitás espacio libre para guardar el documento final.
+
+## Para desarrolladores (solo para colaborar con el proyecto)
+
+Esta sección es únicamente para quienes quieran ejecutar o modificar el código fuente. **No es necesaria para instalar ni usar la aplicación empaquetada.**
 
 Requiere Python 3.11, 3.12 o 3.13.
 
-### macOS
+### Preparar el entorno
+
+macOS:
 
     python3 -m venv .venv
     source .venv/bin/activate
@@ -29,7 +55,7 @@ Requiere Python 3.11, 3.12 o 3.13.
     python -m pip install -e ".[dev]"
     python -m pdf_escolar
 
-### Windows PowerShell
+Windows PowerShell:
 
     py -3.12 -m venv .venv
     .\.venv\Scripts\Activate.ps1
@@ -37,34 +63,19 @@ Requiere Python 3.11, 3.12 o 3.13.
     python -m pip install -e ".[dev]"
     python -m pdf_escolar
 
-## Pruebas y compilación
+### Comprobaciones
 
+    python -m ruff check .
     python -m pytest -q
 
-GitHub Actions ejecuta pruebas en Linux, Windows y macOS y crea artefactos de prueba independientes. Los artefactos no están firmados ni notarizados y todavía no son instaladores de producción.
+Las compilaciones de escritorio se generan en GitHub Actions para cada sistema operativo. Para publicar una versión descargable, el workflow se ejecuta con una etiqueta Git cuyo nombre empiece con `v`, por ejemplo `v0.1.0`.
 
-## Rangos de páginas
+## Calidad y distribución
 
-Los números empiezan en 1:
-- `1-8`: páginas 1 a 8.
-- `3, 7, 12`: páginas individuales.
-- `1-5, 10-15`: varios rangos.
-- `20-`: desde la página 20 hasta el final.
-- `-6`: desde el inicio hasta la página 6.
-
-## Privacidad e integridad
-
-Los documentos se procesan en la computadora. El archivo de salida se crea primero en un temporal de la carpeta de destino, se vuelve a abrir para comprobar la cantidad de páginas y solo entonces se mueve al nombre definitivo. La app impide seleccionar un archivo original como destino para evitar reemplazarlo por accidente.
-
-El procesamiento local no elimina las limitaciones de memoria, CPU o espacio disponible en disco, pero la generación de miniaturas está paginada y no convierte el libro completo en imágenes.
-
-## Licencias
-
-El código propio está bajo MIT (ver `LICENSE`). Las dependencias mantienen sus licencias y avisos respectivos; deben revisarse antes de distribuir ejecutables.
-
-## Próximos pasos
-
-1. Revisar todos los resultados de CI y probar los artefactos en equipos limpios.
-2. Añadir una vista de revisión del documento final.
-3. Añadir reordenamiento página por página.
-4. Preparar instaladores de Windows y macOS con firma y notarización para distribución externa.
+- Interfaz de escritorio en español con selección visual por miniaturas.
+- Motor PDF separado de la interfaz gráfica.
+- Pruebas automáticas en Linux, Windows y macOS.
+- Compilaciones separadas por sistema operativo; cada descarga incluye su runtime y dependencias.
+- Las versiones de producción deben probarse con libros reales y en computadoras limpias.
+- La distribución pública debe incluir firma de Windows y firma/notarización de macOS.
+- El código propio está bajo licencia MIT. Las dependencias mantienen sus propias licencias y avisos.

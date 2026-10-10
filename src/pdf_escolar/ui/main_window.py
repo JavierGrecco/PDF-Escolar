@@ -170,7 +170,7 @@ class DocumentCard(QFrame):
         self.ranges.textChanged.connect(self._ranges_edited)
         row.addWidget(self.ranges, 1)
         visual_button = QPushButton("Elegir visualmente")
-        visual_button.setObjectName("secondaryButton")
+        visual_button.setObjectName("choosePagesButton")
         visual_button.setToolTip("Ver miniaturas y marcar páginas")
         visual_button.clicked.connect(self.open_page_picker)
         row.addWidget(visual_button)
@@ -242,10 +242,19 @@ class MainWindow(QMainWindow):
         titles.addWidget(title)
         titles.addWidget(subtitle)
         header.addLayout(titles, 1)
+        self.help_button = QPushButton("Cómo usar")
+        self.help_button.setObjectName("secondaryButton")
+        self.help_button.clicked.connect(self.show_help)
+        header.addWidget(self.help_button, 0, Qt.AlignmentFlag.AlignTop)
         version = QLabel(f"Versión {__version__}")
         version.setObjectName("versionLabel")
         header.addWidget(version, 0, Qt.AlignmentFlag.AlignTop)
         root.addLayout(header)
+
+        guide = QLabel("PASO 1  Agregá tus PDF     →     PASO 2  Elegí las páginas     →     PASO 3  Creá tu PDF final")
+        guide.setObjectName("guideBanner")
+        guide.setWordWrap(True)
+        root.addWidget(guide)
 
         self.drop_area = DropArea(self.choose_files)
         self.drop_area.files_dropped.connect(self.add_files)
@@ -303,6 +312,7 @@ class MainWindow(QMainWindow):
             QLabel#sectionTitle { font-size:16px; font-weight:700; color:#172554; }
             QLabel#mutedText { color:#697586; font-size:12px; }
             QLabel#versionLabel { background:#E9EEFC; color:#3554A4; border-radius:9px; padding:6px 10px; }
+            QLabel#guideBanner { background:#E8EEFF; color:#2B498F; border:1px solid #D5DFFF; border-radius:10px; padding:11px 14px; font-size:13px; font-weight:650; }
             QFrame#dropArea { background:white; border:1.5px dashed #A9B9E9; border-radius:15px; }
             QLabel#dropTitle { color:#172554; font-size:17px; font-weight:700; }
             QFrame#documentCard { background:white; border:1px solid #E5EAF2; border-radius:12px; }
@@ -315,11 +325,25 @@ class MainWindow(QMainWindow):
             QPushButton#primaryButton:hover { background:#2547AC; }
             QPushButton#primaryButton:disabled { background:#ADB8D7; color:#F5F7FB; }
             QPushButton#secondaryButton { background:#F0F3FA; color:#31466F; }
+            QPushButton#choosePagesButton { background:#E7EDFF; color:#2B4EBA; border:1px solid #CCD8FF; padding:10px 13px; }
+            QPushButton#choosePagesButton:hover { background:#DCE5FF; border-color:#AEBFFF; }
             QPushButton#textButton { background:transparent; color:#3157C8; }
             QScrollArea#documentsScroll { background:transparent; }
             QProgressBar#progressBar { background:#E1E7F2; border:0; border-radius:3px; min-height:6px; max-height:6px; }
             QProgressBar#progressBar::chunk { background:#3157C8; border-radius:3px; }
         """)
+
+    def show_help(self) -> None:
+        QMessageBox.information(
+            self,
+            "Cómo usar PDF Escolar",
+            "1. Agregá uno o varios archivos PDF con el botón o arrastrándolos a la ventana.\n\n"
+            "2. En cada libro, pulsá «Elegir visualmente» para marcar las páginas que necesitás. "
+            "También podés escribir números o rangos, por ejemplo 1-8, 12, 20-25.\n\n"
+            "3. Usá las flechas para ordenar los libros y pulsá «Crear PDF final».\n\n"
+            "4. Elegí dónde guardar el documento nuevo. Los PDF originales no se modifican "
+            "y el contenido se procesa en esta computadora.",
+        )
 
     def choose_files(self):
         paths, _ = QFileDialog.getOpenFileNames(self, "Seleccionar archivos PDF", str(Path.home()), "Documentos PDF (*.pdf)")
