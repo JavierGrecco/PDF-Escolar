@@ -21,6 +21,9 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] La selección inicial incluye todas las páginas.
 - [ ] Escribir `3, 1` en el Libro A muestra dos páginas seleccionadas y conserva ese orden al exportar.
 - [ ] «Elegir visualmente» abre las miniaturas; al confirmar la selección, los rangos se actualizan.
+- [ ] Abrir y cancelar rápidamente el selector de miniaturas no cierra la aplicación ni deja la ventana bloqueada.
+- [ ] Cambiar entre grupos de miniaturas varias veces; la barra de carga corresponde al grupo actual y no desaparece antes de tiempo.
+- [ ] Intentar cerrar la aplicación mientras se crea el PDF muestra un aviso y permite cerrar cuando termina la exportación.
 - [ ] Las flechas cambian el orden de los documentos y deshabilitan el movimiento cuando ya están al principio o al final.
 - [ ] Arrastrar el control ↕ con mouse funciona para reordenar los documentos; soltar antes y después de una tarjeta produce el orden esperado.
 - [ ] Repetir el arrastre usando el touchpad, sin mouse externo.
