@@ -4,15 +4,16 @@
 
 - Interfaz de escritorio en español para cargar varios PDF.
 - Selección de páginas por rangos o mediante miniaturas visuales.
-- Reordenamiento de documentos con controles y arrastre con mouse o touchpad.
+- Reordenamiento de documentos con controles y arrastre con mouse o panel táctil.
 - Organizador visual de páginas individuales de varios PDF, con miniaturas y botones para moverlas.
 - Persistencia de la última carpeta usada para agregar documentos.
 - Nombres de archivo con mayor visibilidad y recuento de páginas.
 - Creación local de un PDF nuevo, sin modificar los archivos originales.
 - Verificación del archivo final y pruebas automatizadas para las operaciones principales.
 - Área de carga compacta cuando ya hay PDF agregados, sin perder la opción de arrastrar y soltar.
-- Aviso único y comprensible cuando uno o varios PDF no se pueden abrir, con detalles técnicos opcionales.
+- Aviso único y comprensible cuando uno o varios PDF no se pueden abrir, sin mostrar diagnósticos internos.
 - Aviso explícito cuando cambiar páginas o documentos invalida el orden manual.
+- Mensajes de error de lectura, exportación y vistas previas en español claro, sin exponer errores internos de las bibliotecas.
 
 ## Pendiente antes de una versión estable
 

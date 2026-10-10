@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
 
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
 from pdf_escolar.pdf_preview import render_page_thumbnail
+from pdf_escolar.ui.messages import show_notice
 
 
 PAGES_PER_VIEW = 30
@@ -267,7 +268,10 @@ class PagePickerDialog(QDialog):
         item = self.page_indexes.get(page_index)
         if item is not None:
             item.setText(f"Página {page_index + 1}\nVista previa no disponible")
-            item.setToolTip(detail)
+            item.setToolTip(
+                "No pudimos mostrar la vista previa de esta página. "
+                "Podés seguir trabajando con las demás."
+            )
 
     @Slot(str)
     def _task_finished(self, finished_token: str) -> None:
@@ -334,10 +338,11 @@ class PagePickerDialog(QDialog):
 
     def accept(self) -> None:
         if not self.selected_pages:
-            QMessageBox.warning(
+            show_notice(
                 self,
                 "No hay páginas seleccionadas",
                 "Marcá al menos una página para poder continuar.",
+                icon=QMessageBox.Icon.Warning,
             )
             return
         super().accept()

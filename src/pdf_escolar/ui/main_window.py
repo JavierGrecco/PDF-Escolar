@@ -17,6 +17,7 @@ from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import (
     PdfPageRef, PdfSource, combine_pages_in_order, combine_selected_pages, inspect_pdf
 )
+from pdf_escolar.ui.messages import friendly_export_error, friendly_pdf_load_error, show_notice
 from pdf_escolar.ui.page_order import PageOrderDialog
 from pdf_escolar.ui.page_picker import PagePickerDialog
 
@@ -159,7 +160,7 @@ DOCUMENT_MIME_TYPE = "application/x-pdf-escolar-document"
 
 
 class DragHandle(QLabel):
-    """A small, explicit drag target that works with mouse and touchpad input."""
+    """Control visible para arrastrar un archivo con mouse o panel táctil."""
 
     def __init__(self, path: str, parent: QWidget | None = None):
         super().__init__("↕", parent)
@@ -169,7 +170,7 @@ class DragHandle(QLabel):
         self.setFixedSize(28, 44)
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.setCursor(Qt.CursorShape.OpenHandCursor)
-        self.setToolTip("Arrastrá este control con el mouse o el touchpad para ordenar el PDF")
+        self.setToolTip("Arrastrá este control con el mouse o el panel táctil para ordenar el PDF")
         self.setAccessibleName("Arrastrar para reordenar archivo")
 
     def mousePressEvent(self, event) -> None:
@@ -499,16 +500,17 @@ class MainWindow(QMainWindow):
         """)
 
     def show_help(self) -> None:
-        QMessageBox.information(
+        show_notice(
             self,
             "Cómo usar PDF Escolar",
             "1. Agregá uno o varios archivos PDF con el botón o arrastrándolos a la ventana.\n\n"
             "2. En cada libro, pulsá «Elegir visualmente» para marcar las páginas que necesitás. "
             "También podés escribir números o rangos, por ejemplo 1-8, 12, 20-25.\n\n"
-            "3. Ordená los libros con las flechas o arrastrando el control ↕ con el mouse o el touchpad. "
+            "3. Ordená los libros con las flechas o arrastrando el control ↕ con el mouse o el panel táctil. "
             "Usá «Ordenar páginas…» para acomodar páginas individuales de todos los libros.\n\n"
             "4. Elegí dónde guardar el documento nuevo. Los PDF originales no se modifican "
             "y el contenido se procesa en esta computadora.",
+            icon=QMessageBox.Icon.Information,
         )
 
     def _last_open_directory(self) -> str:
@@ -642,18 +644,24 @@ class MainWindow(QMainWindow):
             errors, self.load_errors = self.load_errors, []
             count = len(errors)
             noun = "archivo" if count == 1 else "archivos"
-            details = "\n\n".join(
-                f"{path}\n{detail}" for path, detail in errors
-            )
+            error_lines = [
+                f"• {Path(path).name}: {friendly_pdf_load_error(detail)}"
+                for path, detail in errors[:5]
+            ]
+            remaining = count - len(error_lines)
+            if remaining:
+                extra_noun = "archivo" if remaining == 1 else "archivos"
+                error_lines.append(f"• Y {remaining} {extra_noun} más.")
             dialog = QMessageBox(self)
             dialog.setIcon(QMessageBox.Icon.Warning)
             dialog.setWindowTitle("Algunos PDF no se pudieron agregar")
             dialog.setText(f"No se pudieron agregar {count} {noun}.")
             dialog.setInformativeText(
-                "Pueden estar dañados, protegidos por contraseña o no ser PDF válidos. "
-                "Los demás archivos que se pudieron abrir siguen disponibles."
+                "Revisá estos archivos:\n"
+                + "\n".join(error_lines)
+                + "\n\nLos PDF que se pudieron abrir siguen disponibles."
             )
-            dialog.setDetailedText(details)
+            dialog.addButton("Entendido", QMessageBox.ButtonRole.AcceptRole)
             dialog.exec()
 
     @Slot(str, int)
@@ -802,7 +810,9 @@ class MainWindow(QMainWindow):
             if not pages:
                 raise ValueError("Seleccioná al menos una página para poder ordenarlas.")
         except ValueError as exc:
-            QMessageBox.warning(self, "Revisá las páginas", str(exc))
+            show_notice(
+                self, "Revisá las páginas", str(exc), icon=QMessageBox.Icon.Warning
+            )
             return
 
         dialog = PageOrderDialog(pages, self)
@@ -848,7 +858,9 @@ class MainWindow(QMainWindow):
                 if total_selected_pages == 0:
                     raise ValueError("Seleccioná al menos una página para crear el PDF.")
         except ValueError as exc:
-            QMessageBox.warning(self, "Revisá las páginas", str(exc))
+            show_notice(
+                self, "Revisá las páginas", str(exc), icon=QMessageBox.Icon.Warning
+            )
             return
         default = Path.home() / "Documents" / "Material_escolar.pdf"
         if not default.parent.is_dir():
@@ -893,10 +905,16 @@ class MainWindow(QMainWindow):
     def _on_export_error(self, detail: str):
         self.exporting = False
         self.progress.hide()
-        self.status.setText("No se pudo crear el PDF.")
+        self.status.setText("No se pudo crear el PDF. Tus documentos originales no se modificaron.")
         self._refresh_export_state()
-        QMessageBox.critical(self, "No se pudo crear el PDF",
-            "No se generó el documento final. Revisá el espacio disponible y que los archivos sean accesibles.\n\n"
-            f"Detalle técnico: {detail}")
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Icon.Critical)
+        dialog.setWindowTitle("No se pudo crear el PDF")
+        dialog.setText("No pudimos crear el PDF final.")
+        dialog.setInformativeText(
+            friendly_export_error(detail) + "\n\nTus PDF originales no se modificaron."
+        )
+        dialog.addButton("Entendido", QMessageBox.ButtonRole.AcceptRole)
+        dialog.exec()
 
 

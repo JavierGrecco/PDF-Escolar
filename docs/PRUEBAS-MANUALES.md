@@ -31,7 +31,7 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Cambiar entre grupos de miniaturas varias veces; la barra de carga corresponde al grupo actual y no desaparece antes de tiempo.
 - [ ] Las flechas cambian el orden de los documentos y deshabilitan el movimiento cuando ya están al principio o al final.
 - [ ] Arrastrar el control ↕ con mouse funciona para reordenar los documentos; soltar antes y después de una tarjeta produce el orden esperado.
-- [ ] Repetir el arrastre usando el touchpad, sin mouse externo.
+- [ ] Repetir el arrastre usando el panel táctil, sin mouse externo.
 - [ ] «Ordenar páginas…» muestra miniaturas de ambos PDF, con el nombre del archivo y número de página.
 - [ ] En el organizador, mover páginas con arrastre, Subir, Bajar y Restablecer orden inicial actualiza el orden esperado.
 - [ ] Desplazarse rápidamente por las miniaturas y cerrar el organizador no bloquea la aplicación ni produce cierres inesperados.
@@ -60,7 +60,7 @@ Confirmá que los originales sigan iguales después de las pruebas.
 
 ### macOS Intel y Apple Silicon
 
-- [ ] Probar el arrastre con el touchpad en un MacBook y con mouse si está disponible.
+- [ ] Probar el arrastre con el panel táctil en un MacBook y con mouse si está disponible.
 - [ ] Confirmar que el nombre de los PDF sigue legible con el escalado y tamaño de ventana habituales.
 
 - [ ] Usar el paquete correspondiente a la arquitectura del equipo.

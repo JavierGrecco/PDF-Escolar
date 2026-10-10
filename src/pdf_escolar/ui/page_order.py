@@ -106,7 +106,7 @@ class PageOrderDialog(QDialog):
         title = QLabel("Ordená las páginas del PDF final")
         title.setObjectName("dialogTitle")
         subtitle = QLabel(
-            "Arrastrá las miniaturas con el mouse o el touchpad. "
+            "Arrastrá las miniaturas con el mouse o el panel táctil. "
             "También podés seleccionar una página y usar Subir o Bajar. "
             "El orden de esta ventana será el del documento final."
         )
@@ -276,7 +276,10 @@ class PageOrderDialog(QDialog):
     def _thumbnail_failed(self, item_id: int, detail: str) -> None:
         item = self.items_by_id.get(item_id)
         if item is not None:
-            item.setToolTip(f"{item.toolTip()}\nVista previa no disponible: {detail}")
+            item.setToolTip(
+                f"{item.toolTip()}\n"
+                "Vista previa no disponible. La página sigue incluida en el orden."
+            )
 
     @Slot(str)
     def _task_finished(self, finished_token: str) -> None:
