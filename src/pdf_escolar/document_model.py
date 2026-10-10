@@ -248,6 +248,8 @@ class PdfFragment:
     def __post_init__(self) -> None:
         if not isinstance(self.source_id, str) or not self.source_id.strip():
             raise DocumentModelError("Un fragmento debe apuntar a un PDF fuente.")
+        if not isinstance(self.source_region, NormalizedRect) or not isinstance(self.bounds, NormalizedRect):
+            raise DocumentModelError("La región y la posición del fragmento deben ser rectángulos válidos.")
         if (
             not isinstance(self.page_index, int)
             or isinstance(self.page_index, bool)
@@ -303,6 +305,8 @@ class TextElement:
     label: str = ""
 
     def __post_init__(self) -> None:
+        if not isinstance(self.bounds, NormalizedRect):
+            raise DocumentModelError("La posición del bloque de texto debe ser un rectángulo válido.")
         if not isinstance(self.html, str):
             raise DocumentModelError("El contenido de texto debe ser una cadena.")
         if len(self.html) > MAX_HTML_CHARACTERS:
