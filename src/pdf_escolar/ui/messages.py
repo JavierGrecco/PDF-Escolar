@@ -72,10 +72,8 @@ def friendly_pdf_load_error(detail: object) -> str:
             "malformed",
             "syntax error",
             "stream has ended",
-            "stream ended",
             "unexpected eof",
             "end of file",
-            "unexpected end",
             "eof marker",
         )
     ):
