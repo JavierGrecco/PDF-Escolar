@@ -137,6 +137,16 @@ jobs:
           if (-not (Test-Path $installedExe -PathType Leaf)) {
             throw "La instalación terminó, pero no se encontró PDF-Escolar.exe."
           }
+          $installedNotices = Join-Path $installDir "THIRD-PARTY-NOTICES.txt"
+          if (-not (Test-Path $installedNotices -PathType Leaf)) {
+            throw "La instalación no incluyó el archivo de avisos de terceros."
+          }
+          $noticeText = Get-Content -Raw $installedNotices
+          foreach ($component in @("PySide6", "pikepdf", "pypdfium2", "Pillow")) {
+            if ($noticeText -notmatch [regex]::Escape($component)) {
+              throw "El inventario de licencias no contiene el componente $component."
+            }
+          }
 
           $appProcess = Start-Process -FilePath $installedExe -PassThru
           Start-Sleep -Seconds 6
@@ -300,6 +310,12 @@ jobs:
           plist="$app/Contents/Info.plist"
           test -d "$app"
           test -L "$mountpoint/Applications"
+          notices="$mountpoint/THIRD-PARTY-NOTICES.txt"
+          test -s "$notices"
+          grep -qi "PySide6" "$notices"
+          app_notices="$(find "$app" -type f -name 'THIRD-PARTY-NOTICES.txt' -print -quit)"
+          test -n "$app_notices"
+          grep -qi "pypdfium2" "$app_notices"
           plutil -lint "$plist"
           executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")"
           executable="$app/Contents/MacOS/$executable_name"
