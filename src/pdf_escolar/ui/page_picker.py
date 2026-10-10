@@ -213,7 +213,6 @@ class PagePickerDialog(QDialog):
         self._update_selected_label()
         self.loading_bar.show()
 
-        self.current_task_id = None
         if self.isVisible():
             self.thumbnail_timer.start(0)
 
