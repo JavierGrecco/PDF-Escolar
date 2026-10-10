@@ -58,7 +58,7 @@ El complemento OCR se compila y prueba para:
 
 ### Publicación, estado y límites
 
-El flujo independiente `.github/workflows/build-ocr.yml` construye los dos paquetes y genera una prueba real de extremo a extremo: crea un PDF escaneado que solo contiene una imagen, ejecuta OCR en el paquete y verifica que el texto esperado se puede extraer. La primera beta de OCR se publica separada de la aplicación y con avisos de terceros incluidos. Las versiones posteriores se publican desde GitHub Actions con un número explícito.
+El flujo independiente `.github/workflows/build-ocr.yml` construye los dos paquetes y genera una prueba real de extremo a extremo: crea un PDF escaneado que solo contiene una imagen, ejecuta OCR en el paquete y verifica que el texto esperado se puede extraer. La beta inicial ya está publicada como [aplicación v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/v0.1.0-beta.1) y [complemento OCR v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1). Los SHA-256 de los dos paquetes OCR están publicados por GitHub y se verifican durante la instalación; los cuatro instaladores directos están sincronizados y enumerados en `descargas/INFORMACION-DE-DESCARGA.txt`.
 
 Las pruebas automáticas demuestran que el complemento funciona con el documento de prueba, pero **no reemplazan la validación manual con escaneos reales**. Antes de considerar estable la función, hay que probar calidad con fotocopias, páginas rotadas, documentos mixtos (texto y escaneo), archivos extensos, PDF dañados o protegidos, y comprobar el resultado visual y la búsqueda/copia de texto.
 
