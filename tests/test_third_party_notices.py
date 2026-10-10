@@ -44,7 +44,7 @@ def test_generated_manifest_includes_official_qt_license_texts():
     assert "Fuente oficial de PySide" in manifest
     assert "LGPL-3.0-only.txt" in manifest
     assert "GPL-3.0-only.txt" in manifest
-    assert "qtproject/pyside-pyside-setup" not in manifest or "PySide6" in manifest
+    assert "13a4334f8fe46f108ad07536f612d8881ebe476e" in manifest
 
 
 def test_rtf_license_notice_is_readable():
