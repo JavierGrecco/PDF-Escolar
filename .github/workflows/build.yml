@@ -88,12 +88,16 @@ jobs:
       - name: Generate application icon
         run: python tools/create_icon.py
 
+      - name: Generate third-party license notices
+        run: python tools/generate_third_party_notices.py --output dist/THIRD-PARTY-NOTICES.txt
+
       - name: Build self-contained Windows application
         shell: pwsh
         run: >-
           pyinstaller --noconfirm --clean --onefile --windowed
           --name PDF-Escolar --paths src
           --icon assets/pdf-escolar.ico
+          --add-data "dist/THIRD-PARTY-NOTICES.txt;pdf_escolar"
           --collect-all pikepdf --collect-all pypdfium2 --collect-all PIL
           src/pdf_escolar/__main__.py
 
@@ -225,6 +229,9 @@ jobs:
       - name: Generate application icon
         run: python tools/create_icon.py
 
+      - name: Generate third-party license notices
+        run: python tools/generate_third_party_notices.py --output dist/THIRD-PARTY-NOTICES.txt
+
       - name: Create macOS icon
         shell: bash
         run: |
@@ -246,6 +253,7 @@ jobs:
           pyinstaller --noconfirm --clean --windowed
           --name PDF-Escolar --paths src
           --icon assets/pdf-escolar.icns
+          --add-data "dist/THIRD-PARTY-NOTICES.txt:pdf_escolar"
           --collect-all pikepdf --collect-all pypdfium2 --collect-all PIL
           src/pdf_escolar/__main__.py
 
