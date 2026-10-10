@@ -22,6 +22,7 @@ from pdf_escolar.ui.messages import (
 )
 from pdf_escolar.ui.page_order import PageOrderDialog
 from pdf_escolar.ui.page_picker import PagePickerDialog
+from pdf_escolar.ui.pdf_tools_dialog import PdfToolsDialog
 
 
 @dataclass(frozen=True)
@@ -400,6 +401,11 @@ class MainWindow(QMainWindow):
         titles.addWidget(title)
         titles.addWidget(subtitle)
         header.addLayout(titles, 1)
+        self.tools_button = QPushButton("Herramientas PDF")
+        self.tools_button.setObjectName("choosePagesButton")
+        self.tools_button.setToolTip("Rotar páginas, recortar márgenes o separar un PDF en archivos individuales")
+        self.tools_button.clicked.connect(self.open_pdf_tools)
+        header.addWidget(self.tools_button, 0, Qt.AlignmentFlag.AlignTop)
         self.help_button = QPushButton("Cómo usar")
         self.help_button.setObjectName("secondaryButton")
         self.help_button.clicked.connect(self.show_help)
@@ -501,6 +507,11 @@ class MainWindow(QMainWindow):
             QProgressBar#progressBar::chunk { background:#3157C8; border-radius:3px; }
         """)
 
+    def open_pdf_tools(self) -> None:
+        dialog = PdfToolsDialog(self)
+        dialog.exec()
+        dialog.deleteLater()
+
     def show_help(self) -> None:
         show_notice(
             self,
@@ -511,7 +522,9 @@ class MainWindow(QMainWindow):
             "3. Ordená los libros con las flechas o arrastrando el control ↕ con el mouse o el panel táctil. "
             "Usá «Ordenar páginas…» para acomodar páginas individuales de todos los libros.\n\n"
             "4. Elegí dónde guardar el documento nuevo. Los PDF originales no se modifican "
-            "y el contenido se procesa en esta computadora.",
+            "y el contenido se procesa en esta computadora.\n\n"
+            "También podés abrir «Herramientas PDF» para rotar páginas, recortar márgenes "
+            "o separar un documento en archivos individuales.",
             icon=QMessageBox.Icon.Information,
         )
 
