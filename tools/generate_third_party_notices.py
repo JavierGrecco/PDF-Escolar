@@ -212,7 +212,7 @@ def collect_license_files(
     # Some Qt wheels ship native framework license resources that are present on
     # disk but omitted from their .dist-info RECORD. Search the shared Qt package
     # only when normal metadata collection found no notices, and only once.
-    if not candidates and name.startswith("pyside6"):
+    if name.startswith("pyside6"):
         qt_root = Path(dist.locate_file("PySide6"))
         root_key = str(qt_root.resolve())
         if root_key not in _QT_LICENSE_FALLBACK_ROOTS and qt_root.is_dir():
@@ -231,7 +231,7 @@ def collect_license_files(
                         f"No se pudo incorporar un aviso de Qt ({relative_text}): {exc}"
                     ) from exc
                 if content:
-                    candidates[relative_text] = (relative_text, content)
+                    candidates.setdefault(relative_text, (relative_text, content))
 
     return [candidates[key] for key in sorted(candidates)]
 
