@@ -2,6 +2,20 @@
 
 ## Objetivo
 
+## Estado real de la implementación — 10 de octubre de 2026
+
+La hoja de ruta ya tiene una primera base de código integrada:
+
+- **PR #20:** incorpora esta especificación de producto.
+- **PR #21:** añade `src/pdf_escolar/document_model.py` y `tests/test_document_model.py`. La base define fuentes referenciadas, páginas de composición, fragmentos PDF, bloques de texto enriquecido, rectángulos normalizados, sustracción de zonas rectangulares y guardado/lectura atómicos de proyectos `.pdfescolar`.
+- Las pruebas cubren la geometría de exclusión, ausencia de solapamientos, serialización, referencias de fuentes inválidas y archivos de proyecto corruptos o demasiado grandes.
+
+**La interfaz de composición todavía no está implementada.** Hoy, en «Herramientas PDF», se puede girar una página entera seleccionada por número/rango, recortar márgenes uniformes y separar páginas. No se puede todavía arrastrar sobre la vista previa para seleccionar regiones arbitrarias, excluir una zona y conservar automáticamente el resto, reordenar varios fragmentos de una página, colocar piezas múltiples en el mismo lienzo ni editar consignas desde una página enriquecida.
+
+La siguiente implementación de cara al usuario debe construir primero el diálogo visual de selección/conservación/exclusión de regiones y la vista previa. El motor debe convertir las coordenadas de vista a coordenadas PDF con pruebas para rotación, CropBox, páginas de diferentes tamaños y contenido vectorial; después, los fragmentos se incorporarán al guion de composición. El modelo por sí solo no realiza esas operaciones de exportación.
+
+
+
 Evolucionar PDF Escolar de una herramienta para seleccionar y combinar páginas a un **taller visual para crear documentos educativos y documentos de uso general**. La persona debe poder tomar partes de diferentes PDF, decidir qué conservar y qué excluir, montar las piezas en el orden y la posición que quiera, insertar consignas escritas y exportar un PDF final.
 
 El producto debe seguir siendo local, intuitivo, no destructivo y compatible con el flujo de distribución de escritorio. La complejidad técnica tiene que quedar escondida detrás de acciones visibles y reversibles.
