@@ -19,7 +19,7 @@ def test_source_tree_provides_a_clear_license_notice_template():
     notices = load_third_party_notices()
 
     assert notices.strip()
-    assert "inventario completo se genera durante la compilación" in notices
+    assert "inventario se genera durante la compilación" in notices
     assert "revisión manual" in notices
 
 
