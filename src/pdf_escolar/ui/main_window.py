@@ -122,6 +122,26 @@ class DropArea(QFrame):
         layout.addWidget(title)
         layout.addWidget(hint)
         layout.addWidget(button, 0, Qt.AlignmentFlag.AlignHCenter)
+        self.title_label = title
+        self.hint_label = hint
+        self.choose_button = button
+        self.content_layout = layout
+
+    def set_compact(self, compact: bool) -> None:
+        """Keep the drop target available without wasting space after loading files."""
+        self.title_label.setVisible(not compact)
+        self.hint_label.setVisible(not compact)
+        self.choose_button.setText(
+            "Agregar más PDF" if compact else "Seleccionar archivos PDF"
+        )
+        if compact:
+            self.content_layout.setContentsMargins(12, 8, 12, 8)
+            self.content_layout.setSpacing(4)
+            self.setToolTip("También podés arrastrar archivos PDF hasta esta zona.")
+        else:
+            self.content_layout.setContentsMargins(18, 18, 18, 18)
+            self.content_layout.setSpacing(10)
+            self.setToolTip("")
 
     def dragEnterEvent(self, event: QDragEnterEvent):
         if event.mimeData().hasUrls():
@@ -354,6 +374,7 @@ class MainWindow(QMainWindow):
         self.tasks: set[QRunnable] = set()
         self.exporting = False
         self.custom_page_order: list[PdfPageRef] | None = None
+        self.load_errors: list[tuple[str, str]] = []
 
         central = QWidget()
         central.setObjectName("central")
@@ -528,10 +549,17 @@ class MainWindow(QMainWindow):
             QSettings().setValue("last_open_directory", str(valid_pdf_paths[-1].parent))
         if not accepted:
             return
-        self.custom_page_order = None
         self.pending.update(accepted)
+        order_was_reset = self._invalidate_custom_page_order(
+            "agregaste archivos nuevos"
+        )
+        self._refresh_drop_area_mode()
         self._update_summary()
-        self.status.setText("Revisando los archivos…")
+        self.status.setText(
+            "Revisando archivos… (se reinició el orden manual)."
+            if order_was_reset
+            else "Revisando los archivos…"
+        )
         self.progress.show()
         self.progress.setRange(0, 0)
         task = InspectTask(accepted)
@@ -556,14 +584,14 @@ class MainWindow(QMainWindow):
         card.ranges_changed.connect(self._on_page_selection_changed)
         self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
         self.documents[path] = (info, card)
+        self._refresh_drop_area_mode()
         self._update_summary()
 
     @Slot(str, str)
     def _on_load_error(self, path: str, detail: str):
         self.pending.discard(path)
-        self.status.setText(f"No se pudo leer {Path(path).name}.")
-        QMessageBox.warning(self, "No se pudo leer el PDF",
-            f"No pudimos abrir «{Path(path).name}».\n\nComprobá que el archivo no tenga contraseña y que sea legible.\n\nDetalle técnico: {detail}")
+        self.load_errors.append((path, detail))
+        self.status.setText(f"No se pudo agregar «{Path(path).name}».")
 
     @Slot(int, int, str)
     def _on_progress(self, done: int, total: int, message: str):
@@ -597,11 +625,31 @@ class MainWindow(QMainWindow):
     def _on_batch_finished(self):
         if not self.pending:
             self.progress.hide()
+            self._refresh_drop_area_mode()
         self._update_summary()
         if self.documents:
             self.status.setText("Ingresá las páginas de cada archivo y creá el PDF final.")
         elif not self.pending:
             self.status.setText("No hay archivos cargados. Podés volver a intentarlo.")
+
+        # Avoid a chain of modal alerts when several files cannot be opened.
+        if not self.pending and self.load_errors:
+            errors, self.load_errors = self.load_errors, []
+            count = len(errors)
+            noun = "archivo" if count == 1 else "archivos"
+            details = "\n\n".join(
+                f"{path}\n{detail}" for path, detail in errors
+            )
+            dialog = QMessageBox(self)
+            dialog.setIcon(QMessageBox.Icon.Warning)
+            dialog.setWindowTitle("Algunos PDF no se pudieron agregar")
+            dialog.setText(f"No se pudieron agregar {count} {noun}.")
+            dialog.setInformativeText(
+                "Pueden estar dañados, protegidos por contraseña o no ser PDF válidos. "
+                "Los demás archivos que se pudieron abrir siguen disponibles."
+            )
+            dialog.setDetailedText(details)
+            dialog.exec()
 
     @Slot(str, int)
     def move_file(self, path: str, offset: int):
@@ -614,7 +662,7 @@ class MainWindow(QMainWindow):
             return
         ordered[current_index], ordered[target_index] = ordered[target_index], ordered[current_index]
         self.documents = dict(ordered)
-        self.custom_page_order = None
+        self._invalidate_custom_page_order("cambiaste el orden de los archivos")
         self._relayout_cards()
         self._update_summary()
 
@@ -632,7 +680,7 @@ class MainWindow(QMainWindow):
         if [key for key, _value in ordered] == list(self.documents.keys()):
             return
         self.documents = dict(ordered)
-        self.custom_page_order = None
+        self._invalidate_custom_page_order("cambiaste el orden de los archivos")
         self._relayout_cards()
         self._update_summary()
 
@@ -650,10 +698,23 @@ class MainWindow(QMainWindow):
             card.move_down_button.setEnabled(index < last_index)
 
     def _on_page_selection_changed(self) -> None:
-        # The manual sequence represents an exact selection; invalidate it when
-        # a range is edited so that newly selected/deselected pages cannot be lost.
-        self.custom_page_order = None
+        # A custom sequence represents an exact selection. Explain why it was
+        # cleared instead of silently changing the export order.
+        self._invalidate_custom_page_order("cambiaste la selección de páginas")
         self._update_summary()
+
+    def _invalidate_custom_page_order(self, reason: str) -> bool:
+        if self.custom_page_order is None:
+            return False
+        self.custom_page_order = None
+        self.status.setText(
+            f"Se quitó el orden manual porque {reason}. "
+            "Podés volver a «Ordenar páginas…» para definirlo."
+        )
+        return True
+
+    def _refresh_drop_area_mode(self) -> None:
+        self.drop_area.set_compact(bool(self.documents or self.pending))
 
     @Slot(str)
     def remove_file(self, path: str):
@@ -662,7 +723,8 @@ class MainWindow(QMainWindow):
             _, card = entry
             self.cards_layout.removeWidget(card)
             card.deleteLater()
-            self.custom_page_order = None
+            self._invalidate_custom_page_order("quitaste un archivo")
+        self._refresh_drop_area_mode()
         self._update_summary()
 
     def _update_summary(self):
