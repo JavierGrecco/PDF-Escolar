@@ -211,6 +211,31 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
+  verify-artifacts:
+    name: Verify generated installers
+    if: github.event_name == 'pull_request'
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all generated packages
+        uses: actions/download-artifact@v8
+        with:
+          pattern: pdf-escolar-*
+          path: dist
+          merge-multiple: true
+
+      - name: Verify expected installers and disk images
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s dist/PDF-Escolar.exe
+          test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-Windows.exe' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-macOS-Intel.dmg' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-macOS-Apple-Silicon.dmg' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*-Intel.zip' -print -quit)"
+          test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*-Apple-Silicon.zip' -print -quit)"
+          ls -lh dist
+
   publish-release:
     name: Publish downloadable installers
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && inputs.release_version != '')
@@ -220,7 +245,7 @@ jobs:
       contents: write
     steps:
       - name: Download all installer artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: pdf-escolar-*
           path: dist
@@ -265,7 +290,7 @@ jobs:
           ref: main
 
       - name: Descargar los paquetes generados
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           pattern: pdf-escolar-*
           path: dist
