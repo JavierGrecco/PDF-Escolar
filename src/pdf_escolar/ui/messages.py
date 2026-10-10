@@ -20,22 +20,47 @@ def show_notice(
     dialog.exec()
 
 
-def friendly_pdf_load_error(detail: str) -> str:
+def _error_reason(detail: object) -> str:
+    """Return a safe classifier input without trusting arbitrary exception values."""
+    if not isinstance(detail, str):
+        return ""
+    try:
+        return str.casefold(detail)
+    except Exception:
+        # Error translation must never become a second error shown to the user.
+        return ""
+
+
+def friendly_pdf_load_error(detail: object) -> str:
     """Translate common PDF open failures without exposing library diagnostics."""
-    reason = detail.casefold()
+    reason = _error_reason(detail)
 
     if any(term in reason for term in ("password", "encrypted", "encryption", "contraseña")):
         return "Este PDF está protegido con contraseña. Usá una copia sin contraseña."
 
     if any(
         term in reason
-        for term in ("permission denied", "access denied", "permissionerror", "errno 13")
+        for term in (
+            "permission denied",
+            "access denied",
+            "access is denied",
+            "permissionerror",
+            "errno 13",
+            "winerror 5",
+        )
     ):
         return "No tenés permiso para abrir este archivo. Revisá sus permisos o elegí otra copia."
 
     if any(
         term in reason
-        for term in ("no such file", "file not found", "does not exist", "errno 2")
+        for term in (
+            "no such file",
+            "file not found",
+            "filenotfounderror",
+            "does not exist",
+            "errno 2",
+            "winerror 2",
+        )
     ):
         return "No encontramos el archivo. Puede haberse movido o eliminado."
 
@@ -47,8 +72,11 @@ def friendly_pdf_load_error(detail: str) -> str:
             "malformed",
             "syntax error",
             "stream has ended",
+            "stream ended",
             "unexpected eof",
             "end of file",
+            "unexpected end",
+            "eof marker",
         )
     ):
         return "El archivo parece estar dañado o no tiene un formato PDF válido."
@@ -59,13 +87,19 @@ def friendly_pdf_load_error(detail: str) -> str:
     )
 
 
-def friendly_export_error(detail: str) -> str:
+def friendly_export_error(detail: object) -> str:
     """Offer a practical next step instead of displaying raw exception text."""
-    reason = detail.casefold()
+    reason = _error_reason(detail)
 
     if any(
         term in reason
-        for term in ("no space left", "disk full", "not enough space", "errno 28")
+        for term in (
+            "no space left",
+            "disk full",
+            "not enough space",
+            "errno 28",
+            "winerror 112",
+        )
     ):
         return (
             "No hay suficiente espacio para guardar el PDF. Liberá espacio "
@@ -74,7 +108,14 @@ def friendly_export_error(detail: str) -> str:
 
     if any(
         term in reason
-        for term in ("permission denied", "access denied", "permissionerror", "errno 13")
+        for term in (
+            "permission denied",
+            "access denied",
+            "access is denied",
+            "permissionerror",
+            "errno 13",
+            "winerror 5",
+        )
     ):
         return (
             "No tenés permiso para guardar en esa carpeta. Elegí otra carpeta "
@@ -83,7 +124,14 @@ def friendly_export_error(detail: str) -> str:
 
     if any(
         term in reason
-        for term in ("no such file", "file not found", "does not exist", "errno 2")
+        for term in (
+            "no such file",
+            "file not found",
+            "filenotfounderror",
+            "does not exist",
+            "errno 2",
+            "winerror 2",
+        )
     ):
         return "La carpeta elegida ya no está disponible. Elegí otra ubicación para guardar el PDF."
 
