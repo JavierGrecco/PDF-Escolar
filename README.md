@@ -28,7 +28,7 @@ En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaci
 
 - **Trabajar con varios archivos:** reunir páginas de distintos PDF en un mismo documento final.
 - **Elegir páginas:** seleccionar miniaturas visualmente o ingresar números y rangos, como `1-8, 12, 20-25`.
-- **Reordenar con libertad:** cambiar el orden de los documentos y mezclar páginas individuales mediante miniaturas, arrastre o botones.
+- **Reordenar con libertad:** cambiar el orden de los documentos y mezclar páginas individuales mediante miniaturas de distintos tamaños, arrastre o botones, con vista previa detallada de la página seleccionada.
 - **Guardar un PDF nuevo:** elegir dónde guardarlo, sin alterar los documentos originales.
 - **Herramientas PDF:** rotar páginas, recortar márgenes y separar páginas en archivos independientes, con operaciones que conservan el contenido del PDF sin convertirlo en imagen.
 - **OCR local (beta):** convertir documentos escaneados en PDF buscables, para localizar, seleccionar y copiar texto reconocido. Requiere instalar un complemento opcional.
@@ -38,9 +38,9 @@ En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaci
 
 1. Abrí PDF Escolar y agregá uno o más archivos PDF.
 2. Entrá en **Elegir visualmente** para marcar las páginas o escribí los números y rangos que necesitás.
-3. Ordená los documentos y, si querés mezclar páginas de distintas fuentes, elegí **Ordenar páginas…**.
-4. Revisá el orden final y pulsá **Crear PDF final**.
-5. Elegí dónde guardar el documento nuevo.
+3. Elegí **Ordenar páginas…** para ajustar el tamaño de las miniaturas y reorganizar las hojas; o pulsá directamente **Crear PDF final** para revisar la secuencia antes de guardarla.
+4. En la revisión, inspeccioná la página seleccionada y corregí el orden desde esa misma vista.
+5. Confirmá y elegí dónde guardar el documento nuevo.
 
 Para otras tareas, abrí **Herramientas PDF** desde la ventana principal. Podés girar páginas, recortar márgenes en milímetros o generar un PDF por página. Estas operaciones crean archivos nuevos y no reemplazan los originales.
 
@@ -70,11 +70,11 @@ El complemento y sus avisos de licencia se distribuyen en una publicación separ
 
 ## Hacia dónde va el proyecto
 
-La próxima mejora se centra en que puedas **identificar cada hoja, ver el resultado final y corregir el orden antes de guardar**. La hoja de ruta contempla miniaturas ajustables, vista ampliada, una previsualización interactiva que permite reordenar páginas sin volver al inicio y un estado vacío que mantenga la apariencia de la aplicación antes de cargar archivos.
+La experiencia de ordenamiento ya incluye **miniaturas pequeñas, medianas y grandes**, una vista detallada de la página seleccionada con su archivo y número de origen, y una ventana para ampliarla. Al pulsar **Crear PDF final**, la aplicación muestra la secuencia para revisarla y corregir el orden antes de elegir dónde guardar el documento. El área vacía de documentos también tiene un fondo explícito y coherente con la ventana principal.
 
 También estamos definiendo una experiencia visual consistente para Windows y macOS: respetar el tema del sistema por defecto, ofrecer alternativas clara y oscura, mejorar la legibilidad y conservar el aspecto original de las páginas PDF en pantalla. La elección de temas y el editor visual descritos en la documentación son propuestas de evolución; no forman parte de la beta actual.
 
-Después se incorporarán de forma gradual la rotación y el recorte visual en la previsualización, y un modo de creación más avanzado para seleccionar regiones, excluir zonas, recomponer fragmentos de varios documentos e insertar consignas con texto enriquecido. La interfaz completa todavía no está implementada.
+Las próximas etapas son el sistema de temas Sistema/Claro/Oscuro y, después, la rotación y el recorte visual en la previsualización. A más largo plazo, el modo de creación permitirá seleccionar regiones, excluir zonas, recomponer fragmentos de varios documentos e insertar consignas con texto enriquecido. Esas funciones avanzadas todavía no están implementadas.
 
 - [Hoja de ruta de experiencia, previsualización y temas](docs/EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md)
 - [Editor visual y composición](docs/EDITOR-VISUAL-Y-COMPOSICION.md)
