@@ -10,10 +10,11 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
     from PySide6.QtCore import QEvent, QSettings
-    from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView
+    from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView, QScrollArea
     from pdf_escolar.pdf_engine import PdfPageRef
     from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
     from pdf_escolar.ui.page_order import PageOrderDialog
+    from pdf_escolar.ui.pdf_tools_dialog import PdfToolsDialog
 except ImportError as exc:
     # Some Linux runners lack system libraries needed by Qt. Skip only those
     # known runtime-library errors; application import regressions must fail CI.
@@ -110,6 +111,18 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
         assert dialog.preview_title.text() == "Página 3 de 3 del PDF final"
     finally:
         _dispose_widget(dialog, application)
+
+def test_pdf_tools_content_scrolls_without_hiding_action_buttons(application):
+    dialog = PdfToolsDialog()
+    try:
+        content_scroll = dialog.findChild(QScrollArea, "toolsContentScroll")
+        assert content_scroll is not None
+        assert content_scroll.widget() is not None
+        assert dialog.buttons.parentWidget() is dialog
+        assert dialog.run_button.parentWidget() is dialog.buttons
+    finally:
+        _dispose_widget(dialog, application)
+
 
 def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path):
     settings = QSettings()
