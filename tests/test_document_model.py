@@ -216,3 +216,20 @@ def test_project_rejects_unknown_schema_version():
 
     with pytest.raises(DocumentModelError, match="no es compatible"):
         DocumentProject.from_dict(payload)
+
+
+def test_project_loader_rejects_oversized_file_before_reading(tmp_path, monkeypatch):
+    import pdf_escolar.document_model as document_model
+
+    path = tmp_path / "grande.pdfescolar"
+    path.write_text("x", encoding="utf-8")
+    monkeypatch.setattr(
+        Path,
+        "stat",
+        lambda self: type("Stat", (), {"st_size": document_model.MAX_PROJECT_BYTES + 1})()
+        if self == path
+        else Path.stat(self),
+    )
+
+    with pytest.raises(DocumentModelError, match="supera el tamaño"):
+        DocumentProject.load(path)
