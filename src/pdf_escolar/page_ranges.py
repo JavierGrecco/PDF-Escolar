@@ -33,3 +33,23 @@ def parse_page_ranges(specification: str, total_pages: int) -> list[int]:
             raise ValueError(f"El rango «{token}» está invertido; el inicio supera al final.")
         selected.extend(range(start - 1, end))
     return selected
+
+  
+  
+def format_page_ranges(pages: list[int]) -> str:
+    """Format one-based page numbers as compact contiguous ranges."""
+    numbers = sorted(set(pages))
+    if not numbers:
+        return ""
+    if numbers[0] < 1:
+        raise ValueError("Los números de página empiezan en 1.")
+    spans: list[str] = []
+    start = previous = numbers[0]
+    for number in numbers[1:]:
+        if number == previous + 1:
+            previous = number
+            continue
+        spans.append(str(start) if start == previous else f"{start}-{previous}")
+        start = previous = number
+    spans.append(str(start) if start == previous else f"{start}-{previous}")
+    return ", ".join(spans)

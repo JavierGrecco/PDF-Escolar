@@ -1,5 +1,5 @@
 import pytest
-from pdf_escolar.page_ranges import parse_page_ranges
+from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
 
 
 def test_single_pages_and_ranges_keep_entered_order():
@@ -23,3 +23,15 @@ def test_invalid_ranges_are_rejected(spec):
 def test_empty_document_is_rejected():
     with pytest.raises(ValueError):
         parse_page_ranges("1", 0)
+
+
+def test_format_ranges_compacts_adjacent_pages():
+    assert format_page_ranges([1, 2, 3, 7, 9, 10]) == "1-3, 7, 9-10"
+
+
+def test_format_ranges_deduplicates_and_sorts():
+    assert format_page_ranges([4, 2, 3, 3, 2]) == "2-4"
+
+
+def test_format_empty_selection():
+    assert format_page_ranges([]) == ""

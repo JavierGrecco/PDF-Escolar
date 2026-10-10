@@ -6,12 +6,13 @@ from pathlib import Path
 from PySide6.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot, QUrl
 from PySide6.QtGui import QDesktopServices, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
-    QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
+    QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
     QMessageBox, QPushButton, QProgressBar, QScrollArea, QVBoxLayout, QWidget
 )
 from pdf_escolar import __version__
 from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import PdfSource, combine_selected_pages, inspect_pdf
+from pdf_escolar.ui.page_picker import PagePickerDialog
 
 
 @dataclass(frozen=True)
@@ -148,11 +149,23 @@ class DocumentCard(QFrame):
         self.ranges.setToolTip("Separá páginas y rangos con comas. También podés usar 30- hasta el final.")
         self.ranges.textChanged.connect(self.ranges_changed.emit)
         row.addWidget(self.ranges, 1)
+        visual_button = QPushButton("Elegir visualmente")
+        visual_button.setObjectName("secondaryButton")
+        visual_button.setToolTip("Ver miniaturas y marcar páginas")
+        visual_button.clicked.connect(self.open_page_picker)
+        row.addWidget(visual_button)
         all_pages = QPushButton("Todas")
         all_pages.setObjectName("textButton")
         all_pages.clicked.connect(lambda: self.ranges.setText(f"1-{document.page_count}"))
         row.addWidget(all_pages)
         layout.addLayout(row)
+
+    def open_page_picker(self) -> None:
+        dialog = PagePickerDialog(
+            self.document.path, self.document.page_count, self.ranges.text(), self
+        )
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            self.ranges.setText(dialog.selected_ranges())
 
     def selection(self) -> PdfSource:
         return PdfSource(self.document.path, self.ranges.text())

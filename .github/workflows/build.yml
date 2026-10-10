@@ -22,7 +22,7 @@ jobs:
       - run: python -m pip install -e . pyinstaller
       - name: Build Windows executable
         shell: pwsh
-        run: pyinstaller --noconfirm --clean --onefile --windowed --name PDF-Escolar --paths src --collect-all pikepdf src/pdf_escolar/__main__.py
+        run: pyinstaller --noconfirm --clean --onefile --windowed --name PDF-Escolar --paths src --collect-all pikepdf --collect-all pypdfium2 --collect-all PIL src/pdf_escolar/__main__.py
       - uses: actions/upload-artifact@v4
         with:
           name: pdf-escolar-windows
@@ -38,7 +38,7 @@ jobs:
           cache: pip
       - run: python -m pip install -e . pyinstaller
       - name: Build macOS application
-        run: pyinstaller --noconfirm --clean --windowed --name PDF-Escolar --paths src --collect-all pikepdf src/pdf_escolar/__main__.py
+        run: pyinstaller --noconfirm --clean --windowed --name PDF-Escolar --paths src --collect-all pikepdf --collect-all pypdfium2 --collect-all PIL src/pdf_escolar/__main__.py
       - name: Package application bundle
         run: ditto -c -k --sequesterRsrc --keepParent dist/PDF-Escolar.app dist/PDF-Escolar-macOS.zip
       - uses: actions/upload-artifact@v4
