@@ -61,14 +61,15 @@ def _write_pdf_atomically(
 
     try:
         with pikepdf.open(source) as pdf:
-            if not pdf.pages:
+            source_page_count = len(pdf.pages)
+            if source_page_count == 0:
                 raise ValueError("El PDF no contiene páginas.")
             result = transform(pdf)
             pdf.save(str(temporary))
 
         with pikepdf.open(temporary) as verified:
-            if not verified.pages:
-                raise ValueError("El resultado no contiene páginas.")
+            if len(verified.pages) != source_page_count:
+                raise ValueError("La cantidad de páginas del resultado no coincide con el original.")
         os.replace(temporary, target)
         return result
     except Exception:
