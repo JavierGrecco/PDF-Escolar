@@ -52,7 +52,7 @@ El ZIP se descarga desde una publicación de GitHub, se verifica con el digest S
 El complemento OCR se compila y prueba para:
 
 - **Windows x64.**
-- **macOS con Apple Silicon (M1 o posterior), macOS 14 o posterior.**
+- **macOS con Apple Silicon (M1 o posterior), macOS 15 o posterior.**
 
 **Mac Intel no forma parte de la matriz OCR.** El motivo es mantener el motor moderno y sus dependencias nativas sin imponer versiones antiguas ni reducir la calidad de la integración. PDF Escolar sigue pudiéndose usar en Mac Intel para sus otras funciones PDF; la interfaz debe explicar que OCR no está disponible en ese equipo.
 

@@ -9,7 +9,7 @@ Este documento es el punto de continuidad técnica. La información de la secci�
 - La aplicación principal funciona y se prueba mediante GitHub Actions en Ubuntu, Windows, macOS Apple Silicon y el conjunto de dependencias heredado de Mac Intel.
 - El código ya integrado incluye selección y orden visual de páginas, combinación no destructiva y herramientas PDF nativas de rotación, recorte de márgenes y separación.
 - La dirección de producto para el editor visual de composición está documentada en [EDITOR-VISUAL-Y-COMPOSICION.md](EDITOR-VISUAL-Y-COMPOSICION.md). Esa hoja de ruta no implica que la interfaz completa esté disponible en los instaladores.
-- La beta OCR usa un complemento separado con OCRmyPDF y Tesseract. El motor se compila para Windows x64 y macOS Apple Silicon (M1 o posterior, macOS 14+). No se ofrecerá OCR para Mac Intel; las herramientas PDF existentes sí siguen estando disponibles allí.
+- La beta OCR usa un complemento separado con OCRmyPDF y Tesseract. El motor se compila para Windows x64 y macOS Apple Silicon (M1 o posterior, macOS 15+). No se ofrecerá OCR para Mac Intel; las herramientas PDF existentes sí siguen estando disponibles allí.
 - Los artefactos de CI de un PR prueban ese commit; no son sinónimo de un lanzamiento en GitHub Releases ni de una actualización de los enlaces de `descargas/`.
 - Los instaladores no están firmados ni notarizados en esta etapa. La validación de Actions tampoco sustituye las pruebas manuales en equipos reales.
 - No debe declararse una versión beta publicada hasta comprobar que existe la release de la aplicación y la release del complemento OCR, que incluyen sus paquetes para todas las plataformas admitidas, y que `descargas/INFORMACION-DE-DESCARGA.txt` identifica la versión sincronizada.
@@ -19,7 +19,7 @@ Este documento es el punto de continuidad técnica. La información de la secci�
 1. Revisar el [estado de GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions).
 2. Consultar [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases) para verificar versiones y activos reales.
 3. Abrir [INFORMACION-DE-DESCARGA.txt](../descargas/INFORMACION-DE-DESCARGA.txt) y confirmar versión, commit, ejecución y SHA-256 de los cuatro paquetes.
-4. Completar [PRUEBAS-MANUALES.md](PRUEBAS-MANUALES.md) con Windows, Mac Intel y Apple Silicon, según la función que se valida. OCR solo se prueba en Windows x64 y Apple Silicon con macOS 14+.
+4. Completar [PRUEBAS-MANUALES.md](PRUEBAS-MANUALES.md) con Windows, Mac Intel y Apple Silicon, según la función que se valida. OCR solo se prueba en Windows x64 y Apple Silicon con macOS 15+.
 5. Reproducir fallos desde el log específico y el SHA exacto. No resumir una ejecución fallida como «CI verde» porque otros sistemas hayan terminado con éxito.
 
 ## Historial técnico previo

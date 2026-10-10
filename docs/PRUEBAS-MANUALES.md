@@ -112,6 +112,6 @@ Estas pruebas requieren una versión de prueba que incluya una publicación del 
 - [ ] Probar un PDF protegido con contraseña o dañado; se debe mostrar un aviso entendible y no reemplazar ningún archivo de salida previo.
 - [ ] Cerrar la aplicación durante una operación larga solo después de confirmar que el flujo espera a que el proceso termine y no deja un archivo parcial.
 - [ ] Desconectar Internet y volver a ejecutar OCR; la función debe trabajar con el complemento ya instalado.
-- [ ] En Mac con Apple Silicon y macOS 14 o posterior, comprobar la instalación y ejecución de OCR.
-- [ ] En Mac Intel y en Mac Apple Silicon con macOS anterior a 14, confirmar que se indica que OCR no está disponible sin afectar las demás herramientas PDF.
+- [ ] En Mac con Apple Silicon y macOS 15 o posterior, comprobar la instalación y ejecución de OCR.
+- [ ] En Mac Intel y en Mac Apple Silicon con macOS anterior a 15, confirmar que se indica que OCR no está disponible sin afectar las demás herramientas PDF.
 - [ ] Registrar sistema operativo, versión del complemento, idioma, tamaño aproximado del escaneo y resultado de la prueba.

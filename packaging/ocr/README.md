@@ -16,7 +16,7 @@ La primera distribución incluye Tesseract con los modelos `spa`, `eng` y `osd` 
 
 El flujo `.github/workflows/build-ocr.yml` construye y prueba paquetes para Windows x64 y Mac con chip Apple Silicon (M1 o posterior). El OCR requiere Tesseract, datos de idioma y bibliotecas nativas; no alcanza con empaquetar solamente los módulos de Python.
 
-El complemento para Mac necesita macOS 14 o posterior y Apple Silicon (M1 o posterior). Elegimos no construir una variante OCR para Mac Intel: el motor moderno y sus dependencias nativas se compilan y validan mejor en Windows y Apple Silicon. La aplicación principal puede seguir utilizándose en Mac Intel para combinar, ordenar, rotar, recortar y separar PDF; OCR no se mostrará como disponible en esos equipos.
+El complemento para Mac necesita macOS 15 o posterior y Apple Silicon (M1 o posterior). Elegimos no construir una variante OCR para Mac Intel: el motor moderno y sus dependencias nativas se compilan y validan mejor en Windows y Apple Silicon. La aplicación principal puede seguir utilizándose en Mac Intel para combinar, ordenar, rotar, recortar y separar PDF; OCR no se mostrará como disponible en esos equipos.
 
 ## Prueba de humo
 
