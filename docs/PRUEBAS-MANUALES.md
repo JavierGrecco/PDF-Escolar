@@ -16,6 +16,12 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] La aplicación abre sin cerrarse y muestra el nombre y la versión.
 - [ ] Se pueden agregar los dos PDF desde el selector de archivos.
 - [ ] También se pueden agregar arrastrándolos a la ventana.
+- [ ] Después de agregar un PDF, el área de carga se compacta y el botón pasa a decir «Agregar más PDF».
+- [ ] Incluso en estado compacto, se pueden arrastrar otros PDF al área de carga.
+- [ ] Al quitar todos los documentos, el área de carga vuelve a mostrar las instrucciones iniciales.
+- [ ] Agregar varios PDF dañados o protegidos muestra un único resumen, sin una sucesión de ventanas emergentes.
+- [ ] Si algunos archivos fallan, los PDF que sí se pudieron abrir siguen cargados.
+- [ ] Los detalles del error se pueden consultar sin obligar al usuario a leerlos para entender qué pasó.
 - [ ] Cada tarjeta muestra el nombre completo y legible del PDF en una fila propia, además de la cantidad de páginas y el tamaño.
 - [ ] Probar nombres largos y cambiar el escalado de pantalla (por ejemplo, 125 % o 150 % en Windows); el nombre sigue visible.
 - [ ] La selección inicial incluye todas las páginas.
@@ -32,6 +38,7 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Crear una secuencia mezclada, por ejemplo B-DOS, A-TRES, B-UNO, A-UNO; exportarla y verificar visualmente que ese sea el orden final.
 - [ ] Cancelar el organizador no cambia el orden previamente aplicado; cancelar Guardar no crea un archivo.
 - [ ] Cambiar un rango o quitar/agregar un PDF después de ordenar páginas no deja una secuencia vieja; volver a ordenar si hace falta.
+- [ ] Cuando un cambio invalida el orden manual, la aplicación lo explica y dice cómo volver a «Ordenar páginas…».
 - [ ] Cerrar y reabrir la aplicación; «Seleccionar archivos PDF» comienza en la última carpeta utilizada.
 - [ ] El resumen actualiza la cantidad de páginas seleccionadas cuando cambia un rango.
 - [ ] Intentar usar un rango inválido, por ejemplo `1-99` en un PDF de 3 páginas, muestra un aviso y no genera un PDF incompleto.
