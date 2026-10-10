@@ -1,7 +1,9 @@
 from pathlib import Path
 import pikepdf
 import pytest
-from pdf_escolar.pdf_engine import PdfSource, combine_selected_pages, inspect_pdf
+from pdf_escolar.pdf_engine import (
+    PdfPageRef, PdfSource, combine_pages_in_order, combine_selected_pages, inspect_pdf
+)
 
 
 def make_pdf(path: Path, widths: list[float]) -> None:
@@ -112,3 +114,39 @@ def test_inspect_pdf_rejects_a_password_protected_document(tmp_path):
     with pytest.raises(pikepdf.PasswordError):
         inspect_pdf(str(source))
 
+
+def test_export_supports_an_explicit_order_across_multiple_pdfs(tmp_path):
+    first, second, output = (
+        tmp_path / "math.pdf",
+        tmp_path / "science.pdf",
+        tmp_path / "ordered.pdf",
+    )
+    make_pdf(first, [100, 200, 300])
+    make_pdf(second, [400, 500])
+
+    count = combine_pages_in_order(
+        [
+            PdfPageRef(str(second), 1),
+            PdfPageRef(str(first), 2),
+            PdfPageRef(str(second), 0),
+            PdfPageRef(str(first), 0),
+        ],
+        str(output),
+    )
+
+    assert count == 4
+    assert page_widths(output) == [500, 300, 400, 100]
+    assert page_widths(first) == [100, 200, 300]
+    assert page_widths(second) == [400, 500]
+
+
+def test_invalid_explicit_page_reference_preserves_existing_output(tmp_path):
+    source, output = tmp_path / "source.pdf", tmp_path / "existing.pdf"
+    make_pdf(source, [200, 300])
+    make_pdf(output, [800])
+
+    with pytest.raises(ValueError, match="no existe la página 3"):
+        combine_pages_in_order([PdfPageRef(str(source), 2)], str(output))
+
+    assert page_widths(output) == [800]
+    assert not list(tmp_path.glob(".existing_*.tmp.pdf"))
