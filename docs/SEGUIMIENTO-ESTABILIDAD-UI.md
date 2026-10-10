@@ -6,20 +6,23 @@ Este documento es el punto de continuidad técnica. La información de la secci�
 
 ## Estado actual
 
-- La aplicación principal funciona y se prueba mediante GitHub Actions en Ubuntu, Windows, macOS Apple Silicon y el conjunto de dependencias heredado de Mac Intel.
-- El código ya integrado incluye selección y orden visual de páginas, combinación no destructiva y herramientas PDF nativas de rotación, recorte de márgenes y separación.
-- La dirección de producto para el editor visual de composición está documentada en [EDITOR-VISUAL-Y-COMPOSICION.md](EDITOR-VISUAL-Y-COMPOSICION.md). Esa hoja de ruta no implica que la interfaz completa esté disponible en los instaladores.
-- La beta OCR usa un complemento separado con OCRmyPDF y Tesseract. El motor se compila para Windows x64 y macOS Apple Silicon (M1 o posterior, macOS 15+). No se ofrecerá OCR para Mac Intel; las herramientas PDF existentes sí siguen estando disponibles allí.
-- Los artefactos de CI de un PR prueban ese commit; no son sinónimo de un lanzamiento en GitHub Releases ni de una actualización de los enlaces de `descargas/`.
-- Los instaladores no están firmados ni notarizados en esta etapa. La validación de Actions tampoco sustituye las pruebas manuales en equipos reales.
-- No debe declararse una versión beta publicada hasta comprobar que existe la release de la aplicación y la release del complemento OCR, que incluyen sus paquetes para todas las plataformas admitidas, y que `descargas/INFORMACION-DE-DESCARGA.txt` identifica la versión sincronizada.
+- La aplicación y el complemento OCR están publicados como versiones **beta** coordinadas; no son versiones estables:
+  - [PDF Escolar v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/v0.1.0-beta.1).
+  - [Complemento OCR v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1).
+- La aplicación principal pasó las pruebas de CI y los checks de empaquetado en Windows x64, macOS Intel y Apple Silicon. Ejecución: [Build installers #38087055313](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38087055313).
+- OCR pasó la prueba integral de reconocimiento en Windows x64 y Apple Silicon con macOS 15 o posterior. Ejecución: [Build OCR companion #38087055391](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38087055391).
+- Las pruebas automatizadas de la aplicación también finalizaron correctamente en Ubuntu, Windows, macOS Apple Silicon y el conjunto heredado de dependencias de Mac Intel: [Tests #38087055326](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38087055326).
+- `descargas/INFORMACION-DE-DESCARGA.txt` se sincronizó con la beta `0.1.0-beta.1`, el commit `fee92b1c39dcce2576bbce8d0acfdf1b21f051d8` y la ejecución 38087055313. Sus cuatro SHA-256 coinciden con los digests de los activos de la release de la aplicación.
+- El complemento OCR es opcional y separado. Está disponible para Windows x64 y Mac con Apple Silicon (M1 o posterior) y macOS 15 o posterior. Mac Intel mantiene las demás herramientas de PDF, pero no OCR.
+- La dirección de producto para el editor visual de composición está documentada en [EDITOR-VISUAL-Y-COMPOSICION.md](EDITOR-VISUAL-Y-COMPOSICION.md). El modelo de composición está integrado, pero la interfaz de selección de regiones, el montaje de fragmentos y el editor de texto enriquecido siguen en desarrollo.
+- Los instaladores no están firmados ni notarizados. La beta necesita validación manual con documentos reales y equipos limpios antes de considerarse estable. Las pruebas automáticas no sustituyen esas comprobaciones.
 
 ## Comprobaciones a la hora de retomar el trabajo
 
-1. Revisar el [estado de GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions).
-2. Consultar [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases) para verificar versiones y activos reales.
-3. Abrir [INFORMACION-DE-DESCARGA.txt](../descargas/INFORMACION-DE-DESCARGA.txt) y confirmar versión, commit, ejecución y SHA-256 de los cuatro paquetes.
-4. Completar [PRUEBAS-MANUALES.md](PRUEBAS-MANUALES.md) con Windows, Mac Intel y Apple Silicon, según la función que se valida. OCR solo se prueba en Windows x64 y Apple Silicon con macOS 15+.
+1. Revisar el [estado de GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions) y el commit objetivo de cada ejecución.
+2. Consultar [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases) para verificar las versiones y los activos reales; no deducir una publicación solo porque un job comenzó.
+3. Abrir [INFORMACION-DE-DESCARGA.txt](../descargas/INFORMACION-DE-DESCARGA.txt) y comprobar que la versión, el commit, la ejecución y los cuatro SHA-256 corresponden a los activos de `v0.1.0-beta.1`.
+4. Completar [PRUEBAS-MANUALES.md](PRUEBAS-MANUALES.md) con equipos Windows, Mac Intel y Apple Silicon, según la función que se valida. OCR solo se prueba en Windows x64 y Apple Silicon con macOS 15+.
 5. Reproducir fallos desde el log específico y el SHA exacto. No resumir una ejecución fallida como «CI verde» porque otros sistemas hayan terminado con éxito.
 
 ## Historial técnico previo
