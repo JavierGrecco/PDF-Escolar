@@ -58,7 +58,7 @@ def main() -> None:
     font = load_font(74)
     label = "PDF"
     bounds = draw.textbbox((0, 0), label, font=font)
-    tw, th = bounds[2] - bounds[0], bounds[3] - bounds[1]
+    tw = bounds[2] - bounds[0]
     draw.text(((SIZE - tw) / 2, 631 - bounds[1]), label, font=font, fill="white")
 
     png = ASSETS / "pdf-escolar.png"
