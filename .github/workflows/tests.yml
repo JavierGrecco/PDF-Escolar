@@ -91,6 +91,26 @@ jobs:
               if result.returncode:
                   failures.append((label, result.returncode))
 
+          def run_command(label, command, cwd=None, extra_env=None):
+              environment = os.environ.copy()
+              if extra_env:
+                  environment.update(extra_env)
+              print(f"\\n===== {label} =====", flush=True)
+              result = subprocess.run(command, cwd=cwd, env=environment, check=False)
+              print(f"===== exit={result.returncode}: {label} =====", flush=True)
+              if result.returncode:
+                  failures.append((label, result.returncode))
+
+          # Compare complete GUI module and full suite in separate processes.
+          run_command(
+              "branch: complete GUI module",
+              [sys.executable, "-m", "pytest", "-q", "-rs", "tests/test_gui_smoke.py"],
+          )
+          run_command(
+              "branch: complete test suite",
+              [sys.executable, "-m", "pytest", "-q", "-rs"],
+          )
+
           # Separate processes tell us whether one test crashes by itself.
           for name in tests:
               run_case(f"individual: {name}", [name])
@@ -127,6 +147,18 @@ jobs:
                   run_case(
                       "main baseline: first three GUI tests",
                       tests[:3],
+                      cwd=baseline,
+                      extra_env=baseline_env,
+                  )
+                  run_command(
+                      "main baseline: complete GUI module",
+                      [sys.executable, "-m", "pytest", "-q", "-rs", "tests/test_gui_smoke.py"],
+                      cwd=baseline,
+                      extra_env=baseline_env,
+                  )
+                  run_command(
+                      "main baseline: complete test suite",
+                      [sys.executable, "-m", "pytest", "-q", "-rs"],
                       cwd=baseline,
                       extra_env=baseline_env,
                   )
