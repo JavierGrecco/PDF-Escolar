@@ -1,6 +1,6 @@
 # Hoja de ruta: previsualización, orden de páginas y temas visuales
 
-**Estado:** propuesta de producto documentada el 10 de octubre de 2026.  
+**Estado:** hoja de ruta documentada el 10 de octubre de 2026; la primera implementación de previsualización está integrada en la rama de trabajo.  
 **Alcance:** mejorar la experiencia de selección, orden y revisión del PDF final; corregir el estado vacío de la interfaz; establecer una base visual coherente y accesible.
 
 ## Resumen ejecutivo
@@ -9,13 +9,13 @@ La primera prueba real reportada en Windows confirma que el flujo básico actual
 
 La prioridad de producto es pasar de «ordenar miniaturas pequeñas y confiar en que son las páginas correctas» a **«identificar, previsualizar, ordenar y comprobar visualmente el documento que voy a crear»**. La previsualización tiene que ser interactiva: la persona debe poder corregir el orden desde allí sin volver atrás y reconstruir la selección.
 
-También se atenderá la impresión visual del estado vacío y se definirá una estrategia de apariencia para Windows y macOS. Esta hoja de ruta no afirma que esas funciones ya estén implementadas.
+También se atiende la impresión visual del estado vacío y se define una estrategia de apariencia para Windows y macOS. La primera implementación de revisión/miniaturas y la corrección del fondo vacío están hechas; el selector de temas y el editor avanzado siguen pendientes.
 
 ## Estado real y límites actuales
 
 - La aplicación ya permite incorporar varios PDF, elegir páginas, reordenar la selección y generar un nuevo PDF; el usuario ha probado este flujo en Windows con varios archivos.
-- La identificación por miniaturas durante el ordenamiento resulta difícil en algunas páginas: falta una alternativa rápida de ampliación y una revisión visual cómoda del resultado.
-- Se reportó un fondo negro poco apropiado en el área de documentos antes de agregar el primer archivo. Primero debe verificarse en la interfaz y en los distintos temas; la solución prevista es un estado vacío diseñado explícitamente, no un panel negro sin propósito.
+- La primera implementación incorpora miniaturas pequeñas/medianas/grandes, una vista detallada de la página seleccionada, identificación de archivo/página de origen y una vista ampliada. La revisión final se abre antes de elegir el destino cuando la secuencia aún no se había revisado.
+- El área de documentos vacía ahora recibe un fondo explícito alineado con la superficie principal. El estado vacío con mensaje/acción dedicada y el sistema completo de temas quedan como refinamientos futuros.
 - Las herramientas PDF actuales rotan páginas completas por número/rango, recortan márgenes uniformes y separan páginas. No equivalen a recortar visualmente una zona arbitraria, quitar una parte y recomponer el resto.
 - El modelo inicial de composición ya existe, pero la interfaz de composición y el exportador de páginas compuestas todavía no están conectados.
 - Los temas seleccionables y el sistema de tokens de color descritos aquí son una propuesta, no una función existente.
@@ -116,16 +116,16 @@ Estas referencias sirven como principios y comparación funcional. No implican c
 
 **Salida:** interfaz de inicio coherente y lista para soportar variantes de apariencia, sin modificar el comportamiento PDF.
 
-### P1 — Identificación y miniaturas
+### P1 — Identificación y miniaturas (primera implementación)
 
 - Añadir tamaños de miniatura configurables y ampliación de una página seleccionada.
 - Mostrar procedencia y numeración de manera legible.
 - Implementar zoom, ajustar a página y navegación entre páginas en la vista detallada.
 - Generar miniaturas y vistas pesadas fuera del hilo de interfaz y usar caché limitada.
 
-**Salida:** se puede identificar una hoja dudosa sin depender de una miniatura diminuta.
+**Implementado inicialmente:** tres tamaños de miniatura; vista detallada de la selección con posición en el documento final y procedencia; botón para abrir una vista ampliada; renderizado fuera del hilo de interfaz.\n\n**Pendiente:** comprobar la legibilidad con documentos reales, el cambio de tamaño en distintas resoluciones y el comportamiento con archivos muy largos.
 
-### P2 — Revisión interactiva antes de exportar
+### P2 — Revisión interactiva antes de exportar (primera implementación)
 
 - Construir la vista final con una página grande y una tira/lista de miniaturas ordenables.
 - Permitir arrastrar para cambiar el orden, además de acciones accesibles para mover antes/después.
@@ -133,7 +133,7 @@ Estas referencias sirven como principios y comparación funcional. No implican c
 - Mantener sincronizados orden, selección, previsualización y exportación.
 - Añadir, cuando el modelo actual lo permita sin deuda técnica, deshacer/rehacer para movimientos y eliminaciones.
 
-**Salida:** una persona puede comprobar y corregir la secuencia final desde un único lugar y antes de escribir el archivo.
+**Implementado inicialmente:** «Crear PDF final» abre la revisión antes de elegir el destino si el orden aún no se revisó; la secuencia ordenada confirmada alimenta directamente el exportador. Si el usuario acaba de aplicar el orden desde la pantalla de organización, no se repite el diálogo.\n\n**Pendiente:** permitir quitar páginas desde esa vista, añadir deshacer/rehacer y ejecutar pruebas manuales en Windows y macOS.
 
 ### P3 — Tema del sistema, Claro y Oscuro
 
