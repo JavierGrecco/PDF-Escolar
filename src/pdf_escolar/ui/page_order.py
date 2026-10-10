@@ -77,6 +77,10 @@ class PageOrderThumbnailTask(QRunnable):
                 finally:
                     if document is not None:
                         document.close()
+        except Exception as exc:
+            if not self._cancelled.is_set():
+                for item_id, _reference in self.requests:
+                    self.signals.failed.emit(item_id, str(exc))
         finally:
             self.signals.finished.emit(str(id(self)))
 
