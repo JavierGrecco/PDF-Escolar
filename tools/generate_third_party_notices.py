@@ -27,6 +27,16 @@ except ImportError as exc:  # pragma: no cover - packaging is a PDF dependency
 ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_PATH = ROOT / "packaging" / "app" / "THIRD-PARTY-NOTICES.md"
 PROJECT_LICENSE_PATH = ROOT / "LICENSE"
+QT_UPSTREAM_LICENSE_DIR = ROOT / "packaging" / "app" / "licenses" / "qt"
+QT_UPSTREAM_SOURCE_COMMIT = "13a4334f8fe46f108ad07536f612d8881ebe476e"
+QT_UPSTREAM_LICENSES = (
+    "LGPL-3.0-only.txt",
+    "GPL-2.0-only.txt",
+    "GPL-3.0-only.txt",
+    "Qt-GPL-exception-1.0.txt",
+    "GFDL-1.3-no-invariants-only.txt",
+    "LicenseRef-Qt-Commercial.txt",
+)
 TEXT_SUFFIXES = {
     "",
     ".txt",
@@ -265,6 +275,30 @@ def render_manifest() -> str:
     files_by_component: dict[str, list[tuple[str, str]]] = {}
     for name, dist in sorted(components.items()):
         files_by_component[name] = collect_license_files(name, dist)
+
+    # PySide's own wheel build defines these six files as base license texts,
+    # but the installed binary wheels may omit them from RECORD and disk. Ship
+    # the matching unmodified upstream texts alongside our generated manifest.
+    qt_files = files_by_component.setdefault("pyside6", [])
+    for filename in QT_UPSTREAM_LICENSES:
+        source_file = QT_UPSTREAM_LICENSE_DIR / filename
+        if not source_file.is_file():
+            raise RuntimeError(
+                f"Falta el texto oficial de licencia de Qt: {source_file.relative_to(ROOT)}"
+            )
+        try:
+            content = read_text(source_file)
+        except (OSError, ValueError) as exc:
+            raise RuntimeError(
+                f"No se pudo leer el texto oficial de licencia de Qt {filename}: {exc}"
+            ) from exc
+        qt_files.append(
+            (
+                f"Fuente oficial de PySide: LICENSES/{filename} "
+                f"(commit {QT_UPSTREAM_SOURCE_COMMIT})",
+                content,
+            )
+        )
 
     core_groups = {
         "Qt for Python": {
