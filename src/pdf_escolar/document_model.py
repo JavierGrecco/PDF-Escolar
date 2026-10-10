@@ -548,7 +548,11 @@ class DocumentProject:
     @classmethod
     def _load_file(cls, path: Path) -> DocumentProject:
         try:
+            if path.stat().st_size > MAX_PROJECT_BYTES:
+                raise DocumentModelError("El archivo de proyecto supera el tamaño admitido.")
             raw = path.read_bytes()
+        except DocumentModelError:
+            raise
         except OSError as exc:
             raise DocumentModelError("No pudimos leer el archivo de proyecto.") from exc
         if len(raw) > MAX_PROJECT_BYTES:
