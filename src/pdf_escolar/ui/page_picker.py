@@ -83,7 +83,7 @@ class PagePickerDialog(QDialog):
         self.page_indexes: dict[int, QListWidgetItem] = {}
         self.tasks: set[QRunnable] = set()
         self.pool = QThreadPool(self)
-        self.current_task_id: int | None = None
+        self.current_task: ThumbnailTask | None = None
         self.thumbnail_timer = QTimer(self)
         self.thumbnail_timer.setSingleShot(True)
         self.thumbnail_timer.timeout.connect(self._start_thumbnail_task)
@@ -204,7 +204,7 @@ class PagePickerDialog(QDialog):
         self.thumbnail_timer.stop()
         for task in tuple(self.tasks):
             task.cancel()
-        self.current_task_id = None
+        self.current_task = None
         self.list_widget.blockSignals(True)
         self.list_widget.clear()
         self.page_indexes.clear()
@@ -249,7 +249,7 @@ class PagePickerDialog(QDialog):
         task.signals.failed.connect(self._thumbnail_failed)
         task.signals.finished.connect(self._task_finished)
         self.tasks.add(task)
-        self.current_task_id = id(task)
+        self.current_task = task
         self.pool.start(task)
 
     @Slot(int, bytes)
@@ -284,7 +284,7 @@ class PagePickerDialog(QDialog):
             except (RuntimeError, TypeError):
                 pass
         self.tasks.discard(task)
-        if task_id == self.current_task_id:
+        if task is self.current_task:
             self.loading_bar.hide()
 
     @Slot(QListWidgetItem)
