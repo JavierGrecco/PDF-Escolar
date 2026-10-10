@@ -111,3 +111,27 @@ def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path)
             settings.remove("last_open_directory")
         else:
             settings.setValue("last_open_directory", old_value)
+
+def test_document_cards_can_be_reordered_by_drop_and_buttons(application):
+    window = MainWindow()
+    paths = ["/tmp/order-a.pdf", "/tmp/order-b.pdf", "/tmp/order-c.pdf"]
+    try:
+        for page_count, path in enumerate(paths, start=1):
+            window._on_loaded(path, page_count, 1024)
+
+        window.reorder_file_by_drop(paths[0], paths[2], False)
+        assert list(window.documents) == [paths[1], paths[0], paths[2]]
+
+        window.move_file(paths[2], -1)
+        assert list(window.documents) == [paths[1], paths[2], paths[0]]
+    finally:
+        window.close()
+
+
+def test_hidden_page_order_dialog_does_not_start_thumbnail_tasks(application):
+    dialog = PageOrderDialog([PdfPageRef("/tmp/not-opened.pdf", 0)])
+    try:
+        application.processEvents()
+        assert not dialog.tasks
+    finally:
+        dialog.close()
