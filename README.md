@@ -10,7 +10,7 @@
 
 Las versiones permanentes se publican en **[Versiones y descargas (Releases)](https://github.com/JavierGrecco/PDF-Escolar/releases)**. Los archivos adjuntos a una versión no caducan automáticamente como los artefactos de prueba de GitHub Actions.
 
-**Todavía no hay una versión estable publicada en Releases.** Hasta que se publique la primera, podés usar una compilación de prueba. Los artefactos públicos de GitHub Actions tienen un límite de conservación de 90 días; no son el lugar adecuado para distribuir una versión permanente.
+**¿No aparece ninguna versión en Releases?** Entonces todavía no hay una publicación estable y podés usar una compilación de prueba. Los artefactos de GitHub Actions para repositorios públicos tienen un límite máximo de conservación de 90 días; no son el lugar adecuado para distribuir una versión permanente.
 
 ### Compilación de prueba (temporal)
 
