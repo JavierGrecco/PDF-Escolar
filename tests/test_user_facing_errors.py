@@ -6,6 +6,7 @@ import pytest
 from pdf_escolar.ui.messages import (
     friendly_export_error,
     friendly_pdf_load_error,
+    friendly_pdf_tool_error,
     safe_exception_detail,
 )
 
@@ -65,3 +66,21 @@ def test_a_broken_exception_formatter_cannot_break_error_handling():
             raise RuntimeError("diagnóstico interno")
 
     assert safe_exception_detail(UnprintableError()) == ""
+
+
+@pytest.mark.parametrize(
+    ("detail", "expected"),
+    [
+        ("FileExistsError: Ya existen archivos con esos nombres en la carpeta elegida", "Elegí otra carpeta"),
+        ("ValueError: El archivo de salida no puede reemplazar uno de los PDF originales", "distintos del PDF original"),
+        ("ValueError: Los márgenes dejan sin área visible la página 1", "márgenes son demasiado grandes"),
+        ("ValueError: El archivo de salida debe tener extensión .pdf", "extensión .pdf"),
+        ("RuntimeError: internal parser detail 54321", "Revisá que los archivos originales"),
+    ],
+)
+def test_pdf_tool_errors_suggest_a_safe_next_step(detail, expected):
+    message = friendly_pdf_tool_error(detail)
+    assert expected in message
+    assert detail not in message
+    assert "Traceback" not in message
+    assert "RuntimeError" not in message
