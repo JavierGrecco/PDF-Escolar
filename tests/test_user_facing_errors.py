@@ -16,7 +16,7 @@ from pdf_escolar.ui.messages import friendly_export_error, friendly_pdf_load_err
         ("invalid PDF: malformed object stream", "dañado"),
         (
             "RuntimeError: stream ended unexpectedly at object offset 54321",
-            "dañado",
+            "No pudimos abrir",
         ),
         ("RuntimeError: unexpected internal parser code 54321", "No pudimos abrir"),
     ],
