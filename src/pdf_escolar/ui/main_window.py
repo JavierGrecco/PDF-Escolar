@@ -44,7 +44,7 @@ class WorkerSignals(QObject):
     batch_finished = Signal()
     export_finished = Signal(int, str)
     export_error = Signal(str)
-    task_finished = Signal(int)
+    task_finished = Signal(object)
 
 
 class InspectTask(QRunnable):
@@ -67,7 +67,7 @@ class InspectTask(QRunnable):
                 )
         finally:
             self.signals.batch_finished.emit()
-            self.signals.task_finished.emit(id(self))
+            self.signals.task_finished.emit(self)
 
 
 class ExportTask(QRunnable):
@@ -98,7 +98,7 @@ class ExportTask(QRunnable):
         except Exception as exc:
             self.signals.export_error.emit(str(exc))
         finally:
-            self.signals.task_finished.emit(id(self))
+            self.signals.task_finished.emit(self)
 
 
 class DropArea(QFrame):
@@ -563,9 +563,9 @@ class MainWindow(QMainWindow):
             self.progress.setValue(done)
         self.status.setText(message)
 
-    @Slot(int)
-    def _task_finished(self, task_id: int) -> None:
-        task = next((item for item in self.tasks if id(item) == task_id), None)
+    @Slot(object)
+    def _task_finished(self, finished_task: object) -> None:
+        task = next((item for item in self.tasks if item is finished_task), None)
         if task is None:
             return
         for signal_name in (
