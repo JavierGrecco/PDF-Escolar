@@ -8,10 +8,11 @@ Aplicación de escritorio local para seleccionar páginas de uno o varios PDF y 
 - Cantidad de páginas y tamaño de cada archivo.
 - Selección de páginas por rangos, por ejemplo `1-8, 12, 20-25`.
 - Selección visual por miniaturas; se renderizan solo 30 páginas por grupo para controlar memoria y tiempo de carga.
-- Contador de páginas seleccionadas y controles para marcar/desmarcar el grupo visible.
+- Contador de páginas elegidas por archivo y para toda la operación, con aviso visible si un rango no es válido.
+- Controles para marcar/desmarcar el grupo visible.
 - Reordenamiento de los PDF de origen mediante flechas; el orden se refleja en el documento final.
 - Guardado del PDF final con nombre y ubicación elegidos por la persona usuaria.
-- Proceso de exportación en segundo plano y verificación de la salida antes de publicarla.
+- Proceso de exportación en segundo plano, progreso de páginas y verificación de la salida antes de publicarla.
 - Procesamiento local: los PDF no se suben a Internet.
 
 Dentro de cada archivo, las páginas seleccionadas visualmente se exportan por número ascendente. En modo de rangos, se conserva el orden en que se ingresan los rangos. El reordenamiento manual página por página entre diferentes libros se puede ampliar en una versión posterior.

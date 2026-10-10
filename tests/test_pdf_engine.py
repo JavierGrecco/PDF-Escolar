@@ -26,8 +26,15 @@ def test_export_keeps_source_and_range_order(tmp_path):
     first, second, output = tmp_path / "math.pdf", tmp_path / "science.pdf", tmp_path / "out.pdf"
     make_pdf(first, [100, 200, 300])
     make_pdf(second, [400, 500])
-    count = combine_selected_pages([PdfSource(str(first), "3, 1"), PdfSource(str(second), "2")], str(output))
+    progress = []
+    count = combine_selected_pages(
+        [PdfSource(str(first), "3, 1"), PdfSource(str(second), "2")],
+        str(output),
+        lambda done, total, message: progress.append((done, total, message)),
+    )
     assert count == 3
+    assert any(message.startswith("Combinando páginas:") for _, _, message in progress)
+    assert progress[-1] == (3, 3, "PDF creado correctamente.")
     assert page_widths(output) == [300, 100, 500]
     assert page_widths(first) == [100, 200, 300]
     assert page_widths(second) == [400, 500]

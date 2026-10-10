@@ -167,7 +167,7 @@ class DocumentCard(QFrame):
         self.ranges.setPlaceholderText("Ej.: 1-8, 12, 20-25")
         self.ranges.setClearButtonEnabled(True)
         self.ranges.setToolTip("Separá páginas y rangos con comas. También podés usar 30- hasta el final.")
-        self.ranges.textChanged.connect(self.ranges_changed.emit)
+        self.ranges.textChanged.connect(self._ranges_edited)
         row.addWidget(self.ranges, 1)
         visual_button = QPushButton("Elegir visualmente")
         visual_button.setObjectName("secondaryButton")
@@ -179,6 +179,25 @@ class DocumentCard(QFrame):
         all_pages.clicked.connect(lambda: self.ranges.setText(f"1-{document.page_count}"))
         row.addWidget(all_pages)
         layout.addLayout(row)
+
+        self.selection_summary = QLabel("")
+        self.selection_summary.setObjectName("selectionSummary")
+        layout.addWidget(self.selection_summary)
+        self._update_selection_summary()
+
+    def _ranges_edited(self) -> None:
+        self._update_selection_summary()
+        self.ranges_changed.emit()
+
+    def _update_selection_summary(self) -> None:
+        try:
+            count = len(parse_page_ranges(self.ranges.text(), self.document.page_count))
+            label = f"{count:,} páginas seleccionadas"
+            self.selection_summary.setStyleSheet("color:#64748B; font-size:12px;")
+        except ValueError:
+            label = "Revisá los rangos de páginas"
+            self.selection_summary.setStyleSheet("color:#B42318; font-size:12px;")
+        self.selection_summary.setText(label)
 
     def open_page_picker(self) -> None:
         dialog = PagePickerDialog(
@@ -287,6 +306,7 @@ class MainWindow(QMainWindow):
             QFrame#dropArea { background:white; border:1.5px dashed #A9B9E9; border-radius:15px; }
             QLabel#dropTitle { color:#172554; font-size:17px; font-weight:700; }
             QFrame#documentCard { background:white; border:1px solid #E5EAF2; border-radius:12px; }
+            QLabel#selectionSummary { padding-left: 2px; }
             QLabel#pdfIcon { background:#FCEBE9; color:#C24136; border-radius:8px; font-size:11px; font-weight:800; }
             QLabel#fileName { font-size:14px; font-weight:700; }
             QLineEdit#rangeInput { background:#F9FAFC; border:1px solid #DCE3EF; border-radius:8px; padding:10px; }
@@ -341,7 +361,7 @@ class MainWindow(QMainWindow):
         card = DocumentCard(info)
         card.remove_requested.connect(self.remove_file)
         card.move_requested.connect(self.move_file)
-        card.ranges_changed.connect(self._refresh_export_state)
+        card.ranges_changed.connect(self._update_summary)
         self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
         self.documents[path] = (info, card)
         self._update_summary()
@@ -405,7 +425,21 @@ class MainWindow(QMainWindow):
     def _update_summary(self):
         count = len(self.documents)
         if count:
-            self.file_count.setText(f"{count} archivo{'s' if count != 1 else ''}")
+            selected_count = 0
+            has_invalid_ranges = False
+            for info, card in self.documents.values():
+                try:
+                    selected_count += len(parse_page_ranges(card.ranges.text(), info.page_count))
+                except ValueError:
+                    has_invalid_ranges = True
+            summary = f"{count} archivo{'s' if count != 1 else ''}"
+            if has_invalid_ranges:
+                summary += " · Revisá las páginas"
+            else:
+                summary += f" · {selected_count:,} páginas seleccionadas"
+            if self.pending:
+                summary += " · Cargando más…"
+            self.file_count.setText(summary)
         elif self.pending:
             self.file_count.setText("Revisando archivos…")
         else:
@@ -421,8 +455,12 @@ class MainWindow(QMainWindow):
             return
         selections = [card.selection() for _, card in self.documents.values()]
         try:
-            for (info, _card), source in zip(self.documents.values(), selections):
-                parse_page_ranges(source.page_ranges, info.page_count)
+            total_selected_pages = sum(
+                len(parse_page_ranges(source.page_ranges, info.page_count))
+                for (info, _card), source in zip(self.documents.values(), selections)
+            )
+            if total_selected_pages == 0:
+                raise ValueError("Seleccioná al menos una página para crear el PDF.")
         except ValueError as exc:
             QMessageBox.warning(self, "Revisá las páginas", str(exc))
             return
@@ -438,7 +476,7 @@ class MainWindow(QMainWindow):
         self._refresh_export_state()
         self.status.setText("Preparando el documento final…")
         self.progress.show()
-        self.progress.setRange(0, len(selections))
+        self.progress.setRange(0, total_selected_pages)
         self.progress.setValue(0)
         task = ExportTask(selections, output)
         task.signals.progress.connect(self._on_progress)
