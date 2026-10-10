@@ -412,51 +412,57 @@ def run_ocr_with_companion(
     if not target.parent.is_dir():
         raise OCRCompanionError("La carpeta de destino no existe.")
 
-    arguments = [
-        str(helper),
-        "--input",
-        str(source),
-        "--output",
-        str(target),
-        "--language",
-        "+".join(languages),
-    ]
-    if pages and pages.strip():
-        arguments.extend(["--pages", pages.strip()])
-    try:
-        result = subprocess.run(
-            arguments,
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            check=False,
-        )
-    except OSError as exc:
-        raise OCRCompanionError(
-            "No pudimos iniciar el complemento OCR. Intentá instalarlo nuevamente."
-        ) from exc
+    with tempfile.TemporaryDirectory(
+        prefix=".pdf-escolar-ocr-publish-",
+        dir=str(target.parent),
+    ) as working_directory:
+        temporary_output = Path(working_directory) / "resultado.pdf"
+        arguments = [
+            str(helper),
+            "--input",
+            str(source),
+            "--output",
+            str(temporary_output),
+            "--language",
+            "+".join(languages),
+        ]
+        if pages and pages.strip():
+            arguments.extend(["--pages", pages.strip()])
+        try:
+            result = subprocess.run(
+                arguments,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                check=False,
+            )
+        except OSError as exc:
+            raise OCRCompanionError(
+                "No pudimos iniciar el complemento OCR. Intentá instalarlo nuevamente."
+            ) from exc
 
-    if result.returncode != 0:
-        raise OCRCompanionError(
-            "No pudimos crear el PDF buscable. Comprobá que el documento no esté protegido "
-            "y que las páginas seleccionadas sean legibles."
-        )
-    if not target.is_file() or target.stat().st_size == 0:
-        raise OCRCompanionError("El complemento no generó un PDF válido.")
+        if result.returncode != 0:
+            raise OCRCompanionError(
+                "No pudimos crear el PDF buscable. Comprobá que el documento no esté protegido "
+                "y que las páginas seleccionadas sean legibles."
+            )
+        if not temporary_output.is_file() or temporary_output.stat().st_size == 0:
+            raise OCRCompanionError("El complemento no generó un PDF válido.")
 
-    try:
-        import pikepdf
+        try:
+            import pikepdf
 
-        with pikepdf.open(target) as pdf:
-            count = len(pdf.pages)
-    except Exception as exc:
-        target.unlink(missing_ok=True)
-        raise OCRCompanionError(
-            "El resultado del OCR no es un PDF válido. No se guardó el archivo final."
-        ) from exc
-    if count == 0:
-        target.unlink(missing_ok=True)
-        raise OCRCompanionError("El resultado del OCR no contiene páginas.")
-    return count
+            with pikepdf.open(temporary_output) as pdf:
+                count = len(pdf.pages)
+        except Exception as exc:
+            raise OCRCompanionError(
+                "El resultado del OCR no es un PDF válido. El archivo de destino quedó sin cambios."
+            ) from exc
+        if count == 0:
+            raise OCRCompanionError(
+                "El resultado del OCR no contiene páginas. El archivo de destino quedó sin cambios."
+            )
+        os.replace(temporary_output, target)
+        return count
