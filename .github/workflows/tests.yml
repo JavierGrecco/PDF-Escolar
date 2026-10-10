@@ -74,6 +74,11 @@ jobs:
               "test_last_open_directory_uses_a_saved_existing_folder",
               "test_document_cards_can_be_reordered_by_drop_and_buttons",
               "test_hidden_page_order_dialog_does_not_start_thumbnail_tasks",
+              "test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible",
+              "test_main_worker_tasks_disable_qrunnable_auto_deletion",
+              "test_page_picker_keeps_the_current_page_group_responsive",
+              "test_cancelled_page_picker_thumbnail_task_finishes_without_opening_a_pdf",
+              "test_cancelled_page_order_thumbnail_task_finishes_without_opening_a_pdf",
           ]
           failures = []
 
