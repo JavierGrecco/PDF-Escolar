@@ -70,10 +70,6 @@ jobs:
         run: |
           Set-Content -Path src/pdf_escolar/_build_version.py -Value "__version__ = '$env:APP_VERSION'" -Encoding utf8
 
-      - name: Set application display version
-        shell: bash
-        run: printf '__version__ = "%s"\n' "$APP_VERSION" > src/pdf_escolar/_build_version.py
-
       - name: Install application and packager
         run: python -m pip install -e . pyinstaller
 
@@ -145,6 +141,10 @@ jobs:
             exit 1
           fi
           echo "APP_VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Set application display version
+        shell: bash
+        run: printf '__version__ = "%s"\n' "$APP_VERSION" > src/pdf_escolar/_build_version.py
 
       - name: Install application and packager
         run: python -m pip install -e . pyinstaller
