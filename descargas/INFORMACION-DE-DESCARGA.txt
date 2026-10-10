@@ -1,11 +1,11 @@
 PDF Escolar
-Versión: 0.1.0-dev.113
-Fecha de compilación (UTC): 2026-10-10 17:05
-Código fuente: ff5a949b077e23b58e8bfb434dc8fc3e22c00f64
-Compilación: https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031656
+Versión: 0.1.0-dev.115
+Fecha de compilación (UTC): 2026-10-10 17:23
+Código fuente: 539cf15734fb4385ab3c705c2bcc3ad23dc1a1de
+Compilación: https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224574
 
 SHA-256:
-f0570580fd7cde162a9eebf1aaeac4cdf1a4fecb492936d152210c22c628e0ff  descargas/PDF-Escolar.exe
-e2909f7255896cca780cc826065ca70e6865822e86796586abc8eaac07a71d34  descargas/PDF-Escolar-Instalador-Windows.exe
-91b324d8d12ee5fa9847d959275573a4e491407d5ca216c1c4c01a9ba27f888f  descargas/PDF-Escolar-macOS-Intel.dmg
-24065cef8cf33943cbe7bcb4ddca7c4fe3095a3a9954192eda455a04d057f02c  descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
+ba330a8e34e3da328946e3cb8f25742bbafacb8e42364810bbc1af5a5a19c9bd  descargas/PDF-Escolar.exe
+6da66906906543ded912b009284f9ae4e4180f383cf29e593d9fb0ca950363ca  descargas/PDF-Escolar-Instalador-Windows.exe
+cbf0a7bd79fa256961ce942e3372bcadc5e9a4836ca2f216908ec59a870d19a7  descargas/PDF-Escolar-macOS-Intel.dmg
+38bb78cf5693e3718879805eeed295cf73e21afa41bf4dc05827de964661c6a8  descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
