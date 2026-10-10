@@ -159,6 +159,59 @@ def test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible(appl
         _dispose_widget(dialog, application)
 
 
+def test_drop_area_compacts_after_loading_files_and_expands_when_empty(application):
+    window = MainWindow()
+    path = "/tmp/sample.pdf"
+    try:
+        assert not window.drop_area.title_label.isHidden()
+        assert window.drop_area.choose_button.text() == "Seleccionar archivos PDF"
+
+        window._on_loaded(path, 3, 1024)
+
+        assert window.drop_area.title_label.isHidden()
+        assert window.drop_area.hint_label.isHidden()
+        assert window.drop_area.choose_button.text() == "Agregar más PDF"
+
+        window.remove_file(path)
+
+        assert not window.drop_area.title_label.isHidden()
+        assert window.drop_area.choose_button.text() == "Seleccionar archivos PDF"
+    finally:
+        _dispose_widget(window, application)
+
+
+def test_load_errors_are_collected_for_one_clear_summary(application):
+    window = MainWindow()
+    path = "/tmp/protected.pdf"
+    try:
+        window.pending.add(path)
+        window._on_load_error(path, "password required")
+        assert path not in window.pending
+        assert window.load_errors == [(path, "password required")]
+    finally:
+        _dispose_widget(window, application)
+
+
+def test_editing_page_selection_explains_custom_order_reset(application):
+    window = MainWindow()
+    path = "/tmp/three-pages.pdf"
+    try:
+        window._on_loaded(path, 3, 1024)
+        window.custom_page_order = [
+            PdfPageRef(path, 2),
+            PdfPageRef(path, 0),
+        ]
+
+        card = window.documents[path][1]
+        card.ranges.setText("1-2")
+
+        assert window.custom_page_order is None
+        assert "orden manual" in window.status.text().lower()
+        assert "Ordenar páginas" in window.status.text()
+    finally:
+        _dispose_widget(window, application)
+
+
 def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
     from pdf_escolar.ui.main_window import ExportTask, InspectTask
     inspect_task = InspectTask([])
