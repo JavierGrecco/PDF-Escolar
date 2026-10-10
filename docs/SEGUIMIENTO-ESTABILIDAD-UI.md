@@ -6,6 +6,10 @@ Este documento es el punto de continuidad técnica. La información de la secci�
 
 ## Estado actual
 
+- **Código principal posterior a la beta:** el PR [#25](https://github.com/JavierGrecco/PDF-Escolar/pull/25) se integró el 10 de octubre de 2026 en el commit `f0a1f52d337ffc21715c1a56b84944874d6d425c`. Añade tamaños de miniatura, vista detallada/ampliada, revisión interactiva antes de exportar y fondo explícito para el área vacía.
+- **CI del PR #25:** todas las pruebas finalizaron correctamente en Ubuntu, Windows, macOS Apple Silicon y macOS Intel ([Tests #38092037062](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037062)); las compilaciones de Windows, macOS Intel y Apple Silicon y su verificación final también finalizaron correctamente ([Build installers #38092037060](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037060)).
+- **Diferencia entre código y publicación:** los artefactos del PR son compilaciones temporales de validación; la ejecución no publicó un Release ni reemplazó `descargas/`. `descargas/INFORMACION-DE-DESCARGA.txt` sigue apuntando a `v0.1.0-beta.1`, por lo que la beta pública no incluye las mejoras visuales recientes. El artefacto `pdf-escolar-windows` puede descargarse desde la ejecución de Build installers anterior para validación; expira el 8 de enero de 2027.
+- Para poner las mejoras en manos de usuarios como beta oficial, ejecutar manualmente [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml) desde `main`, con la versión `0.1.0-beta.2`. Verificar la publicación, los activos y el manifiesto de checksums antes de anunciarla.
 - La aplicación y el complemento OCR están publicados como versiones **beta** coordinadas; no son versiones estables:
   - [PDF Escolar v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/v0.1.0-beta.1).
   - [Complemento OCR v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1).
