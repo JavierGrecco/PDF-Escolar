@@ -3,15 +3,21 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot, QUrl
-from PySide6.QtGui import QDesktopServices, QDragEnterEvent, QDropEvent
+from PySide6.QtCore import (
+    QObject, QRunnable, QSettings, QThreadPool, Qt, Signal, Slot, QUrl, QMimeData
+)
+from PySide6.QtGui import QDesktopServices, QDrag, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
-    QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
-    QMessageBox, QPushButton, QProgressBar, QScrollArea, QVBoxLayout, QWidget
+    QApplication, QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,
+    QMainWindow, QMessageBox, QPushButton, QProgressBar, QScrollArea, QSizePolicy,
+    QVBoxLayout, QWidget
 )
 from pdf_escolar import __version__
 from pdf_escolar.page_ranges import parse_page_ranges
-from pdf_escolar.pdf_engine import PdfSource, combine_selected_pages, inspect_pdf
+from pdf_escolar.pdf_engine import (
+    PdfPageRef, PdfSource, combine_pages_in_order, combine_selected_pages, inspect_pdf
+)
+from pdf_escolar.ui.page_order import PageOrderDialog
 from pdf_escolar.ui.page_picker import PagePickerDialog
 
 
@@ -58,9 +64,16 @@ class InspectTask(QRunnable):
 
 
 class ExportTask(QRunnable):
-    def __init__(self, sources: list[PdfSource], output_path: str):
+    def __init__(
+        self,
+        sources: list[PdfSource],
+        output_path: str,
+        page_order: list[PdfPageRef] | None = None,
+    ):
         super().__init__()
-        self.sources, self.output_path = sources, output_path
+        self.sources = sources
+        self.output_path = output_path
+        self.page_order = page_order
         self.signals = WorkerSignals()
 
     @Slot()
@@ -68,7 +81,11 @@ class ExportTask(QRunnable):
         try:
             def report(done, total, message):
                 self.signals.progress.emit(done, total, message)
-            count = combine_selected_pages(self.sources, self.output_path, report)
+
+            if self.page_order is None:
+                count = combine_selected_pages(self.sources, self.output_path, report)
+            else:
+                count = combine_pages_in_order(self.page_order, self.output_path, report)
             self.signals.export_finished.emit(count, self.output_path)
         except Exception as exc:
             self.signals.export_error.emit(str(exc))
@@ -108,9 +125,61 @@ class DropArea(QFrame):
         event.acceptProposedAction()
 
 
+DOCUMENT_MIME_TYPE = "application/x-pdf-escolar-document"
+
+
+class DragHandle(QLabel):
+    """A small, explicit drag target that works with mouse and touchpad input."""
+
+    def __init__(self, path: str, parent: QWidget | None = None):
+        super().__init__("↕", parent)
+        self.path = path
+        self._press_position = None
+        self.setObjectName("dragHandle")
+        self.setFixedSize(28, 44)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+        self.setToolTip("Arrastrá este control con el mouse o el touchpad para ordenar el PDF")
+        self.setAccessibleName("Arrastrar para reordenar archivo")
+
+    def mousePressEvent(self, event) -> None:
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._press_position = event.position().toPoint()
+            event.accept()
+            return
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event) -> None:
+        if (
+            self._press_position is None
+            or not (event.buttons() & Qt.MouseButton.LeftButton)
+        ):
+            event.ignore()
+            return
+        distance = (event.position().toPoint() - self._press_position).manhattanLength()
+        if distance < QApplication.startDragDistance():
+            event.ignore()
+            return
+
+        drag = QDrag(self)
+        mime_data = QMimeData()
+        mime_data.setData(DOCUMENT_MIME_TYPE, self.path.encode("utf-8"))
+        drag.setMimeData(mime_data)
+        self.setCursor(Qt.CursorShape.ClosedHandCursor)
+        drag.exec(Qt.DropAction.MoveAction)
+        self.setCursor(Qt.CursorShape.OpenHandCursor)
+        self._press_position = None
+        event.accept()
+
+    def mouseReleaseEvent(self, event) -> None:
+        self._press_position = None
+        super().mouseReleaseEvent(event)
+
+
 class DocumentCard(QFrame):
     remove_requested = Signal(str)
     move_requested = Signal(str, int)
+    drop_reorder_requested = Signal(str, str, bool)
     ranges_changed = Signal()
 
     def __init__(self, document: DocumentInfo):
@@ -118,38 +187,50 @@ class DocumentCard(QFrame):
         self.document = document
         self.setObjectName("documentCard")
         self.setFrameShape(QFrame.Shape.StyledPanel)
+        self.setAcceptDrops(True)
+
         layout = QVBoxLayout(self)
         layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(10)
+
+        # Keep the filename on a wide, dedicated row for Windows/macOS scaling.
         top = QHBoxLayout()
+        self.drag_handle = DragHandle(document.path, self)
+        top.addWidget(self.drag_handle)
         icon = QLabel("PDF")
         icon.setObjectName("pdfIcon")
         icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
         icon.setFixedSize(42, 44)
         top.addWidget(icon)
+
         column = QVBoxLayout()
         name = QLabel(Path(document.path).name)
         name.setObjectName("fileName")
         name.setWordWrap(True)
+        name.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        name.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
         name.setToolTip(document.path)
         metadata = QLabel(f"{document.page_count:,} páginas · {human_size(document.file_size)}")
-        metadata.setObjectName("mutedText")
+        metadata.setObjectName("fileMetadata")
+        metadata.setToolTip("Cantidad de páginas y tamaño del archivo")
         column.addWidget(name)
         column.addWidget(metadata)
         top.addLayout(column, 1)
+        layout.addLayout(top)
+
         order_controls = QHBoxLayout()
-        self.move_up_button = QPushButton("↑")
+        order_controls.addStretch(1)
+        self.move_up_button = QPushButton("↑ Subir")
         self.move_up_button.setObjectName("secondaryButton")
-        self.move_up_button.setToolTip("Mover este PDF antes")
+        self.move_up_button.setToolTip("Mover este PDF una posición hacia arriba")
         self.move_up_button.setAccessibleName("Mover archivo hacia arriba")
-        self.move_up_button.setFixedWidth(38)
         self.move_up_button.clicked.connect(lambda: self.move_requested.emit(document.path, -1))
         order_controls.addWidget(self.move_up_button)
 
-        self.move_down_button = QPushButton("↓")
+        self.move_down_button = QPushButton("↓ Bajar")
         self.move_down_button.setObjectName("secondaryButton")
-        self.move_down_button.setToolTip("Mover este PDF después")
+        self.move_down_button.setToolTip("Mover este PDF una posición hacia abajo")
         self.move_down_button.setAccessibleName("Mover archivo hacia abajo")
-        self.move_down_button.setFixedWidth(38)
         self.move_down_button.clicked.connect(lambda: self.move_requested.emit(document.path, 1))
         order_controls.addWidget(self.move_down_button)
 
@@ -158,8 +239,8 @@ class DocumentCard(QFrame):
         remove.setToolTip("Quitar este archivo de la selección")
         remove.clicked.connect(lambda: self.remove_requested.emit(document.path))
         order_controls.addWidget(remove)
-        top.addLayout(order_controls, 0)
-        layout.addLayout(top)
+        layout.addLayout(order_controls)
+
         layout.addWidget(QLabel("Páginas que querés incluir"))
         row = QHBoxLayout()
         self.ranges = QLineEdit(f"1-{document.page_count}")
@@ -184,6 +265,34 @@ class DocumentCard(QFrame):
         self.selection_summary.setObjectName("selectionSummary")
         layout.addWidget(self.selection_summary)
         self._update_selection_summary()
+
+    def dragEnterEvent(self, event: QDragEnterEvent) -> None:
+        if event.mimeData().hasFormat(DOCUMENT_MIME_TYPE):
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event) -> None:
+        if event.mimeData().hasFormat(DOCUMENT_MIME_TYPE):
+            event.acceptProposedAction()
+        else:
+            super().dragMoveEvent(event)
+
+    def dropEvent(self, event: QDropEvent) -> None:
+        if not event.mimeData().hasFormat(DOCUMENT_MIME_TYPE):
+            super().dropEvent(event)
+            return
+        try:
+            source_path = bytes(event.mimeData().data(DOCUMENT_MIME_TYPE)).decode("utf-8")
+        except UnicodeDecodeError:
+            event.ignore()
+            return
+        if source_path != self.document.path:
+            drop_below = event.position().toPoint().y() >= self.height() // 2
+            self.drop_reorder_requested.emit(source_path, self.document.path, drop_below)
+            event.acceptProposedAction()
+        else:
+            event.ignore()
 
     def _ranges_edited(self) -> None:
         self._update_selection_summary()
@@ -216,11 +325,12 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("PDF Escolar")
         self.setMinimumSize(720, 600)
         self.resize(920, 780)
-        self.pool = QThreadPool.globalInstance()
+        self.pool = QThreadPool(self)
         self.documents: dict[str, tuple[DocumentInfo, DocumentCard]] = {}
         self.pending: set[str] = set()
         self.tasks: set[QRunnable] = set()
         self.exporting = False
+        self.custom_page_order: list[PdfPageRef] | None = None
 
         central = QWidget()
         central.setObjectName("central")
@@ -264,6 +374,14 @@ class MainWindow(QMainWindow):
         section.setObjectName("sectionTitle")
         file_header.addWidget(section)
         file_header.addStretch(1)
+        self.organize_pages_button = QPushButton("Ordenar páginas…")
+        self.organize_pages_button.setObjectName("choosePagesButton")
+        self.organize_pages_button.setToolTip(
+            "Organizar visualmente las páginas seleccionadas de todos los PDF"
+        )
+        self.organize_pages_button.clicked.connect(self.organize_pages)
+        self.organize_pages_button.setEnabled(False)
+        file_header.addWidget(self.organize_pages_button)
         self.file_count = QLabel("Todavía no agregaste archivos")
         self.file_count.setObjectName("mutedText")
         file_header.addWidget(self.file_count)
@@ -318,7 +436,9 @@ class MainWindow(QMainWindow):
             QFrame#documentCard { background:white; border:1px solid #E5EAF2; border-radius:12px; }
             QLabel#selectionSummary { padding-left: 2px; }
             QLabel#pdfIcon { background:#FCEBE9; color:#C24136; border-radius:8px; font-size:11px; font-weight:800; }
-            QLabel#fileName { font-size:14px; font-weight:700; }
+            QLabel#fileName { font-size:16px; font-weight:750; color:#172554; }
+            QLabel#dragHandle { background:#F0F3FA; color:#405477; border-radius:8px; font-size:20px; font-weight:700; }
+            QLabel#fileMetadata { color:#53627A; font-size:12px; }
             QLineEdit#rangeInput { background:#F9FAFC; border:1px solid #DCE3EF; border-radius:8px; padding:10px; }
             QPushButton { border:0; border-radius:8px; padding:9px 13px; font-weight:600; }
             QPushButton#primaryButton { background:#3157C8; color:white; font-size:14px; padding:12px 17px; }
@@ -340,13 +460,27 @@ class MainWindow(QMainWindow):
             "1. Agregá uno o varios archivos PDF con el botón o arrastrándolos a la ventana.\n\n"
             "2. En cada libro, pulsá «Elegir visualmente» para marcar las páginas que necesitás. "
             "También podés escribir números o rangos, por ejemplo 1-8, 12, 20-25.\n\n"
-            "3. Usá las flechas para ordenar los libros y pulsá «Crear PDF final».\n\n"
+            "3. Ordená los libros con las flechas o arrastrando el control ↕ con el mouse o el touchpad. "
+            "Usá «Ordenar páginas…» para acomodar páginas individuales de todos los libros.\n\n"
             "4. Elegí dónde guardar el documento nuevo. Los PDF originales no se modifican "
             "y el contenido se procesa en esta computadora.",
         )
 
+    def _last_open_directory(self) -> str:
+        """Return the last folder used to add PDFs, falling back to the home folder."""
+        settings = QSettings()
+        saved = settings.value("last_open_directory", "", type=str)
+        if saved and Path(saved).is_dir():
+            return saved
+        return str(Path.home())
+
     def choose_files(self):
-        paths, _ = QFileDialog.getOpenFileNames(self, "Seleccionar archivos PDF", str(Path.home()), "Documentos PDF (*.pdf)")
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Seleccionar archivos PDF",
+            self._last_open_directory(),
+            "Documentos PDF (*.pdf)",
+        )
         if paths:
             self.add_files(paths)
 
@@ -360,8 +494,18 @@ class MainWindow(QMainWindow):
             resolved = str(path.resolve())
             if resolved not in self.documents and resolved not in self.pending and resolved not in accepted:
                 accepted.append(resolved)
+        valid_pdf_paths = [
+            Path(raw).expanduser().resolve()
+            for raw in paths
+            if Path(raw).expanduser().is_file()
+            and Path(raw).expanduser().suffix.lower() == ".pdf"
+        ]
+        # Remember the last usable folder even if the PDFs were already loaded.
+        if valid_pdf_paths:
+            QSettings().setValue("last_open_directory", str(valid_pdf_paths[-1].parent))
         if not accepted:
             return
+        self.custom_page_order = None
         self.pending.update(accepted)
         self._update_summary()
         self.status.setText("Revisando los archivos…")
@@ -385,7 +529,8 @@ class MainWindow(QMainWindow):
         card = DocumentCard(info)
         card.remove_requested.connect(self.remove_file)
         card.move_requested.connect(self.move_file)
-        card.ranges_changed.connect(self._update_summary)
+        card.drop_reorder_requested.connect(self.reorder_file_by_drop)
+        card.ranges_changed.connect(self._on_page_selection_changed)
         self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
         self.documents[path] = (info, card)
         self._update_summary()
@@ -425,6 +570,29 @@ class MainWindow(QMainWindow):
             return
         ordered[current_index], ordered[target_index] = ordered[target_index], ordered[current_index]
         self.documents = dict(ordered)
+        self.custom_page_order = None
+        self._relayout_cards()
+        self._update_summary()
+
+    @Slot(str, str, bool)
+    def reorder_file_by_drop(self, source_path: str, target_path: str, drop_below: bool):
+        if source_path == target_path:
+            return
+        ordered = list(self.documents.items())
+        source_entry = next((entry for entry in ordered if entry[0] == source_path), None)
+        if source_entry is None or not any(key == target_path for key, _value in ordered):
+            return
+        ordered.remove(source_entry)
+        target_index = next(i for i, (key, _value) in enumerate(ordered) if key == target_path)
+        ordered.insert(target_index + (1 if drop_below else 0), source_entry)
+        if [key for key, _value in ordered] == list(self.documents.keys()):
+            return
+        self.documents = dict(ordered)
+        self.custom_page_order = None
+        self._relayout_cards()
+        self._update_summary()
+
+    def _relayout_cards(self) -> None:
         for index, (_key, (_info, card)) in enumerate(self.documents.items()):
             self.cards_layout.removeWidget(card)
             self.cards_layout.insertWidget(index, card)
@@ -437,6 +605,12 @@ class MainWindow(QMainWindow):
             card.move_up_button.setEnabled(index > 0)
             card.move_down_button.setEnabled(index < last_index)
 
+    def _on_page_selection_changed(self) -> None:
+        # The manual sequence represents an exact selection; invalidate it when
+        # a range is edited so that newly selected/deselected pages cannot be lost.
+        self.custom_page_order = None
+        self._update_summary()
+
     @Slot(str)
     def remove_file(self, path: str):
         entry = self.documents.pop(path, None)
@@ -444,6 +618,7 @@ class MainWindow(QMainWindow):
             _, card = entry
             self.cards_layout.removeWidget(card)
             card.deleteLater()
+            self.custom_page_order = None
         self._update_summary()
 
     def _update_summary(self):
@@ -461,6 +636,8 @@ class MainWindow(QMainWindow):
                 summary += " · Revisá las páginas"
             else:
                 summary += f" · {selected_count:,} páginas seleccionadas"
+            if self.custom_page_order is not None and not has_invalid_ranges:
+                summary += " · orden personalizado"
             if self.pending:
                 summary += " · Cargando más…"
             self.file_count.setText(summary)
@@ -472,19 +649,79 @@ class MainWindow(QMainWindow):
         self._refresh_export_state()
 
     def _refresh_export_state(self):
-        self.export_button.setEnabled(bool(self.documents) and not self.pending and not self.exporting)
+        valid_selection = bool(self.documents)
+        selected_count = 0
+        for info, card in self.documents.values():
+            try:
+                selected_count += len(parse_page_ranges(card.ranges.text(), info.page_count))
+            except ValueError:
+                valid_selection = False
+        can_continue = (
+            bool(self.documents)
+            and not self.pending
+            and not self.exporting
+            and valid_selection
+            and selected_count > 0
+        )
+        self.export_button.setEnabled(can_continue)
+        self.organize_pages_button.setEnabled(can_continue)
+
+    def _current_selected_pages(self) -> list[PdfPageRef]:
+        pages: list[PdfPageRef] = []
+        for info, card in self.documents.values():
+            indexes = parse_page_ranges(card.ranges.text(), info.page_count)
+            pages.extend(PdfPageRef(info.path, index) for index in indexes)
+        return pages
+
+    def organize_pages(self) -> None:
+        if not self.documents or self.pending or self.exporting:
+            return
+        try:
+            pages = (
+                list(self.custom_page_order)
+                if self.custom_page_order is not None
+                else self._current_selected_pages()
+            )
+            if not pages:
+                raise ValueError("Seleccioná al menos una página para poder ordenarlas.")
+        except ValueError as exc:
+            QMessageBox.warning(self, "Revisá las páginas", str(exc))
+            return
+
+        dialog = PageOrderDialog(pages, self)
+        result = dialog.exec()
+        # Wait for any in-flight thumbnail task before this modal dialog can be
+        # destroyed; that keeps signal objects and QRunnable wrappers alive on
+        # the GUI thread even if the user applies/cancels while previews load.
+        dialog.thumbnail_pool.waitForDone()
+        if result == QDialog.DialogCode.Accepted:
+            self.custom_page_order = dialog.ordered_pages()
+            self.status.setText(
+                "Orden personalizado aplicado. El PDF final respetará esta secuencia."
+            )
+            self._update_summary()
 
     def export_pdf(self):
         if not self.documents or self.pending or self.exporting:
             return
-        selections = [card.selection() for _, card in self.documents.values()]
+
+        selections: list[PdfSource] = []
+        page_order: list[PdfPageRef] | None = (
+            list(self.custom_page_order) if self.custom_page_order is not None else None
+        )
         try:
-            total_selected_pages = sum(
-                len(parse_page_ranges(source.page_ranges, info.page_count))
-                for (info, _card), source in zip(self.documents.values(), selections)
-            )
-            if total_selected_pages == 0:
-                raise ValueError("Seleccioná al menos una página para crear el PDF.")
+            if page_order is not None:
+                total_selected_pages = len(page_order)
+                if total_selected_pages == 0:
+                    raise ValueError("Seleccioná al menos una página para crear el PDF.")
+            else:
+                selections = [card.selection() for _, card in self.documents.values()]
+                total_selected_pages = sum(
+                    len(parse_page_ranges(source.page_ranges, info.page_count))
+                    for (info, _card), source in zip(self.documents.values(), selections)
+                )
+                if total_selected_pages == 0:
+                    raise ValueError("Seleccioná al menos una página para crear el PDF.")
         except ValueError as exc:
             QMessageBox.warning(self, "Revisá las páginas", str(exc))
             return
@@ -502,7 +739,7 @@ class MainWindow(QMainWindow):
         self.progress.show()
         self.progress.setRange(0, total_selected_pages)
         self.progress.setValue(0)
-        task = ExportTask(selections, output)
+        task = ExportTask(selections, output, page_order=page_order)
         task.signals.progress.connect(self._on_progress)
         task.signals.export_finished.connect(self._on_export_finished)
         task.signals.export_error.connect(self._on_export_error)

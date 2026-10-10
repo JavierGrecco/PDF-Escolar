@@ -4,7 +4,10 @@
 
 - Interfaz de escritorio en español para cargar varios PDF.
 - Selección de páginas por rangos o mediante miniaturas visuales.
-- Reordenamiento de los documentos antes de exportarlos.
+- Reordenamiento de documentos con controles y arrastre con mouse o touchpad.
+- Organizador visual de páginas individuales de varios PDF, con miniaturas y botones para moverlas.
+- Persistencia de la última carpeta usada para agregar documentos.
+- Nombres de archivo con mayor visibilidad y recuento de páginas.
 - Creación local de un PDF nuevo, sin modificar los archivos originales.
 - Verificación del archivo final y pruebas automatizadas para las operaciones principales.
 
