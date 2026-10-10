@@ -256,13 +256,14 @@ class PdfToolsDialog(QDialog):
         self.install_ocr_button.setObjectName("secondaryButton")
         self.install_ocr_button.clicked.connect(self.start_ocr_installation)
         ocr_layout.addWidget(self.install_ocr_button, 0)
-        ocr_layout.addWidget(
-            QLabel(
-                "El complemento se descarga una vez desde GitHub. Tus PDF nunca se suben: "
-                "el reconocimiento se hace en esta computadora y funciona sin conexión "
-                "después de instalarlo."
-            )
+        ocr_disclaimer = QLabel(
+            "El complemento se descarga una vez desde GitHub. Tus PDF nunca se suben: "
+            "el reconocimiento se hace en esta computadora y funciona sin conexión "
+            "después de instalarlo."
         )
+        ocr_disclaimer.setObjectName("ocrDisclaimer")
+        ocr_disclaimer.setWordWrap(True)
+        ocr_layout.addWidget(ocr_disclaimer)
         root.addWidget(self.ocr_panel)
 
         self.status = QLabel("El procesamiento se realiza localmente en esta computadora.")
