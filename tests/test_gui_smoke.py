@@ -334,7 +334,7 @@ def test_pdf_tools_dialog_exposes_optional_local_ocr(application):
         assert dialog.run_button.text() == "Crear PDF buscable"
         assert dialog.ocr_language.currentData() == ["spa"]
         assert "OCR" in dialog.install_ocr_button.text()
-        assert "PDF nunca se suben" in dialog.ocr_panel.findChildren(QLabel)[-1].text()
+        assert "PDF nunca se suben" in dialog.ocr_panel.findChild(QLabel, "ocrDisclaimer").text()
 
         split_index = dialog.operation_selector.findData("split")
         dialog.operation_selector.setCurrentIndex(split_index)
