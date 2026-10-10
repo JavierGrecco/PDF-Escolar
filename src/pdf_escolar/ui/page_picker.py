@@ -4,7 +4,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pypdfium2 as pdfium
-from PySide6.QtCore import QObject, QRunnable, QSize, Qt, QThreadPool, Signal, Slot
+from PySide6.QtCore import QObject, QRunnable, QSize, QThreadPool, QTimer, Qt, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QListView, QListWidget, QListWidgetItem,
@@ -21,7 +21,7 @@ PAGES_PER_VIEW = 30
 class ThumbnailSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)
-    finished = Signal()
+    finished = Signal(int)
 
 
 class ThumbnailTask(QRunnable):
@@ -47,9 +47,11 @@ class ThumbnailTask(QRunnable):
             for page_index in self.page_indexes:
                 self.signals.failed.emit(page_index, str(exc))
         finally:
-            if document is not None:
-                document.close()
-            self.signals.finished.emit()
+            try:
+                if document is not None:
+                    document.close()
+            finally:
+                self.signals.finished.emit(id(self))
 
 
 class PagePickerDialog(QDialog):
@@ -68,7 +70,11 @@ class PagePickerDialog(QDialog):
         self.page_start = 0
         self.page_indexes: dict[int, QListWidgetItem] = {}
         self.tasks: set[QRunnable] = set()
-        self.pool = QThreadPool.globalInstance()
+        self.pool = QThreadPool(self)
+        self.current_task_id: int | None = None
+        self.thumbnail_timer = QTimer(self)
+        self.thumbnail_timer.setSingleShot(True)
+        self.thumbnail_timer.timeout.connect(self._start_thumbnail_task)
         try:
             self.selected_pages = set(parse_page_ranges(current_ranges, total_pages))
         except ValueError:
@@ -183,6 +189,8 @@ class PagePickerDialog(QDialog):
         self._show_page_group()
 
     def _show_page_group(self) -> None:
+        self.thumbnail_timer.stop()
+        self.current_task_id = None
         self.list_widget.blockSignals(True)
         self.list_widget.clear()
         self.page_indexes.clear()
@@ -205,13 +213,30 @@ class PagePickerDialog(QDialog):
         self._update_selected_label()
         self.loading_bar.show()
 
-        indexes = list(range(self.page_start, end))
+        self.current_task_id = None
+        if self.isVisible():
+            self.thumbnail_timer.start(0)
+
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
+        if self.page_indexes:
+            self.thumbnail_timer.start(0)
+
+    def _start_thumbnail_task(self) -> None:
+        if not self.isVisible():
+            return
+        indexes = list(self.page_indexes)
+        if not indexes:
+            self.loading_bar.hide()
+            return
         task = ThumbnailTask(self.pdf_path, indexes)
+        # Keep the Python wrapper alive until completion is handled on the GUI thread.
+        task.setAutoDelete(False)
         task.signals.ready.connect(self._thumbnail_ready)
         task.signals.failed.connect(self._thumbnail_failed)
-        task.signals.finished.connect(self._thumbnails_finished)
+        task.signals.finished.connect(self._task_finished)
         self.tasks.add(task)
-        task.signals.finished.connect(lambda *args, current=task: self.tasks.discard(current))
+        self.current_task_id = id(task)
         self.pool.start(task)
 
     @Slot(int, bytes)
@@ -231,9 +256,23 @@ class PagePickerDialog(QDialog):
             item.setText(f"Página {page_index + 1}\nVista previa no disponible")
             item.setToolTip(detail)
 
-    @Slot()
-    def _thumbnails_finished(self) -> None:
-        self.loading_bar.hide()
+    @Slot(int)
+    def _task_finished(self, task_id: int) -> None:
+        task = next((item for item in self.tasks if id(item) == task_id), None)
+        if task is None:
+            return
+        for signal, slot in (
+            (task.signals.ready, self._thumbnail_ready),
+            (task.signals.failed, self._thumbnail_failed),
+            (task.signals.finished, self._task_finished),
+        ):
+            try:
+                signal.disconnect(slot)
+            except (RuntimeError, TypeError):
+                pass
+        self.tasks.discard(task)
+        if task_id == self.current_task_id:
+            self.loading_bar.hide()
 
     @Slot(QListWidgetItem)
     def _item_changed(self, item: QListWidgetItem) -> None:
@@ -289,6 +328,12 @@ class PagePickerDialog(QDialog):
             )
             return
         super().accept()
+
+    def done(self, result: int) -> None:
+        self.thumbnail_timer.stop()
+        # Finish the current 30-page batch before the owning card releases this dialog.
+        self.pool.waitForDone()
+        super().done(result)
 
     def selected_ranges(self) -> str:
         return format_page_ranges(sorted(index + 1 for index in self.selected_pages))
