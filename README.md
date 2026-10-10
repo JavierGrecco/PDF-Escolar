@@ -24,6 +24,8 @@ No descargues el código fuente para usar la aplicación. Elegí el archivo corr
 
 En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaciones**.
 
+> **Importante sobre la compilación disponible:** la publicación descargable y los archivos directos siguen en **v0.1.0-beta.1**. El código de `main` ya contiene la nueva vista detallada y la revisión del orden antes de guardar, pero esas mejoras aún no están incluidas en la beta pública. Para probarlas en Windows, abrí la [compilación de validación #38092037060](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037060) y descargá el artefacto **`pdf-escolar-windows`** en la sección **Artifacts**. Es un paquete de prueba temporal, no una nueva publicación oficial. La próxima beta se anunciará en [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+
 ## Qué podés hacer
 
 - **Trabajar con varios archivos:** reunir páginas de distintos PDF en un mismo documento final.
