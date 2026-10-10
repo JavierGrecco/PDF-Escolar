@@ -422,7 +422,7 @@ jobs:
 
             ### OCR local (beta)
 
-            Esta versión integra un complemento OCR opcional, descargable desde «Herramientas PDF». La primera instalación requiere conexión a Internet; el reconocimiento se ejecuta en el equipo y después funciona sin conexión. Está disponible para Windows x64 y Mac con Apple Silicon (M1 o posterior) y macOS 14 o posterior. No se ofrece OCR para Mac Intel; las otras herramientas PDF siguen disponibles en esos equipos.
+            Esta versión integra un complemento OCR opcional, descargable desde «Herramientas PDF». La primera instalación requiere conexión a Internet; el reconocimiento se ejecuta en el equipo y después funciona sin conexión. Está disponible para Windows x64 y Mac con Apple Silicon (M1 o posterior) y macOS 15 o posterior. No se ofrece OCR para Mac Intel; las otras herramientas PDF siguen disponibles en esos equipos.
 
             **Aviso para macOS:** si esta versión no ha sido firmada y notarizada por Apple, macOS puede mostrar una advertencia de seguridad. Revisá las notas de la versión antes de instalar.
 

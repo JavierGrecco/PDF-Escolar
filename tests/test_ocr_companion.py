@@ -46,7 +46,7 @@ def test_ocr_companion_refuses_unsupported_macos(monkeypatch):
     message = ocr_companion.platform_support_error()
 
     assert message is not None
-    assert "macOS 14 o posterior" in message
+    assert "macOS 15 o posterior" in message
     with pytest.raises(ocr_companion.OCRCompanionError, match="macOS 14"):
         ocr_companion.expected_asset_name()
 

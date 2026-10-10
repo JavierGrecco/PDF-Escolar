@@ -56,9 +56,9 @@ def platform_support_error() -> str | None:
             version = tuple(int(part) for part in version_parts[:2])
         except ValueError:
             version = ()
-        if not version or version < (14, 0):
+        if not version or version < (15, 0):
             return (
-                "El complemento OCR necesita macOS 14 o posterior en equipos Apple Silicon. "
+                "El complemento OCR necesita macOS 15 o posterior en equipos Apple Silicon. "
                 "PDF Escolar puede seguir usando sus demás herramientas en este equipo."
             )
         return None

@@ -62,7 +62,7 @@ La beta incorpora **Crear PDF buscable (OCR)** en «Herramientas PDF». El compl
 
 - En la primera instalación se necesita conexión a Internet para descargar el complemento desde GitHub. Después, el reconocimiento funciona sin conexión.
 - Los documentos se procesan en la computadora; no se suben a ningún servidor.
-- Disponible para **Windows x64** y **Mac con Apple Silicon (M1 o posterior) con macOS 14 o posterior**.
+- Disponible para **Windows x64** y **Mac con Apple Silicon (M1 o posterior) con macOS 15 o posterior**.
 - **OCR no está disponible en Mac Intel**. La aplicación principal y sus herramientas de rotación, recorte y separación siguen funcionando en esos equipos.
 - Esta es una versión beta: recomendamos comprobar el resultado con documentos propios no confidenciales antes de confiar en OCR para trabajos importantes. Los instaladores todavía no están firmados ni notarizados.
 
