@@ -44,6 +44,7 @@ class WorkerSignals(QObject):
     batch_finished = Signal()
     export_finished = Signal(int, str)
     export_error = Signal(str)
+    task_finished = Signal(str)
 
 
 class InspectTask(QRunnable):
@@ -51,16 +52,22 @@ class InspectTask(QRunnable):
         super().__init__()
         self.paths = paths
         self.signals = WorkerSignals()
+        self.setAutoDelete(False)
 
     @Slot()
     def run(self):
-        for index, path in enumerate(self.paths, start=1):
-            try:
-                self.signals.loaded.emit(path, inspect_pdf(path), os.path.getsize(path))
-            except Exception as exc:
-                self.signals.load_error.emit(path, str(exc))
-            self.signals.progress.emit(index, len(self.paths), f"Revisando {Path(path).name}…")
-        self.signals.batch_finished.emit()
+        try:
+            for index, path in enumerate(self.paths, start=1):
+                try:
+                    self.signals.loaded.emit(path, inspect_pdf(path), os.path.getsize(path))
+                except Exception as exc:
+                    self.signals.load_error.emit(path, str(exc))
+                self.signals.progress.emit(
+                    index, len(self.paths), f"Revisando {Path(path).name}…"
+                )
+        finally:
+            self.signals.batch_finished.emit()
+            self.signals.task_finished.emit(str(id(self)))
 
 
 class ExportTask(QRunnable):
@@ -75,6 +82,7 @@ class ExportTask(QRunnable):
         self.output_path = output_path
         self.page_order = page_order
         self.signals = WorkerSignals()
+        self.setAutoDelete(False)
 
     @Slot()
     def run(self):
@@ -89,6 +97,8 @@ class ExportTask(QRunnable):
             self.signals.export_finished.emit(count, self.output_path)
         except Exception as exc:
             self.signals.export_error.emit(str(exc))
+        finally:
+            self.signals.task_finished.emit(str(id(self)))
 
 
 class DropArea(QFrame):
@@ -312,8 +322,21 @@ class DocumentCard(QFrame):
         dialog = PagePickerDialog(
             self.document.path, self.document.page_count, self.ranges.text(), self
         )
-        if dialog.exec() == QDialog.DialogCode.Accepted:
-            self.ranges.setText(dialog.selected_ranges())
+        result = dialog.exec()
+        # Cancel queued/ongoing previews after the modal loop has returned;
+        # drain the dialog-owned pool before releasing the dialog wrapper.
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
+        dialog.pool.waitForDone()
+        selected_ranges = (
+            dialog.selected_ranges()
+            if result == QDialog.DialogCode.Accepted
+            else None
+        )
+        dialog.deleteLater()
+        if selected_ranges is not None:
+            self.ranges.setText(selected_ranges)
 
     def selection(self) -> PdfSource:
         return PdfSource(self.document.path, self.ranges.text())
@@ -516,8 +539,8 @@ class MainWindow(QMainWindow):
         task.signals.load_error.connect(self._on_load_error)
         task.signals.progress.connect(self._on_progress)
         task.signals.batch_finished.connect(self._on_batch_finished)
+        task.signals.task_finished.connect(self._task_finished)
         self.tasks.add(task)
-        task.signals.batch_finished.connect(lambda *args, current=task: self.tasks.discard(current))
         self.pool.start(task)
 
     @Slot(str, int, int)
@@ -548,6 +571,27 @@ class MainWindow(QMainWindow):
             self.progress.setRange(0, total)
             self.progress.setValue(done)
         self.status.setText(message)
+
+    @Slot(str)
+    def _task_finished(self, finished_token: str) -> None:
+        task = next((item for item in self.tasks if str(id(item)) == finished_token), None)
+        if task is None:
+            return
+        for signal_name in (
+            "loaded",
+            "load_error",
+            "progress",
+            "batch_finished",
+            "export_finished",
+            "export_error",
+            "task_finished",
+        ):
+            signal = getattr(task.signals, signal_name)
+            try:
+                signal.disconnect()
+            except (RuntimeError, TypeError):
+                pass
+        self.tasks.discard(task)
 
     @Slot()
     def _on_batch_finished(self):
@@ -690,12 +734,20 @@ class MainWindow(QMainWindow):
 
         dialog = PageOrderDialog(pages, self)
         result = dialog.exec()
-        # Wait for any in-flight thumbnail task before this modal dialog can be
-        # destroyed; that keeps signal objects and QRunnable wrappers alive on
-        # the GUI thread even if the user applies/cancels while previews load.
+        # Drain outstanding previews explicitly after exec() returns instead
+        # of overriding QDialog.done() or adding slots to its finished signal.
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
         dialog.thumbnail_pool.waitForDone()
-        if result == QDialog.DialogCode.Accepted:
-            self.custom_page_order = dialog.ordered_pages()
+        ordered_pages = (
+            dialog.ordered_pages()
+            if result == QDialog.DialogCode.Accepted
+            else None
+        )
+        dialog.deleteLater()
+        if ordered_pages is not None:
+            self.custom_page_order = ordered_pages
             self.status.setText(
                 "Orden personalizado aplicado. El PDF final respetará esta secuencia."
             )
@@ -743,9 +795,8 @@ class MainWindow(QMainWindow):
         task.signals.progress.connect(self._on_progress)
         task.signals.export_finished.connect(self._on_export_finished)
         task.signals.export_error.connect(self._on_export_error)
+        task.signals.task_finished.connect(self._task_finished)
         self.tasks.add(task)
-        task.signals.export_finished.connect(lambda *args, current=task: self.tasks.discard(current))
-        task.signals.export_error.connect(lambda *args, current=task: self.tasks.discard(current))
         self.pool.start(task)
 
     @Slot(int, str)
@@ -774,3 +825,5 @@ class MainWindow(QMainWindow):
         QMessageBox.critical(self, "No se pudo crear el PDF",
             "No se generó el documento final. Revisá el espacio disponible y que los archivos sean accesibles.\n\n"
             f"Detalle técnico: {detail}")
+
+
