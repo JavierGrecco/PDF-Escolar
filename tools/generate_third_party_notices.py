@@ -281,10 +281,42 @@ def render_manifest() -> str:
         if not any(files_by_component.get(name) for name in names)
     ]
     if missing_texts:
+        diagnostics = []
+        if "Qt for Python" in missing_texts:
+            for name, dist in sorted(components.items()):
+                if not (name.startswith("pyside6") or name == "shiboken6"):
+                    continue
+                files = list(dist.files or ())
+                interesting = [
+                    str(item) for item in files
+                    if any(token in str(item).casefold() for token in (
+                        "licen", "copy", "notice", "copyright", "gpl", "lgpl",
+                        "gfdl", "qt-commercial", "bsd", "apache",
+                    ))
+                ][:20]
+                qt_root = Path(dist.locate_file("PySide6"))
+                disk_candidates = []
+                if qt_root.is_dir():
+                    for path in qt_root.rglob("*"):
+                        if path.is_file() and any(token in path.name.casefold() for token in (
+                            "licen", "copy", "notice", "copyright", "gpl", "lgpl",
+                            "gfdl", "qt-commercial", "bsd", "apache",
+                        )):
+                            disk_candidates.append(path.relative_to(qt_root).as_posix())
+                            if len(disk_candidates) >= 20:
+                                break
+                diagnostics.append(
+                    f"{name}: RECORD_files={len(files)}, "
+                    f"license_like_paths={interesting!r}, "
+                    f"PySide6_root_exists={qt_root.is_dir()}, "
+                    f"disk_candidates={disk_candidates!r}"
+                )
+        details = (" Diagnóstico Qt: " + " | ".join(diagnostics)) if diagnostics else ""
         raise RuntimeError(
             "No se encontraron textos de licencia de los componentes: "
             + ", ".join(missing_texts)
             + ". No se generó un manifiesto incompleto."
+            + details
         )
 
     try:
