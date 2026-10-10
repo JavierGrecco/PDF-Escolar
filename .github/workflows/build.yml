@@ -245,8 +245,8 @@ jobs:
           2. Abrí la aplicación desde la carpeta Aplicaciones.
           3. No necesitás instalar Python ni abrir Terminal.
 
-          Esta compilación de prueba todavía no está firmada ni notarizada por Apple.
-          Para distribuirla públicamente sin advertencias hace falta firma y notarización.
+          Esta aplicación no está firmada ni notarizada por Apple.
+          macOS puede mostrar una advertencia de seguridad al abrirla.
           EOF
           hdiutil create -volname "PDF Escolar" -srcfolder dist/dmg-root -ov -format UDZO "dist/PDF-Escolar-Instalador-$APP_VERSION-macOS-${{ matrix.arch_slug }}.dmg"
           ditto -c -k --sequesterRsrc --keepParent dist/PDF-Escolar.app "dist/PDF-Escolar-macOS-$APP_VERSION-${{ matrix.arch_slug }}.zip"
