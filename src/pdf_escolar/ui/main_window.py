@@ -915,7 +915,6 @@ class MainWindow(QMainWindow):
                 icon=QMessageBox.Icon.Warning,
             )
             return
-        selections: list[PdfSource] = []
         default = Path.home() / "Documents" / "Material_escolar.pdf"
         if not default.parent.is_dir():
             default = Path.home() / "Material_escolar.pdf"
