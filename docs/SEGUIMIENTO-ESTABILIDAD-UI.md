@@ -33,24 +33,27 @@ En la ejecución diagnóstica con HEAD `1e2d5e482fdd79fd962617e09ef68467f1878d30
 - Ubuntu: falla en la salida del proceso; el job conservó el código de salida y falló como corresponde.
 - El job de Ubuntu ejecutó cada uno de los seis tests GUI en procesos independientes y luego prefijos acumulativos.
 
-Resultados individuales:
+Resultados individuales en el HEAD `6fddf937004931771977edd51035d640bb7d897d`:
 - `test_main_window_starts_in_a_safe_empty_state`: 1 passed, salida 0.
-- `test_document_card_displays_the_full_pdf_name_and_page_count`: 1 passed, luego el warning de Qt y salida `-11` (SIGSEGV).
+- `test_document_card_displays_the_full_pdf_name_and_page_count`: 1 passed, pero luego del warning de Qt terminó con `-7` (SIGBUS) en esta ejecución y `-11` (SIGSEGV) en una ejecución anterior.
 - `test_page_order_dialog_supports_drag_and_button_reordering`: 1 passed, salida 0.
 - `test_last_open_directory_uses_a_saved_existing_folder`: 1 passed, salida 0.
 - `test_document_cards_can_be_reordered_by_drop_and_buttons`: 1 passed, salida 0.
 - `test_hidden_page_order_dialog_does_not_start_thumbnail_tasks`: 1 passed, salida 0.
 
-El prefijo de los primeros dos tests terminó bien, pero al agregar el tercero hubo SIGSEGV; los prefijos posteriores también fallaron al salir. Esto muestra que no basta con decir que “se cae la combinación de diálogos”: el test de la tarjeta también reproduce el problema cuando se ejecuta aislado como primer widget del proceso.
+La comparación directa en el mismo job de Ubuntu con un worktree de `main` mostró:
+- La prueba de la tarjeta sola sobre `main`: pasa con salida 0.
+- Los tres primeros tests juntos sobre `main`: todos pasan las aserciones, pero el proceso también puede terminar con SIGSEGV.
+- En la rama propuesta, varios prefijos acumulativos terminaron con SIGBUS/SIGSEGV, aunque el resultado es variable entre ejecuciones.
 
-Como referencia, el CI histórico de `main` en la ejecución [38064894022](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38064894022) acabó con Ruff verde y `33 passed` en Ubuntu, sin crash. Aún falta una comparación controlada de la prueba de tarjeta sobre el mismo commit base y con el mismo entorno.
+Por lo tanto, el diagnóstico por subgrupos no demuestra por sí solo una regresión específica del código de la rama: parte de las secuencias de diagnóstico también puede fallar sobre `main`. La referencia histórica [38064894022](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38064894022) ejecutó la matriz normal y acabó con Ruff verde y `33 passed` en Ubuntu. Falta la comparación decisiva: ejecutar el conjunto GUI completo y el conjunto total, en procesos independientes, tanto sobre `main` como sobre la rama, en el mismo runner.
 
-HEAD posterior `6fddf937004931771977edd51035d640bb7d897d` mueve imports auxiliares a los tests que realmente los necesitan, para comprobar si retener referencias de clases Qt en el módulo de tests contribuye al crash. Esa hipótesis aún no está confirmada; su CI está ejecutándose. No considerar resuelto el problema ni ignorar el código de salida.
+HEAD `6fddf937004931771977edd51035d640bb7d897d` mueve imports auxiliares dentro de sus tests. No eliminó de forma consistente el crash; no considerar resuelto el problema ni ignorar el código de salida.
 
 ## Próximos pasos obligatorios
 
 - [x] Guardar este checkpoint en un commit (no depender solo del historial de conversación).
-- [x] Aislar el cierre anómalo ejecutando cada una de las seis pruebas GUI en procesos independientes en Ubuntu; anotar cuál reproduce el fallo.\n- [ ] Comparar la prueba de tarjeta de manera aislada en la rama base con el mismo entorno y la misma versión de PySide6.
+- [x] Aislar el cierre anómalo ejecutando cada una de las seis pruebas GUI en procesos independientes en Ubuntu; anotar cuál reproduce el fallo.\n- [x] Comparar la prueba de tarjeta aislada en `main` con el mismo runner y entorno; registrar que la prueba aislada pasa pero algunos prefijos GUI también fallan en la base.\n- [ ] Comparar el módulo GUI completo y la suite completa de `main` y la rama propuesta, en el mismo runner, antes de afirmar una regresión.
 - [ ] Comparar con la misma prueba aislada sobre `main` antes de atribuir el defecto a estos cambios.
 - [ ] Corregir la causa raíz y añadir una regresión que falle antes de la corrección.
 - [ ] Restaurar `.github/workflows/tests.yml` a una matriz normal que ejecute `ruff` y el conjunto completo de tests; retirar los filtros y comandos de diagnóstico.
