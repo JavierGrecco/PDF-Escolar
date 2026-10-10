@@ -146,3 +146,33 @@ def friendly_export_error(detail: object) -> str:
         "Revisá que los archivos originales sigan disponibles y que tengas espacio "
         "y permiso para guardar en la carpeta elegida."
     )
+
+
+def friendly_pdf_tool_error(detail: object) -> str:
+    """Explain common native-tool failures without echoing raw diagnostics."""
+    reason = _error_reason(detail)
+
+    if "ya existen archivos con esos nombres" in reason:
+        return (
+            "Ya hay archivos con esos nombres en la carpeta elegida. "
+            "Elegí otra carpeta para no reemplazar documentos anteriores."
+        )
+
+    if "no puede reemplazar uno de los pdf originales" in reason or (
+        "resultado debe guardarse en un archivo nuevo" in reason
+    ):
+        return "Elegí un nombre o una ubicación distintos del PDF original."
+
+    if "sin área visible" in reason:
+        return (
+            "Los márgenes son demasiado grandes para una o más páginas. "
+            "Reducí los valores y volvé a intentarlo."
+        )
+
+    if "debe tener extensión .pdf" in reason:
+        return "Guardá el resultado con la extensión .pdf."
+
+    if "no encontramos el pdf de origen" in reason:
+        return friendly_pdf_load_error(detail)
+
+    return friendly_export_error(detail)
