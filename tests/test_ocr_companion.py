@@ -41,13 +41,13 @@ def test_platform_asset_selection(monkeypatch):
 def test_ocr_companion_refuses_unsupported_macos(monkeypatch):
     monkeypatch.setattr(ocr_companion.sys, "platform", "darwin")
     monkeypatch.setattr(ocr_companion.platform, "machine", lambda: "arm64")
-    monkeypatch.setattr(ocr_companion.platform, "mac_ver", lambda: ("13.6.0", ("", "", ""), ""))
+    monkeypatch.setattr(ocr_companion.platform, "mac_ver", lambda: ("14.8.7", ("", "", ""), ""))
 
     message = ocr_companion.platform_support_error()
 
     assert message is not None
     assert "macOS 15 o posterior" in message
-    with pytest.raises(ocr_companion.OCRCompanionError, match="macOS 14"):
+    with pytest.raises(ocr_companion.OCRCompanionError, match="macOS 15"):
         ocr_companion.expected_asset_name()
 
 
