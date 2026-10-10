@@ -14,3 +14,7 @@ dist/
 .idea/
 Thumbs.db
 src/pdf_escolar/_build_version.py
+/assets/pdf-escolar.png
+/assets/pdf-escolar.ico
+/assets/pdf-escolar.icns
+/assets/pdf-escolar.iconset/
