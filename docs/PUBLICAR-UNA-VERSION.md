@@ -25,13 +25,16 @@ El flujo compila y verifica los paquetes, los adjunta a una publicación `v...` 
 
 Para refrescar los enlaces directos sin publicar una versión, ejecutá el flujo manualmente y activá **Actualizar también los binarios de descargas/**. Es una acción deliberada: los binarios nuevos se guardan en Git y aumentan el historial, por lo que conviene reservarla para una compilación que realmente quieras distribuir. Los cambios de código y las compilaciones automáticas no reemplazan por sí solos esos archivos.
 
-## Publicación inicial coordinada de la beta OCR
+## Primera beta coordinada: publicada el 10 de octubre de 2026
 
-La primera integración de OCR publica dos artefactos relacionados: la aplicación beta `v0.1.0-beta.1` (que contiene el botón OCR) y el complemento `ocr-engine-v0.1.0-beta.1` (el motor opcional). El flujo de OCR no sustituye la publicación de la aplicación: si solo se publica el motor, la versión de PDF Escolar ya instalada no obtiene la interfaz nueva.
+La beta inicial está publicada en dos releases y los enlaces directos se sincronizaron:
 
-La primera publicación se activa de forma deliberada al integrar el PR de OCR con los marcadores `[publish-app-beta]` y `[publish-ocr-beta]` en el título del commit de integración. El workflow construye y comprueba todos los paquetes antes de publicarlos como versiones beta y sincroniza los enlaces directos de `descargas/`. Si el build o el smoke test falla, no se publica una versión estable ni debe anunciarse la beta como disponible.
+- [Aplicación PDF Escolar v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/v0.1.0-beta.1): portable Windows, instalador Windows, DMG Mac Intel y DMG Apple Silicon.
+- [Complemento OCR v0.1.0-beta.1](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1): ZIP Windows x64 y ZIP Mac Apple Silicon.
 
-Para versiones posteriores, publicá la aplicación con **Build installers** (`release_version`) y el complemento con **Build OCR companion** (`release_version`) por separado. No uses una etiqueta de la aplicación como si fuera la etiqueta del motor OCR.
+La primera publicación se activó al integrar el PR OCR con los marcadores `[publish-app-beta]` y `[publish-ocr-beta]` en el título del commit. La build de la aplicación [#38087055313](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38087055313) y la build del complemento [#38087055391](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38087055391) terminaron correctamente. El manifiesto `descargas/INFORMACION-DE-DESCARGA.txt` apunta a `0.1.0-beta.1` y contiene SHA-256 coincidentes con los activos de la release de aplicación.
+
+Para futuras versiones, publicá la aplicación con **Build installers** (`release_version`) y el complemento con **Build OCR companion** (`release_version`) por separado. Usá el mismo número de versión para una pareja coordinada, pero no confundas los tags: `vX.Y.Z` es la aplicación y `ocr-engine-vX.Y.Z` es el motor. No vuelvas a usar los marcadores de primera beta, porque sus tags ya existen.
 
 ## ¿Qué versión conviene publicar?
 
