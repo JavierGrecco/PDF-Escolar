@@ -13,7 +13,7 @@ import tempfile
 import uuid
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import TypeAlias
 
 PROJECT_SCHEMA_VERSION = 1
 MAX_PROJECT_BYTES = 20 * 1024 * 1024
