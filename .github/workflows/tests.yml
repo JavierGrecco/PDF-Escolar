@@ -59,10 +59,47 @@ jobs:
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
       - run: python -m ruff check .
-      - name: Diagnose basic GUI group
+      - name: Diagnose GUI shutdown in isolated processes (temporary)
         run: |
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
+          python - <<'PY'
+          import subprocess
+          import sys
+
+          tests = [
+              "test_main_window_starts_in_a_safe_empty_state",
+              "test_document_card_displays_the_full_pdf_name_and_page_count",
+              "test_page_order_dialog_supports_drag_and_button_reordering",
+              "test_last_open_directory_uses_a_saved_existing_folder",
+              "test_document_cards_can_be_reordered_by_drop_and_buttons",
+              "test_hidden_page_order_dialog_does_not_start_thumbnail_tasks",
+          ]
+          failures = []
+
+          def run_case(label, names):
+              command = [
+                  sys.executable, "-m", "pytest", "-q", "-rs",
+                  *[f"tests/test_gui_smoke.py::{name}" for name in names],
+              ]
+              print(f"\\n===== {label} =====", flush=True)
+              result = subprocess.run(command, check=False)
+              print(f"===== exit={result.returncode}: {label} =====", flush=True)
+              if result.returncode:
+                  failures.append((label, result.returncode))
+
+          # Separate processes tell us whether one test crashes by itself.
+          for name in tests:
+              run_case(f"individual: {name}", [name])
+
+          # Prefixes reveal whether the shutdown failure needs an interaction
+          # between tests, and at which step it starts.
+          for count in range(2, len(tests) + 1):
+              run_case(f"combined prefix: first {count} tests", tests[:count])
+
+          if failures:
+              print("\\nDiagnostic failures:", failures, flush=True)
+              raise SystemExit(1)
+          print("\\nAll isolated and combined diagnostic runs passed.", flush=True)
+          PY
   windows:
     runs-on: windows-latest
     steps:
@@ -75,10 +112,7 @@ jobs:
             pyproject.toml
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
-      - name: Diagnose basic GUI group
-        run: |
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
+      - run: python -m pytest -q -rs
   macos:
     runs-on: macos-latest
     steps:
@@ -91,10 +125,7 @@ jobs:
             pyproject.toml
             requirements*.txt
       - run: python -m pip install -e ".[dev]"
-      - name: Diagnose basic GUI group
-        run: |
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
+      - run: python -m pytest -q -rs
 
   macos-intel:
     name: Tests (macOS Intel / Catalina dependency set)
@@ -113,6 +144,4 @@ jobs:
       - name: Check code style
         run: python -m ruff check .
       - name: Test PDF engine and application
-        run: |
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_main_window_starts_in_a_safe_empty_state tests/test_gui_smoke.py::test_document_card_displays_the_full_pdf_name_and_page_count tests/test_gui_smoke.py::test_page_order_dialog_supports_drag_and_button_reordering
-          python -m pytest -q -rs tests/test_gui_smoke.py::test_last_open_directory_uses_a_saved_existing_folder tests/test_gui_smoke.py::test_document_cards_can_be_reordered_by_drop_and_buttons tests/test_gui_smoke.py::test_hidden_page_order_dialog_does_not_start_thumbnail_tasks
+        run: python -m pytest -q -rs
