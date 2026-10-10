@@ -82,7 +82,7 @@ class PagePickerDialog(QDialog):
         self.page_start = 0
         self.page_indexes: dict[int, QListWidgetItem] = {}
         self.tasks: set[QRunnable] = set()
-        self.pool = QThreadPool(self)
+        self.pool = QThreadPool()
         self.current_task: ThumbnailTask | None = None
         self.thumbnail_timer = QTimer(self)
         self.thumbnail_timer.setSingleShot(True)
