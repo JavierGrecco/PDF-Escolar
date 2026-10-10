@@ -209,3 +209,56 @@ jobs:
             No necesitás instalar Python ni abrir Terminal. Los documentos PDF se procesan localmente.
 
             **Aviso para macOS:** si esta versión no ha sido firmada y notarizada por Apple, macOS puede mostrar una advertencia de seguridad. Revisá las notas de la versión antes de instalar.
+
+  sync-downloads:
+    name: Guardar instaladores en el repositorio
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar los paquetes generados
+        uses: actions/download-artifact@v4
+        with:
+          pattern: pdf-escolar-*
+          path: dist
+          merge-multiple: true
+
+      - name: Preparar los archivos de descarga
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p descargas
+
+          cp dist/PDF-Escolar.exe descargas/PDF-Escolar.exe
+
+          windows_installer="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-Windows.exe' -print -quit)"
+          intel_dmg="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-macOS-Intel.dmg' -print -quit)"
+          apple_dmg="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-macOS-Apple-Silicon.dmg' -print -quit)"
+
+          test -n "$windows_installer"
+          test -n "$intel_dmg"
+          test -n "$apple_dmg"
+
+          cp "$windows_installer" descargas/PDF-Escolar-Instalador-Windows.exe
+          cp "$intel_dmg" descargas/PDF-Escolar-macOS-Intel.dmg
+          cp "$apple_dmg" descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
+
+          ls -lh descargas
+
+      - name: Guardar las descargas en main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add descargas/PDF-Escolar.exe descargas/PDF-Escolar-Instalador-Windows.exe descargas/PDF-Escolar-macOS-Intel.dmg descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
+          if git diff --cached --quiet; then
+            echo "Los archivos de descarga ya están actualizados."
+          else
+            git commit -m "build: actualizar archivos de descarga"
+            git push
+          fi
