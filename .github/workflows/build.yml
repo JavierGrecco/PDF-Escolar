@@ -113,10 +113,16 @@ jobs:
             throw "No se generó un instalador de Windows válido."
           }
 
-          $installDir = Join-Path $env:RUNNER_TEMP "PDF Escolar Smoke Test"
-          & $installer.FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- "/DIR=$installDir"
-          if ($LASTEXITCODE -ne 0) {
-            throw "El instalador de Windows terminó con el código $LASTEXITCODE."
+          $installDir = Join-Path $env:RUNNER_TEMP "PDF-Escolar-Smoke-Test"
+          $installProcess = Start-Process -FilePath $installer.FullName -ArgumentList @(
+            "/VERYSILENT",
+            "/SUPPRESSMSGBOXES",
+            "/NORESTART",
+            "/SP-",
+            "/DIR=$installDir"
+          ) -Wait -PassThru
+          if ($installProcess.ExitCode -ne 0) {
+            throw "El instalador de Windows terminó con el código $($installProcess.ExitCode)."
           }
 
           $installedExe = Join-Path $installDir "PDF-Escolar.exe"
@@ -130,16 +136,20 @@ jobs:
           if ($appProcess.HasExited) {
             throw "PDF Escolar se cerró inesperadamente al iniciarse desde la instalación."
           }
-          Stop-Process -Id $appProcess.Id -Force
-          Start-Sleep -Seconds 1
+          Get-Process -Name "PDF-Escolar" -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep -Seconds 2
 
           $uninstaller = Join-Path $installDir "unins000.exe"
           if (-not (Test-Path $uninstaller -PathType Leaf)) {
             throw "La instalación no creó el desinstalador."
           }
-          & $uninstaller /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
-          if ($LASTEXITCODE -ne 0) {
-            throw "El desinstalador terminó con el código $LASTEXITCODE."
+          $uninstallProcess = Start-Process -FilePath $uninstaller -ArgumentList @(
+            "/VERYSILENT",
+            "/SUPPRESSMSGBOXES",
+            "/NORESTART"
+          ) -Wait -PassThru
+          if ($uninstallProcess.ExitCode -ne 0) {
+            throw "El desinstalador terminó con el código $($uninstallProcess.ExitCode)."
           }
           if (Test-Path $installedExe) {
             throw "La desinstalación no quitó el ejecutable instalado."
