@@ -134,10 +134,16 @@ def is_license_candidate(relative: PurePosixPath) -> bool:
         return True
 
     stems = ("license", "licence", "copying", "notice", "copyright", "patent")
-    return any(
+    if any(
         name == stem or name.startswith(f"{stem}.") or name.startswith(f"{stem}-")
         for stem in stems
-    )
+    ):
+        return True
+    # Some Qt frameworks ship their required notices as files such as
+    # qtwebenginecore_licenses.rtf rather than inside a License/ directory.
+    if "_license" in name or "_licence" in name or name.endswith(("_license", "_licence")):
+        return True
+    return False
 
 
 def _rtf_to_text(source: str) -> str:
