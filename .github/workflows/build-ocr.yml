@@ -1,0 +1,243 @@
+name: Build OCR companion
+
+on:
+  pull_request:
+    paths:
+      - "packaging/ocr/**"
+      - "src/pdf_escolar/ocr_companion.py"
+      - ".github/workflows/build-ocr.yml"
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: "Versión del complemento para publicar (ej. 0.1.0-beta.1); vacío = solo prueba."
+        required: false
+        type: string
+  push:
+    tags:
+      - "ocr-engine-v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TESSDATA_FAST_COMMIT: 87416418657359cb625c412a48b6e1d6d41c29bd
+  OCRMY_PDF_VERSION: 17.13.0
+
+jobs:
+  windows:
+    name: OCR companion (Windows x64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: packaging/ocr/requirements.txt
+      - name: Install isolated OCR build dependencies
+        run: python -m pip install -r packaging/ocr/requirements.txt
+      - name: Install Tesseract
+        shell: pwsh
+        run: choco install tesseract --no-progress -y
+      - name: Build the standalone OCR helper
+        shell: pwsh
+        run: >-
+          python -m PyInstaller --noconfirm --clean --onedir --console
+          --name PDF-Escolar-OCR
+          --collect-all ocrmypdf
+          --collect-all pikepdf
+          --collect-all pypdfium2
+          --collect-all PIL
+          --collect-all pydantic
+          --collect-all fontTools
+          --collect-all fpdf
+          packaging/ocr/helper.py
+      - name: Bundle Tesseract and Spanish/English models
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $bundle = Join-Path $PWD "dist/PDF-Escolar-OCR"
+          $tesseractSource = "C:/Program Files/Tesseract-OCR"
+          if (-not (Test-Path (Join-Path $tesseractSource "tesseract.exe"))) {
+            throw "No se encontró el ejecutable de Tesseract instalado por Chocolatey."
+          }
+          $tesseract = Join-Path $bundle "tesseract"
+          New-Item -ItemType Directory -Force -Path $tesseract | Out-Null
+          Copy-Item -Path (Join-Path $tesseractSource "*") -Destination $tesseract -Recurse -Force
+          $tessdata = Join-Path $tesseract "tessdata"
+          New-Item -ItemType Directory -Force -Path $tessdata | Out-Null
+          $base = "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/$env:TESSDATA_FAST_COMMIT"
+          foreach ($language in @("spa", "eng", "osd")) {
+            Invoke-WebRequest -Uri "$base/$language.traineddata" -OutFile (Join-Path $tessdata "$language.traineddata")
+          }
+          Get-ChildItem $tessdata -Filter "*.traineddata" -File |
+            Where-Object { $_.Name -notin @("spa.traineddata", "eng.traineddata", "osd.traineddata") } |
+            Remove-Item -Force
+      - name: Record third-party licenses
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $bundle = Join-Path $PWD "dist/PDF-Escolar-OCR"
+          $licenses = Join-Path $bundle "licenses"
+          New-Item -ItemType Directory -Force -Path $licenses | Out-Null
+          Invoke-WebRequest "https://raw.githubusercontent.com/ocrmypdf/OCRmyPDF/v$env:OCRMY_PDF_VERSION/LICENSE" -OutFile (Join-Path $licenses "OCRmyPDF-MPL-2.0.txt")
+          Invoke-WebRequest "https://raw.githubusercontent.com/tesseract-ocr/tesseract/5.5.3/LICENSE" -OutFile (Join-Path $licenses "Tesseract-Apache-2.0.txt")
+          Invoke-WebRequest "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/$env:TESSDATA_FAST_COMMIT/LICENSE" -OutFile (Join-Path $licenses "tessdata_fast-Apache-2.0.txt")
+          python -m pip install pip-licenses
+          pip-licenses --with-urls --format=markdown | Set-Content -Path (Join-Path $licenses "PYTHON-DEPENDENCIES.md") -Encoding utf8
+          Copy-Item packaging/ocr/THIRD-PARTY-NOTICES.md $bundle
+      - name: Verify packaged OCR end to end
+        shell: pwsh
+        run: python packaging/ocr/smoke_test.py "dist/PDF-Escolar-OCR/PDF-Escolar-OCR.exe"
+      - name: Archive Windows OCR companion
+        shell: pwsh
+        run: Compress-Archive -Path "dist/PDF-Escolar-OCR" -DestinationPath "dist/PDF-Escolar-OCR-Windows-x64.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ocr-companion-Windows-x64
+          path: dist/PDF-Escolar-OCR-Windows-x64.zip
+          if-no-files-found: error
+          retention-days: 90
+
+  macos:
+    name: OCR companion (macOS ${{ matrix.arch_label }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: macos-15-intel
+            arch_slug: Intel
+            arch_label: Intel
+          - runner: macos-latest
+            arch_slug: Apple-Silicon
+            arch_label: Apple Silicon
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: packaging/ocr/requirements.txt
+      - name: Install isolated OCR build dependencies
+        run: python -m pip install -r packaging/ocr/requirements.txt
+      - name: Install Tesseract and library bundler
+        run: brew install tesseract dylibbundler
+      - name: Build the standalone OCR helper
+        run: >-
+          python -m PyInstaller --noconfirm --clean --onedir --console
+          --name PDF-Escolar-OCR
+          --collect-all ocrmypdf
+          --collect-all pikepdf
+          --collect-all pypdfium2
+          --collect-all PIL
+          --collect-all pydantic
+          --collect-all fontTools
+          --collect-all fpdf
+          packaging/ocr/helper.py
+      - name: Bundle Tesseract, native libraries, and language data
+        shell: bash
+        run: |
+          set -euo pipefail
+          bundle="dist/PDF-Escolar-OCR"
+          tesseract_root="$bundle/tesseract"
+          tesseract_prefix="$(brew --prefix tesseract)"
+          mkdir -p "$tesseract_root/bin" "$tesseract_root/tessdata"
+          cp "$tesseract_prefix/bin/tesseract" "$tesseract_root/bin/tesseract"
+          cp -R "$tesseract_prefix/share/tessdata/." "$tesseract_root/tessdata/"
+          base="https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/$TESSDATA_FAST_COMMIT"
+          for language in spa eng osd; do
+            curl --fail --location --silent --show-error "$base/$language.traineddata"               --output "$tesseract_root/tessdata/$language.traineddata"
+          done
+          find "$tesseract_root/tessdata" -maxdepth 1 -type f -name '*.traineddata'             ! -name 'spa.traineddata' ! -name 'eng.traineddata' ! -name 'osd.traineddata' -delete
+
+          search_args=()
+          while IFS= read -r library_dir; do
+            search_args+=(-s "$library_dir")
+          done < <(find "$(brew --prefix)" -type d -name lib -print)
+          dylibbundler -od -b             -x "$tesseract_root/bin/tesseract"             -d "$tesseract_root/lib"             -p "@executable_path/../lib/"             "${search_args[@]}"
+          chmod 755 "$tesseract_root/bin/tesseract"
+          "$tesseract_root/bin/tesseract" --version
+      - name: Record third-party licenses
+        shell: bash
+        run: |
+          set -euo pipefail
+          licenses="dist/PDF-Escolar-OCR/licenses"
+          mkdir -p "$licenses"
+          curl --fail --location --silent --show-error             "https://raw.githubusercontent.com/ocrmypdf/OCRmyPDF/v$OCRMY_PDF_VERSION/LICENSE"             --output "$licenses/OCRmyPDF-MPL-2.0.txt"
+          curl --fail --location --silent --show-error             "https://raw.githubusercontent.com/tesseract-ocr/tesseract/5.5.3/LICENSE"             --output "$licenses/Tesseract-Apache-2.0.txt"
+          curl --fail --location --silent --show-error             "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/$TESSDATA_FAST_COMMIT/LICENSE"             --output "$licenses/tessdata_fast-Apache-2.0.txt"
+          python -m pip install pip-licenses
+          pip-licenses --with-urls --format=markdown > "$licenses/PYTHON-DEPENDENCIES.md"
+          cp packaging/ocr/THIRD-PARTY-NOTICES.md dist/PDF-Escolar-OCR/
+      - name: Verify packaged OCR end to end
+        run: python packaging/ocr/smoke_test.py "dist/PDF-Escolar-OCR/PDF-Escolar-OCR"
+      - name: Archive macOS OCR companion
+        shell: bash
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent             "dist/PDF-Escolar-OCR"             "dist/PDF-Escolar-OCR-macOS-${{ matrix.arch_slug }}.zip"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ocr-companion-macOS-${{ matrix.arch_slug }}
+          path: dist/PDF-Escolar-OCR-macOS-${{ matrix.arch_slug }}.zip
+          if-no-files-found: error
+          retention-days: 90
+
+  publish-release:
+    name: Publish OCR companion release
+    if: startsWith(github.ref, 'refs/tags/ocr-engine-v') || (github.event_name == 'workflow_dispatch' && inputs.release_version != '')
+    needs: [windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: ocr-companion-*
+          path: dist
+          merge-multiple: true
+      - name: Determine OCR companion version
+        id: version
+        shell: bash
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
+          set -euo pipefail
+          if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == ocr-engine-v* ]]; then
+            tag="$GITHUB_REF_NAME"
+          elif [[ -n "$RELEASE_VERSION" ]]; then
+            if [[ ! "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+              echo "La versión debe tener el formato X.Y.Z, por ejemplo 0.1.0-beta.1." >&2
+              exit 1
+            fi
+            tag="ocr-engine-v$RELEASE_VERSION"
+          else
+            echo "No se determinó la versión OCR." >&2
+            exit 1
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          if [[ "$tag" == *-* ]]; then echo "prerelease=true" >> "$GITHUB_OUTPUT"; else echo "prerelease=false" >> "$GITHUB_OUTPUT"; fi
+      - name: Publish platform packages
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          name: PDF Escolar OCR ${{ steps.version.outputs.tag }}
+          prerelease: ${{ steps.version.outputs.prerelease == 'true' }}
+          generate_release_notes: false
+          body: |
+            Complemento opcional de reconocimiento de texto (OCR) para PDF Escolar.
+
+            - Windows x64: descargá `PDF-Escolar-OCR-Windows-x64.zip`.
+            - macOS Intel: descargá `PDF-Escolar-OCR-macOS-Intel.zip`.
+            - macOS Apple Silicon: descargá `PDF-Escolar-OCR-macOS-Apple-Silicon.zip`.
+
+            El reconocimiento se procesa localmente. El paquete incluye Tesseract y los modelos español, inglés y orientación. La aplicación principal se descarga por separado. Revisá los avisos y las licencias incluidos en cada ZIP.
+          files: |
+            dist/PDF-Escolar-OCR-Windows-x64.zip
+            dist/PDF-Escolar-OCR-macOS-Intel.zip
+            dist/PDF-Escolar-OCR-macOS-Apple-Silicon.zip
