@@ -1,7 +1,6 @@
 """Paginated, thumbnail-based page picker for large PDFs."""
 from __future__ import annotations
 
-from io import BytesIO
 from pathlib import Path
 
 import pypdfium2 as pdfium
@@ -13,32 +12,10 @@ from PySide6.QtWidgets import (
 )
 
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
+from pdf_escolar.pdf_preview import THUMBNAIL_MAX_SIZE, render_page_thumbnail
 
 
 PAGES_PER_VIEW = 30
-THUMBNAIL_MAX_SIZE = 150
-
-
-def render_page_thumbnail(document: pdfium.PdfDocument, page_index: int) -> bytes:
-    """Render one page to a compact JPEG thumbnail."""
-    page = None
-    bitmap = None
-    try:
-        page = document[page_index]
-        width, height = page.get_size()
-        scale = THUMBNAIL_MAX_SIZE / max(width, height, 1)
-        bitmap = page.render(scale=scale)
-        image = bitmap.to_pil().convert("RGB")
-        buffer = BytesIO()
-        image.save(buffer, format="JPEG", quality=72, optimize=True)
-        return buffer.getvalue()
-    finally:
-        if bitmap is not None:
-            bitmap.close()
-        if page is not None:
-            page.close()
-
-
 class ThumbnailSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)

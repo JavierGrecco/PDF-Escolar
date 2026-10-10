@@ -5,7 +5,7 @@ import pikepdf
 import pypdfium2 as pdfium
 from PIL import Image
 
-from pdf_escolar.ui.page_picker import THUMBNAIL_MAX_SIZE, render_page_thumbnail
+from pdf_escolar.pdf_preview import THUMBNAIL_MAX_SIZE, render_page_thumbnail
 
 
 def test_thumbnail_renderer_returns_compact_image(tmp_path: Path):
