@@ -2,14 +2,25 @@
 
 **Esta guía es solo para quien mantiene el repositorio.** Quien utiliza PDF Escolar no debe seguir estos pasos: descarga la versión publicada desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
 
-## Publicar desde la web de GitHub
+## Actualizar los archivos de descarga sin publicar una versión
+
+1. Abrí el flujo [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml).
+2. Pulsá **Run workflow** y elegí la rama `main`.
+3. Dejá vacío el campo **Versión para publicar**.
+4. Pulsá **Run workflow**.
+
+El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon. Si las tres compilaciones y la verificación de archivos terminan correctamente, actualiza los cuatro instaladores de la carpeta [descargas](../descargas/) y genera `INFORMACION-DE-DESCARGA.txt` con sus hashes SHA-256. **No crea una publicación en Releases.**
+
+## Publicar una versión descargable
 
 1. Abrí el flujo [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml).
 2. Pulsá **Run workflow** y elegí la rama `main`.
 3. En **Versión para publicar**, escribí la versión sin la letra `v`. Por ejemplo, `0.1.0-beta.1`.
 4. Pulsá **Run workflow**.
 
-El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon. Si todas las compilaciones terminan correctamente, crea la publicación `v...` en **Releases** y adjunta los instaladores. No hace falta abrir una terminal ni escribir comandos.
+El flujo compila y verifica los paquetes, los adjunta a una publicación `v...` en **Releases** y también actualiza los archivos directos de la carpeta `descargas/`. No hace falta abrir una terminal ni escribir comandos.
+
+**Importante:** los paquetes generados al probar cambios en una rama o en un pull request no actualizan `descargas/` ni se publican en Releases. Hasta ejecutar manualmente uno de los dos pasos anteriores, los enlaces directos siguen apuntando a los últimos archivos guardados en esa carpeta.
 
 ## ¿Qué versión conviene publicar?
 

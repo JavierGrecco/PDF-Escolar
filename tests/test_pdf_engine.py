@@ -75,3 +75,40 @@ def test_inspect_pdf_rejects_a_document_without_pages(tmp_path):
         pdf.save(source)
     with pytest.raises(ValueError, match="no contiene páginas"):
         inspect_pdf(str(source))
+
+def test_invalid_ranges_preserve_an_existing_output(tmp_path):
+    source, output = tmp_path / "source.pdf", tmp_path / "existing.pdf"
+    make_pdf(source, [200, 300])
+    make_pdf(output, [800])
+
+    with pytest.raises(ValueError, match="supera ese límite"):
+        combine_selected_pages([PdfSource(str(source), "1-20")], str(output))
+
+    assert page_widths(output) == [800]
+    assert not list(tmp_path.glob(".existing_*.tmp.pdf"))
+
+
+def test_successful_export_replaces_an_existing_output(tmp_path):
+    source, output = tmp_path / "source.pdf", tmp_path / "existing.pdf"
+    make_pdf(source, [200, 300])
+    make_pdf(output, [800])
+
+    count = combine_selected_pages([PdfSource(str(source), "2")], str(output))
+
+    assert count == 1
+    assert page_widths(output) == [300]
+    assert page_widths(source) == [200, 300]
+
+
+def test_inspect_pdf_rejects_a_password_protected_document(tmp_path):
+    source = tmp_path / "protected.pdf"
+    with pikepdf.Pdf.new() as pdf:
+        pdf.add_blank_page()
+        pdf.save(
+            source,
+            encryption=pikepdf.Encryption(owner="owner", user="reader", R=4),
+        )
+
+    with pytest.raises(pikepdf.PasswordError):
+        inspect_pdf(str(source))
+
