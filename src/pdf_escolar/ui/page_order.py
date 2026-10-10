@@ -212,7 +212,7 @@ class PageOrderDialog(QDialog):
             self._queue_visible_thumbnails()
 
     def _queue_visible_thumbnails(self, *_args) -> None:
-        if not self.pages or not self.list_widget.isVisible():
+        if not self.pages or not self.isVisible() or not self.list_widget.isVisible():
             return
         viewport = self.list_widget.viewport().rect()
         requests: list[tuple[int, PdfPageRef]] = []
