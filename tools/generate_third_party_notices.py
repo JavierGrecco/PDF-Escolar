@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import re
 import sys
 from importlib import metadata
 from pathlib import Path, PurePosixPath
@@ -38,6 +39,7 @@ TEXT_SUFFIXES = {
     ".license",
     ".notice",
     ".adoc",
+    ".rtf",
 }
 MAX_LICENSE_FILE_BYTES = 2 * 1024 * 1024
 CORE_NAMES = {"pyside6", "pikepdf", "pypdfium2", "pillow"}
@@ -138,19 +140,43 @@ def is_license_candidate(relative: PurePosixPath) -> bool:
     )
 
 
+def _rtf_to_text(source: str) -> str:
+    """Convert common RTF control sequences to readable plain text."""
+    text = re.sub(
+        r"{\\\*\\(?:fonttbl|colortbl|stylesheet|info|generator)[^{}]*}",
+        "",
+        source,
+        flags=re.DOTALL,
+    )
+    text = re.sub(
+        r"\\'([0-9a-fA-F]{2})",
+        lambda match: bytes.fromhex(match.group(1)).decode("cp1252"),
+        text,
+    )
+    text = re.sub(r"\\(?:par|line)\b\s?", "\n", text)
+    text = re.sub(r"\\tab\b\s?", "\t", text)
+    text = re.sub(r"\\[a-zA-Z]+-?\d*\s?", "", text)
+    text = re.sub(r"\\([{}\\])", r"\1", text)
+    text = text.replace("{", "").replace("}", "")
+    text = re.sub(r"[ \t]+\n", "\n", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
+    return text.strip()
+
+
 def read_text(path: Path) -> str:
     data = path.read_bytes()
     if len(data) > MAX_LICENSE_FILE_BYTES:
         raise ValueError(f"El archivo de licencia supera el límite de 2 MiB: {path.name}")
     if b"\x00" in data:
         raise ValueError(f"El archivo señalado como licencia parece binario: {path.name}")
+    if path.suffix.casefold() == ".rtf":
+        return _rtf_to_text(data.decode("cp1252", errors="replace"))
     for encoding in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
         try:
             return data.decode(encoding).strip()
         except UnicodeDecodeError:
             continue
     raise ValueError(f"No se pudo leer el texto de licencia: {path.name}")
-
 
 def collect_license_files(
     name: str, dist: metadata.Distribution
