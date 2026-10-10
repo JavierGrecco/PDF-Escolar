@@ -15,8 +15,8 @@ try:
     from pdf_escolar.ui.main_window import (
         DocumentCard, DocumentInfo, ExportTask, InspectTask, MainWindow
     )
-    from pdf_escolar.ui.page_order import PageOrderDialog
-    from pdf_escolar.ui.page_picker import PagePickerDialog
+    from pdf_escolar.ui.page_order import PageOrderDialog, PageOrderThumbnailTask
+    from pdf_escolar.ui.page_picker import PagePickerDialog, ThumbnailTask
 except ImportError as exc:
     # Some Linux runners lack system libraries needed by Qt. Skip only those
     # known runtime-library errors; application import regressions must fail CI.
@@ -172,3 +172,26 @@ def test_page_picker_keeps_the_current_page_group_responsive(application):
     finally:
         dialog.close()
         dialog.pool.waitForDone()
+
+def test_cancelled_page_picker_thumbnail_task_finishes_without_opening_a_pdf():
+    task = ThumbnailTask("/tmp/not-opened.pdf", [0])
+    finished = []
+    task.signals.finished.connect(finished.append)
+
+    task.cancel()
+    task.run()
+
+    assert finished == [id(task)]
+
+
+def test_cancelled_page_order_thumbnail_task_finishes_without_opening_a_pdf():
+    task = PageOrderThumbnailTask(
+        [(0, PdfPageRef("/tmp/not-opened.pdf", 0))]
+    )
+    finished = []
+    task.signals.finished.connect(finished.append)
+
+    task.cancel()
+    task.run()
+
+    assert finished == [id(task)]
