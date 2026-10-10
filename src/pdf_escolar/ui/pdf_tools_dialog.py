@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from threading import Event
 
 from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 from PySide6.QtWidgets import (
@@ -327,15 +326,15 @@ class PdfToolsDialog(QDialog):
             path = result["path"]
             self.status.setText(f"Listo: se procesaron {count} páginas.")
             dialog_text = (
-                f"Se procesaron {count} páginas.\\n\\n"
-                f"El PDF nuevo se guardó en:\\n{path}\\n\\nEl original sigue sin cambios."
+                f"Se procesaron {count} páginas.\n\n"
+                f"El PDF nuevo se guardó en:\n{path}\n\nEl original sigue sin cambios."
             )
         else:
             paths = result["paths"]
             self.status.setText(f"Listo: se crearon {len(paths)} archivos PDF.")
             dialog_text = (
-                f"Se crearon {len(paths)} archivos PDF separados en:\\n"
-                f"{Path(paths[0]).parent}\\n\\nEl original sigue sin cambios."
+                f"Se crearon {len(paths)} archivos PDF separados en:\n"
+                f"{Path(paths[0]).parent}\n\nEl original sigue sin cambios."
             )
         show_notice(self, "Operación completada", dialog_text)
 
@@ -345,7 +344,7 @@ class PdfToolsDialog(QDialog):
         show_notice(
             self,
             "No se pudo procesar el PDF",
-            friendly_pdf_tool_error(detail) + "\\n\\nEl PDF original no se modificó.",
+            friendly_pdf_tool_error(detail) + "\n\nEl PDF original no se modificó.",
             icon=QMessageBox.Icon.Warning,
         )
 
