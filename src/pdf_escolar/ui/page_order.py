@@ -29,7 +29,7 @@ from pdf_escolar.pdf_preview import render_page_thumbnail
 class PageOrderSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)
-    finished = Signal()
+    finished = Signal(int)
 
 
 class PageOrderThumbnailTask(QRunnable):
@@ -63,7 +63,7 @@ class PageOrderThumbnailTask(QRunnable):
                 if document is not None:
                     document.close()
 
-        self.signals.finished.emit()
+        self.signals.finished.emit(id(self))
 
 
 class PageOrderDialog(QDialog):
@@ -234,7 +234,7 @@ class PageOrderDialog(QDialog):
         task.setAutoDelete(False)
         task.signals.ready.connect(self._thumbnail_ready)
         task.signals.failed.connect(self._thumbnail_failed)
-        task.signals.finished.connect(lambda *args, current=task: self._task_finished(current))
+        task.signals.finished.connect(self._task_finished)
         self.tasks.add(task)
         from PySide6.QtCore import QThreadPool
 
@@ -255,19 +255,21 @@ class PageOrderDialog(QDialog):
         if item is not None:
             item.setToolTip(f"{item.toolTip()}\nVista previa no disponible: {detail}")
 
-    def _task_finished(self, task: QRunnable) -> None:
-        # Disconnect the bound slots before releasing the task so the task's
-        # signal object cannot keep the dialog alive or emit into a closed UI.
+    @Slot(int)
+    def _task_finished(self, task_id: int) -> None:
+        # This is a bound QObject slot, so Qt queues the callback to the GUI
+        # thread. QRunnable auto-deletion stays disabled while the Python
+        # wrapper is retained in self.tasks.
+        task = next((item for item in self.tasks if id(item) == task_id), None)
+        if task is None:
+            return
         for signal, slot in (
             (task.signals.ready, self._thumbnail_ready),
             (task.signals.failed, self._thumbnail_failed),
-            (task.signals.finished, None),
+            (task.signals.finished, self._task_finished),
         ):
             try:
-                if slot is None:
-                    signal.disconnect()
-                else:
-                    signal.disconnect(slot)
+                signal.disconnect(slot)
             except (RuntimeError, TypeError):
                 pass
         self.tasks.discard(task)
