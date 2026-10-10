@@ -4,7 +4,7 @@
 
 - Interfaz de escritorio en español para cargar varios PDF.
 - Selección de páginas por rangos o mediante miniaturas visuales.
-- Reordenamiento de documentos con controles y arrastre con mouse o touchpad.
+- Reordenamiento de documentos con controles y arrastre con mouse o panel táctil.
 - Organizador visual de páginas individuales de varios PDF, con miniaturas y botones para moverlas.
 - Persistencia de la última carpeta usada para agregar documentos.
 - Nombres de archivo con mayor visibilidad y recuento de páginas.
