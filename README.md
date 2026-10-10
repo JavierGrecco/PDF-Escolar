@@ -29,7 +29,7 @@ Las compilaciones de prueba no están firmadas ni notarizadas por Apple, por lo 
 ## Cómo se usa
 
 1. **Agregá tus PDF.** Seleccioná uno o varios archivos con el botón o arrastralos a la ventana.
-2. **Elegí las páginas.** En cada documento, pulsá **Elegir visualmente** para ver miniaturas y marcar páginas. También se pueden escribir rangos, por ejemplo `1-8, 12, 20-25`.
+2. **Elegí las páginas.** En cada documento, pulsá **Elegir visualmente** para ver miniaturas y marcar páginas. Si solo necesitás unas pocas de un libro largo, usá **Desmarcar todas** y después marcá las páginas deseadas. También se pueden escribir rangos, por ejemplo `1-8, 12, 20-25`.
 3. **Ordená los archivos.** Usá las flechas para cambiar qué libro aparece primero en el documento final.
 4. **Creá el PDF.** Pulsá **Crear PDF final** y elegí dónde guardarlo. Al terminar, podés abrir la carpeta del resultado.
 
