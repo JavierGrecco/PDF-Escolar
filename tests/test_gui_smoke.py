@@ -103,6 +103,11 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
             references[2],
             references[1],
         ]
+        assert dialog.preview_title.text() == "Página 2 de 3 del PDF final"
+
+        dialog.move_selected_down()
+        assert dialog.ordered_pages() == references
+        assert dialog.preview_title.text() == "Página 3 de 3 del PDF final"
     finally:
         _dispose_widget(dialog, application)
 
