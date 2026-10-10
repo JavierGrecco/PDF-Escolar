@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+from collections import OrderedDict
 import tempfile
 from dataclasses import dataclass
 from pathlib import Path
@@ -10,6 +11,9 @@ from typing import Callable, Iterable
 import pikepdf
 
 from pdf_escolar.page_ranges import parse_page_ranges
+
+
+MAX_OPEN_SOURCE_PDFS = 8
 
 
 @dataclass(frozen=True)
@@ -116,17 +120,21 @@ def combine_pages_in_order(
     update_step = max(1, total_pages // 100)
     try:
         with pikepdf.Pdf.new() as output_pdf:
-            current_path: str | None = None
-            current_pdf = None
+            # Interleaving pages from different PDFs is common in the visual
+            # organizer. Keep a small LRU cache so A/B/A/B doesn't reopen each
+            # source for every page, while bounding open file handles and memory.
+            open_documents: OrderedDict[str, object] = OrderedDict()
             try:
                 for page in references:
-                    if page.path != current_path:
-                        if current_pdf is not None:
-                            current_pdf.close()
-                        current_pdf = pikepdf.open(page.path)
-                        current_path = page.path
+                    input_pdf = open_documents.pop(page.path, None)
+                    if input_pdf is None:
+                        if len(open_documents) >= MAX_OPEN_SOURCE_PDFS:
+                            _oldest_path, oldest_pdf = open_documents.popitem(last=False)
+                            oldest_pdf.close()
+                        input_pdf = pikepdf.open(page.path)
+                    open_documents[page.path] = input_pdf
 
-                    output_pdf.pages.append(current_pdf.pages[page.page_index])
+                    output_pdf.pages.append(input_pdf.pages[page.page_index])
                     exported += 1
                     if progress_callback and (
                         exported % update_step == 0 or exported == total_pages
@@ -137,8 +145,8 @@ def combine_pages_in_order(
                             f"Combinando páginas: {exported:,} de {total_pages:,}…",
                         )
             finally:
-                if current_pdf is not None:
-                    current_pdf.close()
+                for input_pdf in open_documents.values():
+                    input_pdf.close()
             output_pdf.save(str(temp_path))
 
         with pikepdf.open(str(temp_path)) as verification:
