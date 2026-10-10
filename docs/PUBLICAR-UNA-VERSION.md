@@ -22,6 +22,8 @@ El flujo compila y verifica los paquetes, los adjunta a una publicación `v...` 
 
 **Importante:** los paquetes generados al probar cambios en una rama o en un pull request no actualizan `descargas/` ni se publican en Releases. Hasta ejecutar manualmente uno de los dos pasos anteriores, los enlaces directos siguen apuntando a los últimos archivos guardados en esa carpeta.
 
+También se puede hacer un refresco puntual con un commit integrado en `main` cuyo título incluya literalmente `[sync-downloads]`. Eso compila los tres paquetes, actualiza `descargas/` y no crea una publicación en Releases. Usá esa marca solo cuando quieras actualizar los binarios: el commit resultante vuelve a guardar esos archivos grandes en el historial de Git.
+
 ## ¿Qué versión conviene publicar?
 
 - **Vista previa de prueba:** usá una versión con guion, por ejemplo `0.1.0-beta.1`. GitHub la marcará como *pre-release*. Es lo recomendado mientras la aplicación no tenga firma digital y pruebas manuales en equipos limpios.
