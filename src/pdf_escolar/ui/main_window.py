@@ -378,6 +378,7 @@ class MainWindow(QMainWindow):
         self.tasks: set[QRunnable] = set()
         self.exporting = False
         self.custom_page_order: list[PdfPageRef] | None = None
+        self.page_order_reviewed = False
         self.load_errors: list[tuple[str, str]] = []
         self.pending_order_notice: str | None = None
 
@@ -445,7 +446,11 @@ class MainWindow(QMainWindow):
         self.scroll.setObjectName("documentsScroll")
         self.scroll.setWidgetResizable(True)
         self.scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self.scroll.setStyleSheet("background-color:#F5F7FB; border:0;")
+        self.scroll.viewport().setStyleSheet("background-color:#F5F7FB;")
         host = QWidget()
+        host.setObjectName("documentsHost")
+        host.setStyleSheet("background:transparent;")
         self.cards_layout = QVBoxLayout(host)
         self.cards_layout.setContentsMargins(1, 1, 7, 1)
         self.cards_layout.setSpacing(11)
@@ -502,7 +507,8 @@ class MainWindow(QMainWindow):
             QPushButton#choosePagesButton { background:#E7EDFF; color:#2B4EBA; border:1px solid #CCD8FF; padding:10px 13px; }
             QPushButton#choosePagesButton:hover { background:#DCE5FF; border-color:#AEBFFF; }
             QPushButton#textButton { background:transparent; color:#3157C8; }
-            QScrollArea#documentsScroll { background:transparent; }
+            QScrollArea#documentsScroll { background:#F5F7FB; border:0; }
+            QWidget#documentsHost { background:transparent; }
             QProgressBar#progressBar { background:#E1E7F2; border:0; border-radius:3px; min-height:6px; max-height:6px; }
             QProgressBar#progressBar::chunk { background:#3157C8; border-radius:3px; }
         """)
@@ -734,6 +740,7 @@ class MainWindow(QMainWindow):
     def _invalidate_custom_page_order(
         self, reason: str, *, defer_until_loaded: bool = False
     ) -> bool:
+        self.page_order_reviewed = False
         if self.custom_page_order is None:
             return False
         self.custom_page_order = None
@@ -846,6 +853,7 @@ class MainWindow(QMainWindow):
         dialog.deleteLater()
         if ordered_pages is not None:
             self.custom_page_order = ordered_pages
+            self.page_order_reviewed = True
             self.status.setText(
                 "Orden personalizado aplicado. El PDF final respetará esta secuencia."
             )
@@ -855,26 +863,56 @@ class MainWindow(QMainWindow):
         if not self.documents or self.pending or self.exporting:
             return
 
-        selections: list[PdfSource] = []
-        page_order: list[PdfPageRef] | None = (
-            list(self.custom_page_order) if self.custom_page_order is not None else None
-        )
         try:
-            if page_order is not None:
-                total_selected_pages = len(page_order)
-                if total_selected_pages == 0:
-                    raise ValueError("Seleccioná al menos una página para crear el PDF.")
-            else:
-                selections = [card.selection() for _, card in self.documents.values()]
-                total_selected_pages = sum(
-                    len(parse_page_ranges(source.page_ranges, info.page_count))
-                    for (info, _card), source in zip(self.documents.values(), selections)
-                )
-                if total_selected_pages == 0:
-                    raise ValueError("Seleccioná al menos una página para crear el PDF.")
+            pages = (
+                list(self.custom_page_order)
+                if self.custom_page_order is not None
+                else self._current_selected_pages()
+            )
+            if not pages:
+                raise ValueError("Seleccioná al menos una página para crear el PDF.")
         except ValueError as exc:
             show_notice(
                 self, "Revisá las páginas", str(exc), icon=QMessageBox.Icon.Warning
+            )
+            return
+
+        # Every export passes through an interactive final review at least once.
+        # If the user just applied the order in the organizer, avoid an identical
+        # second dialog unless the selection or source order has changed.
+        if not self.page_order_reviewed:
+            dialog = PageOrderDialog(
+                pages, self, confirm_label="Continuar a guardar"
+            )
+            result = dialog.exec()
+            dialog.thumbnail_timer.stop()
+            for task in tuple(dialog.tasks):
+                task.cancel()
+            dialog.thumbnail_pool.waitForDone()
+            ordered_pages = (
+                dialog.ordered_pages()
+                if result == QDialog.DialogCode.Accepted
+                else None
+            )
+            dialog.deleteLater()
+            if ordered_pages is None:
+                return
+            self.custom_page_order = ordered_pages
+            self.page_order_reviewed = True
+            self._update_summary()
+
+        page_order = (
+            list(self.custom_page_order)
+            if self.custom_page_order is not None
+            else pages
+        )
+        total_selected_pages = len(page_order)
+        if total_selected_pages == 0:
+            show_notice(
+                self,
+                "Revisá las páginas",
+                "Seleccioná al menos una página para crear el PDF.",
+                icon=QMessageBox.Icon.Warning,
             )
             return
         default = Path.home() / "Documents" / "Material_escolar.pdf"
@@ -891,7 +929,7 @@ class MainWindow(QMainWindow):
         self.progress.show()
         self.progress.setRange(0, total_selected_pages)
         self.progress.setValue(0)
-        task = ExportTask(selections, output, page_order=page_order)
+        task = ExportTask([], output, page_order=page_order)
         task.signals.progress.connect(self._on_progress)
         task.signals.export_finished.connect(self._on_export_finished)
         task.signals.export_error.connect(self._on_export_error)

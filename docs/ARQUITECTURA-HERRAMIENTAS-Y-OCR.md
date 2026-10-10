@@ -88,11 +88,11 @@ La propuesta de interacción, modelo conceptual, arquitectura técnica y etapas 
 
 ## Experiencia de orden, previsualización y apariencia
 
-La experiencia visual debe evolucionar sin entorpecer el flujo sencillo actual. La siguiente mejora prioritaria es ampliar las miniaturas y añadir una vista de revisión interactiva antes de exportar. Desde esa revisión deben poder corregirse el orden y la selección de páginas, con la misma secuencia de datos que alimenta el exportador.
+La ventana de ordenamiento ya incluye tres tamaños de miniatura, una vista detallada asíncrona de la página seleccionada y una vista ampliada que identifica archivo y página de origen. Las miniaturas siguen permitiendo arrastre para cambiar el orden y botones Subir/Bajar como alternativa. Al pulsar «Crear PDF final» se abre la revisión interactiva antes del selector de destino, salvo que la misma selección ya haya sido revisada y aplicada en «Ordenar páginas…». El orden confirmado es el que se entrega al exportador.
 
-También se documentó una propuesta para el estado vacío y los temas: respetar Sistema como predeterminado, ofrecer Claro y Oscuro como elecciones explícitas y mantener una paleta semántica centralizada. En modo oscuro, la zona de trabajo puede ser oscura, pero la página PDF debe conservar la apariencia real de su contenido. Se deberán probar los diálogos y controles, y verificar contraste y foco, no solo la ventana principal.
+El área vacía de documentos tiene un color de fondo explícito para que no aparezca negra antes de cargar archivos. La solución completa de temas todavía está pendiente: respetar Sistema por defecto, ofrecer Claro y Oscuro como elecciones explícitas y mantener una paleta semántica centralizada. En cualquier tema, la página PDF debe conservar el aspecto real de su contenido.
 
-La especificación, etapas y criterios de aceptación están en [EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md](EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md). Es un plan, no una afirmación de que la interfaz o los temas ya existan.
+La especificación, etapas y criterios de aceptación están en [EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md](EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md). Esta primera implementación no incluye aún zoom libre dentro del panel, eliminación de páginas desde la vista previa, edición de regiones, recomposición de fragmentos ni editor de texto enriquecido.
 
 ## Criterios de aceptación de OCR
 
