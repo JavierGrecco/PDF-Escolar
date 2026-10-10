@@ -1,2 +1,7 @@
 """PDF Escolar: selección y combinación local de páginas PDF."""
-__version__ = "0.1.0"
+
+try:
+    from ._build_version import __version__ as __version__
+except ImportError:
+    # El archivo se genera durante la compilación de instaladores.
+    __version__ = "0.1.0"
