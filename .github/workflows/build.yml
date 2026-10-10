@@ -11,6 +11,14 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "src/**"
+      - "tools/**"
+      - "packaging/**"
+      - "assets/**"
+      - ".github/workflows/build.yml"
+      - "pyproject.toml"
+      - "requirements*.txt"
     tags:
       - "v*"
 
