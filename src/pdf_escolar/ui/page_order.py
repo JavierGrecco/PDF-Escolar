@@ -30,7 +30,7 @@ from pdf_escolar.pdf_preview import render_page_thumbnail
 class PageOrderSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)
-    finished = Signal(int)
+    finished = Signal(object)
 
 
 class PageOrderThumbnailTask(QRunnable):
@@ -78,7 +78,7 @@ class PageOrderThumbnailTask(QRunnable):
                     if document is not None:
                         document.close()
         finally:
-            self.signals.finished.emit(id(self))
+            self.signals.finished.emit(self)
 
 class PageOrderDialog(QDialog):
     """Arrange selected pages across source PDFs using drag-and-drop or buttons."""
@@ -274,12 +274,12 @@ class PageOrderDialog(QDialog):
         if item is not None:
             item.setToolTip(f"{item.toolTip()}\nVista previa no disponible: {detail}")
 
-    @Slot(int)
-    def _task_finished(self, task_id: int) -> None:
+    @Slot(object)
+    def _task_finished(self, finished_task: object) -> None:
         # This is a bound QObject slot, so Qt queues the callback to the GUI
         # thread. QRunnable auto-deletion stays disabled while the Python
         # wrapper is retained in self.tasks.
-        task = next((item for item in self.tasks if id(item) == task_id), None)
+        task = next((item for item in self.tasks if item is finished_task), None)
         if task is None:
             return
         for signal, slot in (
