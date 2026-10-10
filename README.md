@@ -4,86 +4,89 @@
 [![Compilación de instaladores](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green.svg)](LICENSE)
 
-**Una aplicación de escritorio gratuita y de código abierto para seleccionar, ordenar y combinar páginas de varios PDF en un documento nuevo.** Funciona en Windows y macOS, tiene la interfaz en español y está pensada para docentes, familias y cualquier persona que necesite organizar documentos sin usar herramientas complicadas.
+**Elegí páginas de varios PDF, ordenalas y guardalas en un documento nuevo.**
 
-Los archivos se procesan **localmente en tu computadora**: no hace falta subir documentos a una página web, crear una cuenta ni instalar Python.
+Soy Javier, programador, y estoy desarrollando PDF Escolar para hacer más simple una tarea concreta: armar el PDF que necesitás sin depender de herramientas complicadas. Es una aplicación gratuita, de código abierto y con la interfaz en español, para Windows y macOS.
 
-## Descargar y empezar
+Los documentos se procesan en tu computadora. No tenés que subirlos a una página web, crear una cuenta ni instalar Python.
 
-No descargues el código fuente para usar la aplicación. Elegí el archivo correspondiente a tu equipo:
+## Antes de descargar
+
+La versión oficial disponible es **0.1.0-beta.1**. Es una beta, no una versión estable. En otras palabras: ya se puede probar y usar, pero todavía puede tener errores.
+
+**Los instaladores no tienen firma digital y la aplicación para macOS no está notarizada.** Windows o macOS pueden mostrar advertencias al abrirlos. No desactives las protecciones del equipo para instalar un archivo que te genere dudas.
+
+Aclaración importante: ya incorporé mejoras en la vista previa y en la revisión del orden dentro del código de la rama principal, pero **todavía no están incluidas en la beta pública**. Más abajo explico cuáles son.
+
+## Descargar PDF Escolar
+
+No hace falta descargar el código fuente para usar la aplicación. Elegí el archivo para tu equipo:
 
 ### Windows
 
 - **[PDF-Escolar.exe — versión portable](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar.exe):** descargalo y hacé doble clic. No requiere instalación.
-- **[Instalador de Windows](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-Instalador-Windows.exe):** seguí los pasos que aparecen en pantalla.
+- **[Instalador para Windows](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-Instalador-Windows.exe):** abrilo y seguí los pasos en pantalla.
 
 ### macOS
 
 - **[Mac con procesador Intel](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Intel.dmg)**
 - **[Mac con chip Apple Silicon](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Apple-Silicon.dmg)** — M1, M2, M3, M4 y posteriores.
 
-En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaciones**.
+En Mac, abrí el archivo DMG y arrastrá PDF Escolar a la carpeta **Aplicaciones**.
 
-> **Importante sobre la compilación disponible:** la publicación descargable y los archivos directos siguen en **v0.1.0-beta.1**. El código de `main` ya contiene la nueva vista detallada y la revisión del orden antes de guardar, pero esas mejoras aún no están incluidas en la beta pública. Para probarlas en Windows, abrí la [compilación de validación #38092037060](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037060) y descargá el artefacto **`pdf-escolar-windows`** en la sección **Artifacts**. Es un paquete de prueba temporal, no una nueva publicación oficial. La próxima beta se anunciará en [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+También podés consultar los archivos y las notas de la versión en [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases). La versión de los enlaces directos se detalla en [la información de descarga](descargas/INFORMACION-DE-DESCARGA.txt), junto con el commit de origen y los SHA-256 de los archivos.
 
-## Qué podés hacer
+## Qué podés hacer con la beta pública
 
-- **Trabajar con varios archivos:** reunir páginas de distintos PDF en un mismo documento final.
-- **Elegir páginas:** seleccionar miniaturas visualmente o ingresar números y rangos, como `1-8, 12, 20-25`.
-- **Reordenar con libertad:** cambiar el orden de los documentos y mezclar páginas individuales mediante miniaturas de distintos tamaños, arrastre o botones, con vista previa detallada de la página seleccionada.
-- **Guardar un PDF nuevo:** elegir dónde guardarlo, sin alterar los documentos originales.
-- **Herramientas PDF:** rotar páginas, recortar márgenes y separar páginas en archivos independientes, con operaciones que conservan el contenido del PDF sin convertirlo en imagen.
-- **OCR local (beta):** convertir documentos escaneados en PDF buscables, para localizar, seleccionar y copiar texto reconocido. Requiere instalar un complemento opcional.
-- **Seguir trabajando con facilidad:** la aplicación recuerda la última carpeta usada para elegir archivos.
+- **Combinar PDF:** reunir páginas de distintos archivos en un solo documento.
+- **Elegir las páginas:** marcar miniaturas o indicar números y rangos, por ejemplo, 1-8, 12, 20-25.
+- **Ordenar el resultado:** cambiar el orden de los documentos y reorganizar páginas individuales de distintos PDF.
+- **Crear un archivo nuevo:** elegir dónde guardarlo. Los PDF originales no se modifican.
+- **Girar páginas:** rotar páginas completas que elijas.
+- **Recortar márgenes:** quitar márgenes uniformes indicando la medida.
+- **Separar un PDF:** generar un archivo independiente por cada página.
+- **Crear PDF buscables con OCR (beta):** reconocer texto en documentos escaneados para buscarlo, seleccionarlo y copiarlo. Es un complemento opcional.
 
-## Cómo usarlo
+Las herramientas de giro, recorte y separación trabajan sobre archivos nuevos. **El recorte de márgenes no borra de forma segura la información que queda fuera del área visible**; no lo uses como método para ocultar datos confidenciales.
 
-1. Abrí PDF Escolar y agregá uno o más archivos PDF.
-2. Entrá en **Elegir visualmente** para marcar las páginas o escribí los números y rangos que necesitás.
-3. Elegí **Ordenar páginas…** para ajustar el tamaño de las miniaturas y reorganizar las hojas; o pulsá directamente **Crear PDF final** para revisar la secuencia antes de guardarla.
-4. En la revisión, inspeccioná la página seleccionada y corregí el orden desde esa misma vista.
-5. Confirmá y elegí dónde guardar el documento nuevo.
+## Cómo empezar
 
-Para otras tareas, abrí **Herramientas PDF** desde la ventana principal. Podés girar páginas, recortar márgenes en milímetros o generar un PDF por página. Estas operaciones crean archivos nuevos y no reemplazan los originales.
+1. Abrí PDF Escolar y agregá uno o varios archivos PDF. También podés arrastrarlos a la ventana.
+2. Elegí las páginas visualmente o escribí los números y rangos que necesitás.
+3. Entrá en **Ordenar páginas…** para acomodar la secuencia antes de exportar.
+4. Pulsá **Crear PDF final** y elegí dónde guardar el documento nuevo.
 
-## Seguridad y estado de los instaladores
+Para girar, recortar o separar páginas, abrí **Herramientas PDF** desde la ventana principal.
 
-Los PDF se procesan en el equipo y los originales no se modifican. La integración continua ejecuta pruebas automatizadas y comprueba los paquetes de Windows y macOS; también se recomienda completar las [pruebas manuales](docs/PRUEBAS-MANUALES.md) en computadoras de uso habitual.
+## OCR: qué necesitás saber
 
-**Importante:** los instaladores actuales no están firmados digitalmente. Windows o macOS pueden mostrar un aviso de seguridad al abrirlos. No desactives el antivirus ni las protecciones del sistema para abrir un archivo que te genere dudas.
+El reconocimiento de texto es opcional y está en beta.
 
-## Ayuda, errores y sugerencias
+- La primera vez necesitás conexión a Internet para descargar el complemento desde GitHub. Después, el reconocimiento funciona sin conexión.
+- El documento se procesa en tu computadora; no se sube a un servidor para hacer el reconocimiento.
+- Está disponible para **Windows x64** y **Mac con Apple Silicon (M1 o posterior) con macOS 15 o posterior**.
+- **No está disponible en Mac Intel.** Las demás herramientas de PDF siguen disponibles en esos equipos.
+- El resultado puede necesitar revisión, sobre todo si el escaneo está inclinado, borroso o tiene una calidad baja. Probalo primero con una copia de un documento.
 
-- ¿Encontraste un problema o querés proponer una mejora? [Abrí un issue](https://github.com/JavierGrecco/PDF-Escolar/issues/new).
-- ¿Querés comprobar el funcionamiento antes de distribuir una versión? Consultá la [lista de pruebas manuales](docs/PRUEBAS-MANUALES.md).
-- ¿Buscás el código fuente? [Explorá el repositorio](https://github.com/JavierGrecco/PDF-Escolar).
+El complemento y sus avisos de licencia están en la [publicación del motor OCR](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1).
 
-## OCR local — versión beta
+## Qué estoy mejorando
 
-La beta incorpora **Crear PDF buscable (OCR)** en «Herramientas PDF». El complemento opcional permite reconocer texto de documentos escaneados, conservando la imagen de la página con una capa de texto que se puede buscar, seleccionar y copiar.
+Ya incorporé en el código principal:
 
-- En la primera instalación se necesita conexión a Internet para descargar el complemento desde GitHub. Después, el reconocimiento funciona sin conexión.
-- Los documentos se procesan en la computadora; no se suben a ningún servidor.
-- Disponible para **Windows x64** y **Mac con Apple Silicon (M1 o posterior) con macOS 15 o posterior**.
-- **OCR no está disponible en Mac Intel**. La aplicación principal y sus herramientas de rotación, recorte y separación siguen funcionando en esos equipos.
-- Esta es una versión beta: recomendamos comprobar el resultado con documentos propios no confidenciales antes de confiar en OCR para trabajos importantes. Los instaladores todavía no están firmados ni notarizados.
+- Miniaturas pequeñas, medianas y grandes.
+- Una vista detallada de la página seleccionada, con su posición final, el archivo de origen y el número de página original.
+- Una ventana para ampliar la página y examinarla con más detalle.
+- Una revisión interactiva del orden final antes de elegir dónde guardar el PDF.
 
-El complemento y sus avisos de licencia se distribuyen en una publicación separada: [Descargas OCR en Releases](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1).
+Estas mejoras pasaron las pruebas automatizadas y las compilaciones de validación de Windows y macOS, pero **todavía no forman parte de la beta descargable**. Antes de anunciarlas como una nueva versión, falta completar la comprobación visual con documentos reales y diferentes escalados de pantalla.
 
-## Hacia dónde va el proyecto
+Si querés probar los cambios de interfaz antes de la próxima beta, podés descargar el artefacto temporal **pdf-escolar-windows** en la sección **Artifacts** de la [compilación de validación](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037060). Es solo para Windows, no es una publicación oficial y caduca el 8 de enero de 2027.
 
-La experiencia de ordenamiento ya incluye **miniaturas pequeñas, medianas y grandes**, una vista detallada de la página seleccionada con su archivo y número de origen, y una ventana para ampliarla. Al pulsar **Crear PDF final**, la aplicación muestra la secuencia para revisarla y corregir el orden antes de elegir dónde guardar el documento. El área vacía de documentos también tiene un fondo explícito y coherente con la ventana principal.
+Más adelante quiero mejorar los temas claro y oscuro y desarrollar la edición visual de regiones y fragmentos de páginas. **Esas funciones todavía no están disponibles** en la aplicación.
 
-También estamos definiendo una experiencia visual consistente para Windows y macOS: respetar el tema del sistema por defecto, ofrecer alternativas clara y oscura, mejorar la legibilidad y conservar el aspecto original de las páginas PDF en pantalla. La elección de temas y el editor visual descritos en la documentación son propuestas de evolución; no forman parte de la beta actual.
+## Ayuda y código fuente
 
-Las próximas etapas son el sistema de temas Sistema/Claro/Oscuro y, después, la rotación y el recorte visual en la previsualización. A más largo plazo, el modo de creación permitirá seleccionar regiones, excluir zonas, recomponer fragmentos de varios documentos e insertar consignas con texto enriquecido. Esas funciones avanzadas todavía no están implementadas.
+Si encontrás un error o algo que podría ser más sencillo, podés [abrir un issue](https://github.com/JavierGrecco/PDF-Escolar/issues/new). Me sirve conocer qué estabas intentando hacer y qué ocurrió.
 
-- [Hoja de ruta de experiencia, previsualización y temas](docs/EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md)
-- [Editor visual y composición](docs/EDITOR-VISUAL-Y-COMPOSICION.md)
-- [Arquitectura de herramientas PDF y OCR](docs/ARQUITECTURA-HERRAMIENTAS-Y-OCR.md)
-
-## Para desarrolladores
-
-PDF Escolar está escrito en Python y usa Qt para la interfaz. Las instrucciones del entorno de desarrollo y de publicación están en la carpeta [docs](docs/).
-
-El proyecto se distribuye bajo la [licencia MIT](LICENSE). El código fuente es público y las contribuciones que mejoren de forma concreta la utilidad, seguridad, compatibilidad o facilidad de uso son bienvenidas.
+PDF Escolar está escrito en Python y usa Qt para la interfaz. Las notas para preparar el entorno y publicar una versión están en [docs](docs/). El código se distribuye bajo la [licencia MIT](LICENSE).
