@@ -329,11 +329,5 @@ class PagePickerDialog(QDialog):
             return
         super().accept()
 
-    def done(self, result: int) -> None:
-        self.thumbnail_timer.stop()
-        # Finish the current 30-page batch before the owning card releases this dialog.
-        self.pool.waitForDone()
-        super().done(result)
-
     def selected_ranges(self) -> str:
         return format_page_ranges(sorted(index + 1 for index in self.selected_pages))
