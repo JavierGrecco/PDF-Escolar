@@ -76,7 +76,7 @@ RapidOCR y sus modelos actuales tienen licencias Apache-2.0 y ofrecen rutas para
 - Se está construyendo el complemento OCR como aplicación auxiliar independiente con OCRmyPDF 17.13.0 y Tesseract. No forma parte del entorno Python principal de PDF Escolar.
 - La interfaz tiene selector de idioma, instalación por usuario, validación SHA-256 del paquete, extracción segura y ejecución aislada. El PDF de entrada nunca se envía a GitHub ni a otro servicio.
 - El flujo de compilación de OCR genera ZIP por plataforma y ejecuta una prueba de extremo a extremo: crea un PDF escaneado sin texto digital, ejecuta OCR en español y verifica que el resultado permite extraer el texto esperado.
-- Las descargas de OCR se mantienen fuera de la carpeta descargas y del historial habitual de la aplicación; el complemento se publica como una release separada con etiquetas ocr-engine-v.
+- Las descargas de OCR se mantienen fuera de la carpeta descargas y del historial habitual de la aplicación; el complemento se publica como una release separada. La primera beta se publica solo cuando el commit de integración lleva el marcador de publicación y los builds pasan; las versiones posteriores se publican con un número explícito desde Actions.
 - La publicación para usuarios debe esperar a que los tres paquetes superen el flujo y se validen manualmente en Windows x64 y Apple Silicon. El complemento para Mac exige Apple Silicon y macOS 14 o posterior. En Mac Intel se mantienen las funciones nativas de PDF, pero no el OCR.
 - Si una versión del complemento no puede verificarse mediante el digest SHA-256 publicado por GitHub, la aplicación rechaza la instalación.
 
