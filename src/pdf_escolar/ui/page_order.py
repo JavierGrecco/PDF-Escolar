@@ -229,6 +229,9 @@ class PageOrderDialog(QDialog):
             return
         self.loading_bar.show()
         task = PageOrderThumbnailTask(requests)
+        # QRunnable auto-deletion is unsafe while Python still retains the
+        # wrapper in self.tasks. Let the completed callback release it instead.
+        task.setAutoDelete(False)
         task.signals.ready.connect(self._thumbnail_ready)
         task.signals.failed.connect(self._thumbnail_failed)
         task.signals.finished.connect(lambda *args, current=task: self._task_finished(current))
@@ -253,6 +256,20 @@ class PageOrderDialog(QDialog):
             item.setToolTip(f"{item.toolTip()}\nVista previa no disponible: {detail}")
 
     def _task_finished(self, task: QRunnable) -> None:
+        # Disconnect the bound slots before releasing the task so the task's
+        # signal object cannot keep the dialog alive or emit into a closed UI.
+        for signal, slot in (
+            (task.signals.ready, self._thumbnail_ready),
+            (task.signals.failed, self._thumbnail_failed),
+            (task.signals.finished, None),
+        ):
+            try:
+                if slot is None:
+                    signal.disconnect()
+                else:
+                    signal.disconnect(slot)
+            except (RuntimeError, TypeError):
+                pass
         self.tasks.discard(task)
         if not self.tasks:
             self.loading_bar.hide()
