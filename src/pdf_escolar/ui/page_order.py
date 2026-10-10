@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
 
 from pdf_escolar.pdf_engine import PdfPageRef
 from pdf_escolar.pdf_preview import render_page_thumbnail
+from pdf_escolar.ui.messages import safe_exception_detail
 
 
 class PageOrderSignals(QObject):
@@ -69,18 +70,18 @@ class PageOrderThumbnailTask(QRunnable):
                                 self.signals.ready.emit(item_id, image_bytes)
                         except Exception as exc:
                             if not self._cancelled.is_set():
-                                self.signals.failed.emit(item_id, str(exc))
+                                self.signals.failed.emit(item_id, safe_exception_detail(exc))
                 except Exception as exc:
                     if not self._cancelled.is_set():
                         for item_id, _reference in entries:
-                            self.signals.failed.emit(item_id, str(exc))
+                            self.signals.failed.emit(item_id, safe_exception_detail(exc))
                 finally:
                     if document is not None:
                         document.close()
         except Exception as exc:
             if not self._cancelled.is_set():
                 for item_id, _reference in self.requests:
-                    self.signals.failed.emit(item_id, str(exc))
+                    self.signals.failed.emit(item_id, safe_exception_detail(exc))
         finally:
             self.signals.finished.emit(str(id(self)))
 

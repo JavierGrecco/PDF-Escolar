@@ -14,4 +14,4 @@ El build para Intel fija PySide6/Qt 6.4.3 para apuntar a macOS Catalina 10.15. E
 
 ## Firma y notarización
 
-Los artefactos de CI no están firmados ni notarizados por Apple. macOS puede mostrar una advertencia de seguridad en el primer inicio. Para una distribución pública fluida se deben configurar una identidad Apple Developer ID, firma de código y notarización. No se deben presentar estos artefactos sin firma como una versión final de producción.
+Los artefactos generados por CI no están firmados ni notarizados por Apple. macOS puede mostrar una advertencia de seguridad en el primer inicio. Para una distribución pública fluida se deben configurar una identidad Apple Developer ID, firma de código y notarización. No se deben presentar estos artefactos sin firma como una versión final de producción.

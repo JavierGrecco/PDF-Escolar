@@ -20,6 +20,8 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Incluso en estado compacto, se pueden arrastrar otros PDF al área de carga.
 - [ ] Al quitar todos los documentos, el área de carga vuelve a mostrar las instrucciones iniciales.
 - [ ] Agregar varios PDF dañados o protegidos muestra un único resumen, sin una sucesión de ventanas emergentes.
+- [ ] Los errores muestran una explicación y un próximo paso en español; nunca incluyen trazas técnicas, nombres de excepciones ni detalles internos de las bibliotecas.
+- [ ] Probar un PDF protegido, uno dañado, uno inexistente y una carpeta de destino sin permisos produce mensajes entendibles y no bloquea la aplicación.
 - [ ] Si algunos archivos fallan, los PDF que sí se pudieron abrir siguen cargados.
 - [ ] Los detalles del error se pueden consultar sin obligar al usuario a leerlos para entender qué pasó.
 - [ ] Cada tarjeta muestra el nombre completo y legible del PDF en una fila propia, además de la cantidad de páginas y el tamaño.

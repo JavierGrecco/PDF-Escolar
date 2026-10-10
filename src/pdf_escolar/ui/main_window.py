@@ -17,7 +17,9 @@ from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import (
     PdfPageRef, PdfSource, combine_pages_in_order, combine_selected_pages, inspect_pdf
 )
-from pdf_escolar.ui.messages import friendly_export_error, friendly_pdf_load_error, show_notice
+from pdf_escolar.ui.messages import (
+    friendly_export_error, friendly_pdf_load_error, safe_exception_detail, show_notice
+)
 from pdf_escolar.ui.page_order import PageOrderDialog
 from pdf_escolar.ui.page_picker import PagePickerDialog
 
@@ -62,7 +64,7 @@ class InspectTask(QRunnable):
                 try:
                     self.signals.loaded.emit(path, inspect_pdf(path), os.path.getsize(path))
                 except Exception as exc:
-                    self.signals.load_error.emit(path, str(exc))
+                    self.signals.load_error.emit(path, safe_exception_detail(exc))
                 self.signals.progress.emit(
                     index, len(self.paths), f"Revisando {Path(path).name}…"
                 )
@@ -97,7 +99,7 @@ class ExportTask(QRunnable):
                 count = combine_pages_in_order(self.page_order, self.output_path, report)
             self.signals.export_finished.emit(count, self.output_path)
         except Exception as exc:
-            self.signals.export_error.emit(str(exc))
+            self.signals.export_error.emit(safe_exception_detail(exc))
         finally:
             self.signals.task_finished.emit(str(id(self)))
 
