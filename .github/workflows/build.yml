@@ -16,6 +16,11 @@ on:
         description: "Versión para publicar (ej. 0.1.0-beta.1). Dejá vacío para generar solo paquetes de prueba."
         required: false
         type: string
+      sync_downloads:
+        description: "Actualizar también los binarios de descargas/ (solo para un refresco explícito; aumenta el historial de Git)."
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -95,6 +100,51 @@ jobs:
         shell: pwsh
         run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "packaging\windows\PDF-Escolar.iss"'
 
+      - name: Probar instalación, apertura y desinstalación
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $installer = Get-ChildItem dist -Filter "PDF-Escolar-Instalador-*-Windows.exe" -File | Select-Object -First 1
+          $portable = Get-Item "dist/PDF-Escolar.exe"
+          if ($portable.Length -lt 1MB) {
+            throw "El ejecutable portable de Windows está incompleto."
+          }
+          if ($null -eq $installer -or $installer.Length -lt 1MB) {
+            throw "No se generó un instalador de Windows válido."
+          }
+
+          $installDir = Join-Path $env:RUNNER_TEMP "PDF Escolar Smoke Test"
+          & $installer.FullName /VERYSILENT /SUPPRESSMSGBOXES /NORESTART /SP- "/DIR=$installDir"
+          if ($LASTEXITCODE -ne 0) {
+            throw "El instalador de Windows terminó con el código $LASTEXITCODE."
+          }
+
+          $installedExe = Join-Path $installDir "PDF-Escolar.exe"
+          if (-not (Test-Path $installedExe -PathType Leaf)) {
+            throw "La instalación terminó, pero no se encontró PDF-Escolar.exe."
+          }
+
+          $appProcess = Start-Process -FilePath $installedExe -PassThru
+          Start-Sleep -Seconds 6
+          $appProcess.Refresh()
+          if ($appProcess.HasExited) {
+            throw "PDF Escolar se cerró inesperadamente al iniciarse desde la instalación."
+          }
+          Stop-Process -Id $appProcess.Id -Force
+          Start-Sleep -Seconds 1
+
+          $uninstaller = Join-Path $installDir "unins000.exe"
+          if (-not (Test-Path $uninstaller -PathType Leaf)) {
+            throw "La instalación no creó el desinstalador."
+          }
+          & $uninstaller /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+          if ($LASTEXITCODE -ne 0) {
+            throw "El desinstalador terminó con el código $LASTEXITCODE."
+          }
+          if (Test-Path $installedExe) {
+            throw "La desinstalación no quitó el ejecutable instalado."
+          }
+          Write-Host "Instalación, apertura y desinstalación verificadas."
       - name: Upload Windows downloads
         uses: actions/upload-artifact@v7
         with:
@@ -201,6 +251,48 @@ jobs:
           hdiutil create -volname "PDF Escolar" -srcfolder dist/dmg-root -ov -format UDZO "dist/PDF-Escolar-Instalador-$APP_VERSION-macOS-${{ matrix.arch_slug }}.dmg"
           ditto -c -k --sequesterRsrc --keepParent dist/PDF-Escolar.app "dist/PDF-Escolar-macOS-$APP_VERSION-${{ matrix.arch_slug }}.zip"
 
+      - name: Validar el DMG y el contenido de la aplicación
+        shell: bash
+        run: |
+          set -euo pipefail
+          dmg="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-macOS-${{ matrix.arch_slug }}.dmg' -print -quit)"
+          zip_file="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*${{ matrix.arch_slug }}.zip' -print -quit)"
+          test -n "$dmg"
+          test -n "$zip_file"
+          hdiutil verify "$dmg"
+          unzip -tq "$zip_file"
+
+          mountpoint="$(mktemp -d "${RUNNER_TEMP}/pdf-escolar-dmg.XXXXXX")"
+          hdiutil attach -readonly -nobrowse -mountpoint "$mountpoint" "$dmg" >/dev/null
+          cleanup() {
+            hdiutil detach "$mountpoint" -quiet >/dev/null 2>&1 || true
+            rmdir "$mountpoint" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          app="$mountpoint/PDF-Escolar.app"
+          plist="$app/Contents/Info.plist"
+          test -d "$app"
+          test -L "$mountpoint/Applications"
+          plutil -lint "$plist"
+          executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")"
+          executable="$app/Contents/MacOS/$executable_name"
+          test -x "$executable"
+          architectures="$(lipo -archs "$executable")"
+          echo "Arquitecturas del ejecutable: $architectures"
+          case "${{ matrix.arch_slug }}" in
+            Intel)
+              echo "$architectures" | grep -qw x86_64
+              ;;
+            Apple-Silicon)
+              echo "$architectures" | grep -qw arm64
+              ;;
+            *)
+              echo "Arquitectura no reconocida: ${{ matrix.arch_slug }}" >&2
+              exit 1
+              ;;
+          esac
+          echo "El DMG se puede montar y contiene una aplicación macOS válida."
       - name: Upload macOS downloads
         uses: actions/upload-artifact@v7
         with:
@@ -280,10 +372,11 @@ jobs:
   sync-downloads:
     name: Guardar instaladores en el repositorio
     if: >-
-      github.ref == 'refs/heads/main' &&
+      startsWith(github.ref, 'refs/tags/v') ||
       (
-        github.event_name == 'workflow_dispatch' ||
-        github.event_name == 'push'
+        github.event_name == 'workflow_dispatch' &&
+        github.ref == 'refs/heads/main' &&
+        (inputs.sync_downloads == true || inputs.release_version != '')
       )
     needs: [windows, macos]
     runs-on: ubuntu-latest
@@ -323,7 +416,9 @@ jobs:
           cp "$intel_dmg" descargas/PDF-Escolar-macOS-Intel.dmg
           cp "$apple_dmg" descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
 
-          if [[ -n "${RELEASE_VERSION:-}" ]]; then
+          if [[ "${GITHUB_REF_TYPE:-}" == "tag" && "${GITHUB_REF_NAME:-}" == v* ]]; then
+            download_version="${GITHUB_REF_NAME#v}"
+          elif [[ -n "${RELEASE_VERSION:-}" ]]; then
             download_version="$RELEASE_VERSION"
           else
             download_version="0.1.0-dev.${GITHUB_RUN_NUMBER}"
