@@ -1,43 +1,59 @@
 # PDF Escolar
 
-Elegí páginas de uno o varios PDF y guardalas en un solo documento. La aplicación está en español y está pensada para usarse sin conocimientos técnicos.
+[![Pruebas automatizadas](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/tests.yml)
+[![Compilación de instaladores](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml)
+[![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green.svg)](LICENSE)
 
-## Descargar
+**Una aplicación de escritorio gratuita y de código abierto para seleccionar, ordenar y combinar páginas de varios PDF en un documento nuevo.** Funciona en Windows y macOS, tiene la interfaz en español y está pensada para docentes, familias y cualquier persona que necesite organizar documentos sin usar herramientas complicadas.
 
-Los instaladores están en la carpeta **[descargas](descargas/)** de este mismo repositorio. No hace falta descargar el código fuente ni instalar Python.
+Los archivos se procesan **localmente en tu computadora**: no hace falta subir documentos a una página web, crear una cuenta ni instalar Python.
+
+## Descargar y empezar
+
+No descargues el código fuente para usar la aplicación. Elegí el archivo correspondiente a tu equipo:
 
 ### Windows
 
-- **[Descargar PDF-Escolar.exe](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar.exe)** — recomendado. Descargalo y hacé doble clic. No necesita instalación.
-- **[Descargar el instalador de Windows](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-Instalador-Windows.exe)** — seguí los pasos del instalador para dejarlo en tu computadora.
+- **[PDF-Escolar.exe — versión portable](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar.exe):** descargalo y hacé doble clic. No requiere instalación.
+- **[Instalador de Windows](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-Instalador-Windows.exe):** seguí los pasos que aparecen en pantalla.
 
-### Mac
+### macOS
 
 - **[Mac con procesador Intel](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Intel.dmg)**
-- **[Mac con chip Apple Silicon (M1, M2, M3, M4 o posterior)](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Apple-Silicon.dmg)**
+- **[Mac con chip Apple Silicon](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Apple-Silicon.dmg)** — M1, M2, M3, M4 y posteriores.
 
-En Mac, abrí el archivo descargado y arrastrá **PDF Escolar** a la carpeta **Aplicaciones**.
+En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaciones**.
+
+## Qué podés hacer
+
+- **Trabajar con varios archivos:** reunir páginas de distintos PDF en un mismo documento final.
+- **Elegir páginas:** seleccionar miniaturas visualmente o ingresar números y rangos, como `1-8, 12, 20-25`.
+- **Reordenar con libertad:** cambiar el orden de los documentos y mezclar páginas individuales mediante miniaturas, arrastre o botones.
+- **Guardar un PDF nuevo:** elegir dónde guardarlo, sin alterar los documentos originales.
+- **Seguir trabajando con facilidad:** la aplicación recuerda la última carpeta usada para elegir archivos.
 
 ## Cómo usarlo
 
-1. Abrí PDF Escolar y agregá los PDF que quieras usar.
-2. Entrá en **Elegir visualmente** para marcar las páginas. También podés escribir números o rangos, por ejemplo: `1-8, 12, 20-25`.
-3. Ordená los documentos con las flechas o arrastrá el control ↕ con el mouse o el panel táctil.
-4. Pulsá **Ordenar páginas…** para ver las miniaturas de las páginas elegidas de todos los PDF y mezclarlas en el orden que necesites. Podés arrastrarlas o usar **Subir** y **Bajar**.
-5. Pulsá **Crear PDF final** y elegí dónde guardar el archivo nuevo. El resultado respeta el orden visual que confirmaste.
+1. Abrí PDF Escolar y agregá uno o más archivos PDF.
+2. Entrá en **Elegir visualmente** para marcar las páginas o escribí los números y rangos que necesitás.
+3. Ordená los documentos y, si querés mezclar páginas de distintas fuentes, elegí **Ordenar páginas…**.
+4. Revisá el orden final y pulsá **Crear PDF final**.
+5. Elegí dónde guardar el documento nuevo.
 
-La última carpeta desde la que agregaste PDF se recuerda para la próxima vez que uses el selector de archivos.
+## Seguridad y estado de los instaladores
 
-Tus documentos se procesan en tu computadora. Los PDF originales no se modifican.
+Los PDF se procesan en el equipo y los originales no se modifican. La integración continua ejecuta pruebas automatizadas y comprueba los paquetes de Windows y macOS; también se recomienda completar las [pruebas manuales](docs/PRUEBAS-MANUALES.md) en computadoras de uso habitual.
 
-## Un aviso
+**Importante:** los instaladores actuales no están firmados digitalmente. Windows o macOS pueden mostrar un aviso de seguridad al abrirlos. No desactives el antivirus ni las protecciones del sistema para abrir un archivo que te genere dudas.
 
-Estas versiones todavía no están firmadas digitalmente. Windows o Mac pueden mostrar una advertencia de seguridad al abrirlas. Además, aunque los paquetes se compilan automáticamente, todavía falta validarlos manualmente en computadoras de uso habitual antes de considerarlos una versión de producción.
+## Ayuda, errores y sugerencias
 
-## Código fuente
+- ¿Encontraste un problema o querés proponer una mejora? [Abrí un issue](https://github.com/JavierGrecco/PDF-Escolar/issues/new).
+- ¿Querés comprobar el funcionamiento antes de distribuir una versión? Consultá la [lista de pruebas manuales](docs/PRUEBAS-MANUALES.md).
+- ¿Buscás el código fuente? [Explorá el repositorio](https://github.com/JavierGrecco/PDF-Escolar).
 
-Si querés revisar o modificar el proyecto, podés [ver los archivos del repositorio](https://github.com/JavierGrecco/PDF-Escolar). Para usar la aplicación, seguí solamente los pasos de descarga de arriba.
+## Para desarrolladores
 
-## Validar una versión
+PDF Escolar está escrito en Python y usa Qt para la interfaz. Las instrucciones del entorno de desarrollo y de publicación están en la carpeta [docs](docs/).
 
-Antes de considerar una versión lista para distribuir, conviene completar la [lista de pruebas manuales](docs/PRUEBAS-MANUALES.md). Las pruebas automáticas ayudan a detectar errores, pero no reemplazan probar los instaladores en computadoras reales.
+El proyecto se distribuye bajo la [licencia MIT](LICENSE). El código fuente es público y las contribuciones que mejoren de forma concreta la utilidad, seguridad, compatibilidad o facilidad de uso son bienvenidas.
