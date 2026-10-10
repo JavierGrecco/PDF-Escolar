@@ -54,7 +54,7 @@ jobs:
         run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" "packaging\windows\PDF-Escolar.iss"'
 
       - name: Upload Windows downloads
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pdf-escolar-windows
           path: |
@@ -145,7 +145,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent dist/PDF-Escolar.app "dist/PDF-Escolar-macOS-$APP_VERSION-${{ matrix.arch_slug }}.zip"
 
       - name: Upload macOS downloads
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: pdf-escolar-macos-${{ matrix.arch_slug }}
           path: |
