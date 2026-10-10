@@ -276,13 +276,14 @@ class PageOrderDialog(QDialog):
         self._queue_visible_thumbnails()
 
     def restore_initial_order(self) -> None:
-        items = [self.list_widget.takeItem(0) for _ in range(self.list_widget.count())]
-        items.sort(key=lambda item: int(item.data(Qt.ItemDataRole.UserRole)))
+        current_item = self.list_widget.currentItem()
         current_id = (
-            int(self.list_widget.currentItem().data(Qt.ItemDataRole.UserRole))
-            if self.list_widget.currentItem() is not None
+            int(current_item.data(Qt.ItemDataRole.UserRole))
+            if current_item is not None
             else None
         )
+        items = [self.list_widget.takeItem(0) for _ in range(self.list_widget.count())]
+        items.sort(key=lambda item: int(item.data(Qt.ItemDataRole.UserRole)))
         for item in items:
             self.list_widget.addItem(item)
         if current_id is not None:
