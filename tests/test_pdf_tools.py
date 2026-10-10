@@ -37,9 +37,9 @@ def test_rotate_selected_pages_keeps_unselected_pages_and_original(tmp_path):
 
     with pikepdf.open(output) as pdf:
         assert len(pdf.pages) == 3
-        assert [page.rotation for page in pdf.pages] == [90, 0, 90]
+        assert [int(page.obj.get("/Rotate", 0)) for page in pdf.pages] == [90, 0, 90]
     with pikepdf.open(source) as pdf:
-        assert [page.rotation for page in pdf.pages] == [0, 0, 0]
+        assert [int(page.obj.get("/Rotate", 0)) for page in pdf.pages] == [0, 0, 0]
 
 
 @pytest.mark.parametrize("degrees", [0, 45, -45, 360, True])
