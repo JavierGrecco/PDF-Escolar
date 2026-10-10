@@ -202,6 +202,8 @@ class SourceDocument:
         if not isinstance(self.source_id, str) or not self.source_id.strip():
             raise DocumentModelError("Cada PDF fuente necesita un identificador.")
         if self.sha256 is not None:
+            if not isinstance(self.sha256, str):
+                raise DocumentModelError("La huella SHA-256 de una fuente no es válida.")
             digest = self.sha256.lower()
             if len(digest) != 64 or any(ch not in "0123456789abcdef" for ch in digest):
                 raise DocumentModelError("La huella SHA-256 de una fuente no es válida.")
@@ -419,7 +421,11 @@ class DocumentProject:
     def __post_init__(self) -> None:
         if not isinstance(self.title, str) or not self.title.strip():
             raise DocumentModelError("El proyecto necesita un título.")
-        if self.schema_version != PROJECT_SCHEMA_VERSION:
+        if (
+            not isinstance(self.schema_version, int)
+            or isinstance(self.schema_version, bool)
+            or self.schema_version != PROJECT_SCHEMA_VERSION
+        ):
             raise DocumentModelError(
                 f"La versión de proyecto {self.schema_version!r} no es compatible."
             )
