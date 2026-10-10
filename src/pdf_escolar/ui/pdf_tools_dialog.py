@@ -108,7 +108,8 @@ class PdfToolsDialog(QDialog):
         title.setObjectName("dialogTitle")
         subtitle = QLabel(
             "Girás, recortás márgenes o separás páginas. Cada operación crea archivos nuevos; "
-            "los documentos originales no se modifican."
+            "los documentos originales no se modifican. El recorte oculta los bordes, pero no "
+            "borra definitivamente los datos que quedan fuera del área visible."
         )
         subtitle.setObjectName("mutedText")
         subtitle.setWordWrap(True)
