@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pdf-escolar"
+version = "0.1.0"
+description = "Aplicación local para seleccionar y combinar páginas de varios PDF"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+license = { file = "LICENSE" }
+authors = [{ name = "Javier Grecco" }]
+dependencies = [
+  "PySide6>=6.8,<7",
+  "pikepdf>=9.0,<11",
+  "pypdfium2>=5.10,<6",
+  "Pillow>=10,<13",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0,<9", "pyinstaller>=6.10,<7", "ruff>=0.11,<1"]
+
+[project.scripts]
+pdf-escolar = "pdf_escolar.app:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
