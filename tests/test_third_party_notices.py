@@ -34,8 +34,8 @@ def test_qt_license_files_with_licenses_suffix_are_detected():
 def test_rtf_license_notice_is_readable():
     generator = _load_manifest_generator()
     rtf = (
-        r"{\rtf1\ansi Qt WebEngine License\par"
-        r"Copyright Example Corp.\par"
+        r"{\rtf1\ansi Qt WebEngine License\par "
+        r"Copyright Example Corp.\par "
         r"Permission is hereby granted.}"
     )
 
