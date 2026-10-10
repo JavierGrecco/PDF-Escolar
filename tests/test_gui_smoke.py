@@ -12,8 +12,11 @@ try:
     from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView
     from pdf_escolar.pdf_engine import PdfPageRef
-    from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
+    from pdf_escolar.ui.main_window import (
+        DocumentCard, DocumentInfo, ExportTask, InspectTask, MainWindow
+    )
     from pdf_escolar.ui.page_order import PageOrderDialog
+    from pdf_escolar.ui.page_picker import PagePickerDialog
 except ImportError as exc:
     # Some Linux runners lack system libraries needed by Qt. Skip only those
     # known runtime-library errors; application import regressions must fail CI.
@@ -135,3 +138,37 @@ def test_hidden_page_order_dialog_does_not_start_thumbnail_tasks(application):
         assert not dialog.tasks
     finally:
         dialog.close()
+
+def test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible(application):
+    dialog = PagePickerDialog("/tmp/not-opened.pdf", 1, "1")
+    try:
+        application.processEvents()
+        assert not dialog.tasks
+        assert dialog.pool.activeThreadCount() == 0
+    finally:
+        dialog.close()
+        dialog.pool.waitForDone()
+
+
+def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
+    inspect_task = InspectTask([])
+    export_task = ExportTask([], "/tmp/not-created.pdf")
+
+    assert not inspect_task.autoDelete()
+    assert not export_task.autoDelete()
+
+
+def test_page_picker_keeps_the_current_page_group_responsive(application):
+    dialog = PagePickerDialog("/tmp/not-opened.pdf", 65, "1, 35")
+    try:
+        assert dialog.next_button.isEnabled()
+        dialog.next_page()
+        assert dialog.page_start == 30
+        assert dialog.page_label.text() == "Páginas 31–60 de 65"
+        assert not dialog.tasks
+        dialog.previous_page()
+        assert dialog.page_start == 0
+        assert dialog.selected_pages == {0, 34}
+    finally:
+        dialog.close()
+        dialog.pool.waitForDone()
