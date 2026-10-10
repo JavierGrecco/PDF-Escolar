@@ -323,8 +323,11 @@ class DocumentCard(QFrame):
             self.document.path, self.document.page_count, self.ranges.text(), self
         )
         result = dialog.exec()
-        # Keep the dialog and task wrappers alive until any active thumbnail
-        # batch has finished; the dialog owns its pool.
+        # Cancel queued/ongoing previews after the modal loop has returned;
+        # drain the dialog-owned pool before releasing the dialog wrapper.
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
         dialog.pool.waitForDone()
         if result == QDialog.DialogCode.Accepted:
             self.ranges.setText(dialog.selected_ranges())
@@ -725,9 +728,11 @@ class MainWindow(QMainWindow):
 
         dialog = PageOrderDialog(pages, self)
         result = dialog.exec()
-        # Wait for any in-flight thumbnail task before this modal dialog can be
-        # destroyed; that keeps signal objects and QRunnable wrappers alive on
-        # the GUI thread even if the user applies/cancels while previews load.
+        # Drain outstanding previews explicitly after exec() returns instead
+        # of overriding QDialog.done() or adding slots to its finished signal.
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
         dialog.thumbnail_pool.waitForDone()
         if result == QDialog.DialogCode.Accepted:
             self.custom_page_order = dialog.ordered_pages()
