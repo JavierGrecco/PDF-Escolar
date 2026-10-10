@@ -1,0 +1,8 @@
+# OCR engine is isolated from PDF-Escolar's main dependency environment.
+# OCRmyPDF 17.13.0 needs a newer pikepdf than the legacy Intel/Catalina app build.
+ocrmypdf==17.13.0
+pypdfium2>=5.10,<6
+Pillow>=10,<13
+pyinstaller==6.22.3
+reportlab>=4.2,<5
+pdfminer.six>=20240706
