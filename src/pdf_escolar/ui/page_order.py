@@ -31,6 +31,7 @@ from PySide6.QtWidgets import (
 from pdf_escolar.pdf_engine import PdfPageRef
 from pdf_escolar.pdf_preview import render_page_preview, render_page_thumbnail
 from pdf_escolar.ui.messages import safe_exception_detail
+from pdf_escolar.ui.window_geometry import fit_window_to_screen
 
 
 class PageOrderSignals(QObject):
@@ -152,12 +153,21 @@ class PageOrderDialog(QDialog):
             if confirm_label == "Continuar a guardar"
             else "Ordenar páginas"
         )
-        self.setMinimumSize(880, 620)
-        self.resize(1180, 760)
+        self.compact_layout = fit_window_to_screen(
+            self,
+            preferred_size=(1180, 760),
+            minimum_size=(880, 620),
+            parent=parent,
+        )
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(22, 20, 22, 18)
-        root.setSpacing(12)
+        root.setContentsMargins(
+            12 if self.compact_layout else 22,
+            10 if self.compact_layout else 20,
+            12 if self.compact_layout else 22,
+            10 if self.compact_layout else 18,
+        )
+        root.setSpacing(6 if self.compact_layout else 12)
 
         title = QLabel(
             "Revisá el PDF antes de guardarlo"
@@ -253,8 +263,13 @@ class PageOrderDialog(QDialog):
         self.preview_panel = QFrame()
         self.preview_panel.setObjectName("pagePreviewPanel")
         preview_layout = QVBoxLayout(self.preview_panel)
-        preview_layout.setContentsMargins(14, 14, 14, 12)
-        preview_layout.setSpacing(9)
+        preview_layout.setContentsMargins(
+            8 if self.compact_layout else 14,
+            8 if self.compact_layout else 14,
+            8 if self.compact_layout else 14,
+            8 if self.compact_layout else 12,
+        )
+        preview_layout.setSpacing(5 if self.compact_layout else 9)
         self.preview_title = QLabel("Vista previa de la página")
         self.preview_title.setObjectName("pagePreviewTitle")
         self.preview_title.setWordWrap(True)
@@ -268,7 +283,9 @@ class PageOrderDialog(QDialog):
         self.preview_image = QLabel("Seleccioná una página para ver su contenido.")
         self.preview_image.setObjectName("pagePreviewImage")
         self.preview_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.preview_image.setMinimumSize(250, 330)
+        self.preview_image.setMinimumSize(
+            QSize(180, 110) if self.compact_layout else QSize(250, 330)
+        )
         self.preview_image.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
         )
