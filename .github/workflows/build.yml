@@ -62,7 +62,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.release_version }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          $publishBeta = $env:GITHUB_EVENT_NAME -eq "push" -and $env:GITHUB_REF_NAME -eq "main" -and $env:COMMIT_MESSAGE -match '\\[publish-app-beta\\]'
+          $publishBeta = $env:GITHUB_EVENT_NAME -eq "push" -and $env:GITHUB_REF_NAME -eq "main" -and $env:COMMIT_MESSAGE.Contains("[publish-app-beta]")
           if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME.StartsWith("v")) {
             $version = $env:GITHUB_REF_NAME.Substring(1)
           } elseif (-not [string]::IsNullOrWhiteSpace($env:RELEASE_VERSION)) {
