@@ -42,28 +42,36 @@ class PageOrderThumbnailTask(QRunnable):
 
     @Slot()
     def run(self) -> None:
-        grouped: dict[str, list[tuple[int, PdfPageRef]]] = defaultdict(list)
-        for item_id, reference in self.requests:
-            grouped[str(Path(reference.path).expanduser().resolve())].append((item_id, reference))
+        try:
+            grouped: dict[str, list[tuple[int, PdfPageRef]]] = defaultdict(list)
+            for item_id, reference in self.requests:
+                grouped[str(Path(reference.path).expanduser().resolve())].append(
+                    (item_id, reference)
+                )
 
-        for path, entries in grouped.items():
-            document = None
-            try:
-                document = pdfium.PdfDocument(path)
-                for item_id, reference in entries:
-                    try:
-                        image_bytes = render_page_thumbnail(document, reference.page_index)
-                        self.signals.ready.emit(item_id, image_bytes)
-                    except Exception as exc:
+            for path, entries in grouped.items():
+                document = None
+                try:
+                    document = pdfium.PdfDocument(path)
+                    for item_id, reference in entries:
+                        try:
+                            image_bytes = render_page_thumbnail(document, reference.page_index)
+                            self.signals.ready.emit(item_id, image_bytes)
+                        except Exception as exc:
+                            self.signals.failed.emit(item_id, str(exc))
+                except Exception as exc:
+                    for item_id, _reference in entries:
                         self.signals.failed.emit(item_id, str(exc))
-            except Exception as exc:
-                for item_id, _reference in entries:
-                    self.signals.failed.emit(item_id, str(exc))
-            finally:
-                if document is not None:
-                    document.close()
-
-        self.signals.finished.emit(id(self))
+                finally:
+                    if document is not None:
+                        document.close()
+        except Exception as exc:
+            for item_id, _reference in self.requests:
+                self.signals.failed.emit(item_id, str(exc))
+        finally:
+            # Always release the task from the dialog, even if path handling or
+            # cleanup unexpectedly raises while rendering thumbnails.
+            self.signals.finished.emit(id(self))
 
 
 class PageOrderDialog(QDialog):
