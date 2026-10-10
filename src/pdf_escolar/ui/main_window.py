@@ -160,7 +160,7 @@ DOCUMENT_MIME_TYPE = "application/x-pdf-escolar-document"
 
 
 class DragHandle(QLabel):
-    """A small, explicit drag target that works with mouse and touchpad input."""
+    """Control visible para arrastrar un archivo con mouse o panel táctil."""
 
     def __init__(self, path: str, parent: QWidget | None = None):
         super().__init__("↕", parent)
