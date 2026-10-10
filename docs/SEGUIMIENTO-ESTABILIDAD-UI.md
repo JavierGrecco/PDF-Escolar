@@ -2,64 +2,58 @@
 
 Última actualización: 2026-10-10
 
-Este archivo es el punto de continuidad del trabajo sobre el ciclo de vida de las miniaturas. Si se interrumpe una sesión, empezar leyendo este documento, revisar el último commit de esta rama y comprobar el CI asociado a [PR #11](https://github.com/JavierGrecco/PDF-Escolar/pull/11).
+Este documento conserva el contexto técnico para poder retomar el trabajo aunque se interrumpa la sesión. Revisar primero el estado de [PR #11](https://github.com/JavierGrecco/PDF-Escolar/pull/11), el último commit de la rama y el CI actual.
 
 ## Estado del repositorio
 
 - Rama de trabajo: `fix/page-picker-task-lifecycle`.
 - PR: [#11 — Endurecer tareas de miniaturas y cierre de ventanas](https://github.com/JavierGrecco/PDF-Escolar/pull/11).
-- Estado del PR: abierto, en borrador, sin integrar.
-- Rama base: `main`; HEAD observado al iniciar este checkpoint: `f5357729797ed9d1a70ed917434eeead26fdb205`.
-- Último HEAD conocido de esta rama antes de guardar este checkpoint: `cb401bb2b5bd8368859e7e2f9e8cabe75be630a4`.
-- Las funcionalidades de usuario ya están presentes en `main`: nombre y cantidad de páginas por archivo, reordenamiento de documentos, recuerdo de carpeta, organizador visual de páginas y exportación que respeta la secuencia elegida. El PR #11 es una mejora de estabilidad/rendimiento posterior; no es donde se guardaron por primera vez esas cuatro funciones.
+- Estado del PR: abierto, en borrador, no integrado.
+- Base: `main`; HEAD observado: `f5357729797ed9d1a70ed917434eeead26fdb205`.
+- La matriz habitual de `.github/workflows/tests.yml` fue restaurada en el commit `7f5b6e79f5f7f7e15d3f359235c9062b0faa7992`. Ya no incluye el script de diagnóstico temporal.
+- Las mejoras funcionales solicitadas están en `main`: nombre y páginas por archivo, reordenamiento de PDFs, recuerdo de la última carpeta y organizador visual de páginas con exportación en el orden elegido. Este PR es un seguimiento de estabilidad y rendimiento, no la primera implementación de esas cuatro funciones.
 
 ## Cambios propuestos en el PR #11
 
-1. El selector visual de páginas y el organizador de páginas difieren miniaturas solo cuando las ventanas están visibles; cancelan solicitudes obsoletas.
-2. Los trabajos `QRunnable` retienen explícitamente sus wrappers y usan señales de finalización con un token de texto; se eliminó el uso de lambdas como única forma de retirar referencias a tareas.
-3. Las tareas de inspección y exportación informan su finalización desde `finally`, y la ventana principal retira explícitamente la tarea finalizada.
-4. El exportador mantiene una caché LRU acotada (máximo 8 documentos fuente abiertos) para no reabrir un PDF en cada alternancia de páginas entre documentos.
-5. Se agregaron pruebas de cancelación y de reutilización de fuentes intercaladas.
-6. El manejo de errores inesperados al preparar miniaturas garantiza que la tarea emita su señal de finalización.
+1. Selector visual y organizador con tareas de miniaturas limitadas a ventanas visibles y cancelación de trabajos obsoletos.
+2. Retención/liberación explícita de tareas `QRunnable`, señal de finalización y manejo de excepciones en el hilo de miniaturas.
+3. Finalización explícita de tareas de inspección/exportación en `finally`.
+4. Caché LRU acotada (máximo 8 PDFs fuente abiertos) para exportar páginas intercaladas sin reabrir cada PDF en cada transición.
+5. Prueba de exportación intercalada que comprueba el uso de fuentes.
+6. Pruebas de cancelación y limpieza de widgets Qt; los widgets de pruebas se cierran y destruyen explícitamente con `deleteLater` y procesamiento de `DeferredDelete`.
+7. El pool local del selector vuelve a estar asociado al diálogo (`QThreadPool(self)`), de modo que su ciclo de vida coincide con el del dueño.
 
-## Hallazgo de CI que bloquea la integración
+## Historial de CI y diagnóstico Qt
 
-En Ubuntu, Ruff termina correctamente y las aserciones de las pruebas gráficas terminan en verde, pero el proceso Python se cae durante la salida con el mensaje de Qt `QObject: shared QObject was deleted directly` y un `Segmentation fault` o `Bus error`. En ejecuciones previas del conjunto completo llegaron a pasar 39 tests antes de que el proceso fallara al salir.
+CI histórico de `main`:
+- [Run 38064894022](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38064894022): matriz habitual verde. El job Ubuntu ejecutó Ruff con éxito y reportó `33 passed`.
 
-En la ejecución diagnóstica con HEAD `1e2d5e482fdd79fd962617e09ef68467f1878d30`:
-- Windows: éxito.
-- macOS: éxito.
-- macOS Intel / conjunto de dependencias antiguo: éxito.
-- Ubuntu: falla en la salida del proceso; el job conservó el código de salida y falló como corresponde.
-- El job de Ubuntu ejecutó cada uno de los seis tests GUI en procesos independientes y luego prefijos acumulativos.
+Diagnóstico temporal en la rama:
+- Run [38068544414](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38068544414), HEAD `d251ea5906205ad2b7583b7d2d65662f1fd9475b`.
+- En la rama, el módulo GUI entero pasó las 11 aserciones, pero el proceso terminó con `QObject: shared QObject was deleted directly` y SIGBUS (`exit=-7`). La suite entera pasó sus 39 tests y luego terminó con SIGSEGV (`exit=-11`).
+- El mismo job creó un worktree del `main` real y lo comparó bajo el mismo entorno. El módulo GUI base pasó 6 tests y terminó con salida 0; la suite base reportó `33 passed`, pero terminó con SIGSEGV al ejecutarse dentro del script diagnóstico como subproceso.
+- Tests nuevos del selector visual también mostraron SIGBUS intermitente en ejecución aislada: `test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible` y `test_page_picker_keeps_the_current_page_group_responsive`. Los tests de cancelación directa pasaron con salida 0.
+- En otras ejecuciones completas de la rama, macOS también reportó `39 passed` antes de caer al salir. Windows reportó `39 passed` y código de salida 1. En macOS Intel, algunas ejecuciones sí fueron verdes.
 
-Resultados individuales en el HEAD `6fddf937004931771977edd51035d640bb7d897d`:
-- `test_main_window_starts_in_a_safe_empty_state`: 1 passed, salida 0.
-- `test_document_card_displays_the_full_pdf_name_and_page_count`: 1 passed, pero luego del warning de Qt terminó con `-7` (SIGBUS) en esta ejecución y `-11` (SIGSEGV) en una ejecución anterior.
-- `test_page_order_dialog_supports_drag_and_button_reordering`: 1 passed, salida 0.
-- `test_last_open_directory_uses_a_saved_existing_folder`: 1 passed, salida 0.
-- `test_document_cards_can_be_reordered_by_drop_and_buttons`: 1 passed, salida 0.
-- `test_hidden_page_order_dialog_does_not_start_thumbnail_tasks`: 1 passed, salida 0.
+Interpretación: hay una inestabilidad de cierre de Qt en los runners, pero los subprocesos del diagnóstico también reprodujeron SIGSEGV sobre la suite base, mientras que la matriz normal histórica de `main` finalizó correctamente. No afirmar todavía que toda la falla viene de una regresión específica del PR, y tampoco darla por resuelta. La evidencia nueva obliga a distinguir: resultado de las aserciones, código de salida del proceso y comportamiento en el workflow normal.
 
-La comparación directa en el mismo job de Ubuntu con un worktree de `main` mostró:
-- La prueba de la tarjeta sola sobre `main`: pasa con salida 0.
-- Los tres primeros tests juntos sobre `main`: todos pasan las aserciones, pero el proceso también puede terminar con SIGSEGV.
-- En la rama propuesta, varios prefijos acumulativos terminaron con SIGBUS/SIGSEGV, aunque el resultado es variable entre ejecuciones.
+## Cambios después del diagnóstico
 
-Por lo tanto, el diagnóstico por subgrupos no demuestra por sí solo una regresión específica del código de la rama: parte de las secuencias de diagnóstico también puede fallar sobre `main`. La referencia histórica [38064894022](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38064894022) ejecutó la matriz normal y acabó con Ruff verde y `33 passed` en Ubuntu. Falta la comparación decisiva: ejecutar el conjunto GUI completo y el conjunto total, en procesos independientes, tanto sobre `main` como sobre la rama, en el mismo runner.
-
-HEAD `6fddf937004931771977edd51035d640bb7d897d` mueve imports auxiliares dentro de sus tests. No eliminó de forma consistente el crash; no considerar resuelto el problema ni ignorar el código de salida.
+- Se agregó destrucción explícita de widgets de pruebas con `QEvent.Type.DeferredDelete` en `tests/test_gui_smoke.py`.
+- Se volvió a asociar el pool del selector a su diálogo.
+- Se restauró el workflow normal completo para Ubuntu, Windows, macOS y macOS Intel.
+- Al guardar este checkpoint, el último HEAD de trabajo es `7f5b6e79f5f7f7e15d3f359235c9062b0faa7992`. Las acciones de ese commit deben revisarse antes de decidir el siguiente cambio.
 
 ## Próximos pasos obligatorios
 
-- [x] Guardar este checkpoint en un commit (no depender solo del historial de conversación).
-- [x] Aislar el cierre anómalo ejecutando cada una de las seis pruebas GUI en procesos independientes en Ubuntu; anotar cuál reproduce el fallo.\n- [x] Comparar la prueba de tarjeta aislada en `main` con el mismo runner y entorno; registrar que la prueba aislada pasa pero algunos prefijos GUI también fallan en la base.\n- [ ] Comparar el módulo GUI completo y la suite completa de `main` y la rama propuesta, en el mismo runner, antes de afirmar una regresión.
-- [ ] Comparar con la misma prueba aislada sobre `main` antes de atribuir el defecto a estos cambios.
-- [ ] Corregir la causa raíz y añadir una regresión que falle antes de la corrección.
-- [ ] Restaurar `.github/workflows/tests.yml` a una matriz normal que ejecute `ruff` y el conjunto completo de tests; retirar los filtros y comandos de diagnóstico.
-- [ ] Ejecutar la matriz completa en Ubuntu, Windows, macOS y macOS Intel, y confirmar la creación de instaladores antes de sacar el PR de borrador.
-- [ ] No integrar este PR hasta que el proceso pytest termine con código 0 en todos los jobs. La interacción de arrastrar/soltar también necesita una comprobación manual en un equipo real.
+- [ ] Verificar CI de HEAD `7f5b6e79f5f7f7e15d3f359235c9062b0faa7992` en la matriz habitual (no el diagnóstico).
+- [ ] Si el cierre anómalo persiste, reducir primero el nuevo test o cambio de producción que lo introduce; no esconder el código de salida ni convertirlo en éxito.
+- [ ] Si solo se reproduce en la matriz/runner con subprocesos pero no en el workflow normal, anotar evidencia de ambos caminos y evaluar una estrategia de limpieza de tests mínima y estable.
+- [ ] Añadir una regresión específica para cualquier causa raíz confirmada.
+- [ ] Confirmar build de instaladores y revisar diff final antes de sacar el PR de borrador.
+- [ ] Comprobar arrastre/soltar real con touchpad o mouse en un equipo físico.
+- [ ] No integrar el PR hasta que el workflow habitual y los builds estén verdes.
 
 ## Criterio de finalización
 
-El PR se puede considerar listo únicamente cuando: el código está guardado en esta rama, el workflow normal está restaurado, todas las pruebas y builds terminan correctamente (sin crash durante la salida), y los cambios quedan revisables como un diff claro contra `main`.
+Cambios guardados en GitHub, workflow normal restaurado, tests y builds con código de salida 0, exportación validada en orden intercalado y diff final limpio y revisable contra `main`.
