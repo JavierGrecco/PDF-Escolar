@@ -1,13 +1,15 @@
 # Historial de cambios
 
-## 0.1.0 — prototipo inicial
-- Interfaz de escritorio en español.
-- Carga de varios PDF, selección por rangos y exportación local.
-- Validación del documento resultante y protección de los originales.
-- Pruebas y workflows de Windows/macOS/Linux.
+## Versión de desarrollo actual
 
-## En desarrollo
-- Selección visual por miniaturas paginadas.
-- Reordenamiento de archivos de origen.
-- Prueba del renderizado de miniaturas en CI.
-- Artefactos de escritorio para validar el empaquetado.
+- Interfaz de escritorio en español para cargar varios PDF.
+- Selección de páginas por rangos o mediante miniaturas visuales.
+- Reordenamiento de los documentos antes de exportarlos.
+- Creación local de un PDF nuevo, sin modificar los archivos originales.
+- Verificación del archivo final y pruebas automatizadas para las operaciones principales.
+
+## Pendiente antes de una versión estable
+
+- Probar manualmente los instaladores en computadoras limpias con Windows y macOS.
+- Confirmar la compatibilidad con las versiones de macOS que se anuncien como compatibles, incluido Catalina si se mantiene ese objetivo.
+- Configurar firma digital y notarización para una distribución pública sin advertencias de seguridad.
