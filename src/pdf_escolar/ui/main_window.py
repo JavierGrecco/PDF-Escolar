@@ -375,6 +375,7 @@ class MainWindow(QMainWindow):
         self.exporting = False
         self.custom_page_order: list[PdfPageRef] | None = None
         self.load_errors: list[tuple[str, str]] = []
+        self.pending_order_notice: str | None = None
 
         central = QWidget()
         central.setObjectName("central")
@@ -551,7 +552,7 @@ class MainWindow(QMainWindow):
             return
         self.pending.update(accepted)
         order_was_reset = self._invalidate_custom_page_order(
-            "agregaste archivos nuevos"
+            "agregaste archivos nuevos", defer_until_loaded=True
         )
         self._refresh_drop_area_mode()
         self._update_summary()
@@ -632,6 +633,10 @@ class MainWindow(QMainWindow):
         elif not self.pending:
             self.status.setText("No hay archivos cargados. Podés volver a intentarlo.")
 
+        if not self.pending and self.pending_order_notice:
+            self.status.setText(self.pending_order_notice)
+            self.pending_order_notice = None
+
         # Avoid a chain of modal alerts when several files cannot be opened.
         if not self.pending and self.load_errors:
             errors, self.load_errors = self.load_errors, []
@@ -703,14 +708,20 @@ class MainWindow(QMainWindow):
         self._invalidate_custom_page_order("cambiaste la selección de páginas")
         self._update_summary()
 
-    def _invalidate_custom_page_order(self, reason: str) -> bool:
+    def _invalidate_custom_page_order(
+        self, reason: str, *, defer_until_loaded: bool = False
+    ) -> bool:
         if self.custom_page_order is None:
             return False
         self.custom_page_order = None
-        self.status.setText(
+        notice = (
             f"Se quitó el orden manual porque {reason}. "
             "Podés volver a «Ordenar páginas…» para definirlo."
         )
+        if defer_until_loaded and self.pending:
+            self.pending_order_notice = notice
+        else:
+            self.status.setText(notice)
         return True
 
     def _refresh_drop_area_mode(self) -> None:
