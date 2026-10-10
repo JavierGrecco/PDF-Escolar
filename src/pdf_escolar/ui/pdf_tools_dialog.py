@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
 from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import inspect_pdf
 from pdf_escolar.pdf_tools import crop_pdf_pages, rotate_pdf_pages, split_pdf_by_page
-from pdf_escolar.ui.messages import friendly_export_error, safe_exception_detail, show_notice
+from pdf_escolar.ui.messages import friendly_pdf_tool_error, safe_exception_detail, show_notice
 
 
 class PdfToolSignals(QObject):
