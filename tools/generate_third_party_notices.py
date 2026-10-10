@@ -295,7 +295,9 @@ def render_manifest() -> str:
         qt_files.append(
             (
                 f"Fuente oficial de PySide: LICENSES/{filename} "
-                f"(commit {QT_UPSTREAM_SOURCE_COMMIT})",
+                f"(commit {QT_UPSTREAM_SOURCE_COMMIT}; "
+                f"https://github.com/qtproject/pyside-pyside-setup/blob/"
+                f"{QT_UPSTREAM_SOURCE_COMMIT}/LICENSES/{filename})",
                 content,
             )
         )
