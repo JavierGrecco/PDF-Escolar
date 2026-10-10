@@ -9,8 +9,10 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
-    from PySide6.QtWidgets import QApplication
-    from pdf_escolar.ui.main_window import MainWindow
+    from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView
+    from pdf_escolar.pdf_engine import PdfPageRef
+    from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
+    from pdf_escolar.ui.page_order import PageOrderDialog
 except ImportError as exc:
     # Some Linux runners lack system libraries needed by Qt. Skip only those
     # known runtime-library errors; application import regressions must fail CI.
@@ -47,3 +49,42 @@ def test_main_window_starts_in_a_safe_empty_state(application):
         assert "Todavía no agregaste archivos" in window.file_count.text()
     finally:
         window.close()
+
+def test_document_card_displays_the_full_pdf_name_and_page_count(application):
+    card = DocumentCard(
+        DocumentInfo("/tmp/Material de matemática - 4.º grado.pdf", 145, 1024 * 1024)
+    )
+    try:
+        name = card.findChild(QLabel, "fileName")
+        metadata = card.findChild(QLabel, "fileMetadata")
+        assert name is not None
+        assert name.text() == "Material de matemática - 4.º grado.pdf"
+        assert metadata is not None
+        assert "145 páginas" in metadata.text()
+        assert name.wordWrap()
+    finally:
+        card.close()
+
+
+def test_page_order_dialog_supports_drag_and_button_reordering(application):
+    references = [
+        PdfPageRef("/tmp/first.pdf", 0),
+        PdfPageRef("/tmp/second.pdf", 2),
+        PdfPageRef("/tmp/third.pdf", 1),
+    ]
+    dialog = PageOrderDialog(references)
+    try:
+        assert (
+            dialog.list_widget.dragDropMode()
+            == QAbstractItemView.DragDropMode.InternalMove
+        )
+        assert dialog.list_widget.acceptDrops()
+        dialog.list_widget.setCurrentRow(2)
+        dialog.move_selected_up()
+        assert dialog.ordered_pages() == [
+            references[0],
+            references[2],
+            references[1],
+        ]
+    finally:
+        dialog.close()
