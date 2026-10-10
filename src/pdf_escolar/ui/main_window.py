@@ -808,3 +808,15 @@ class MainWindow(QMainWindow):
         QMessageBox.critical(self, "No se pudo crear el PDF",
             "No se generó el documento final. Revisá el espacio disponible y que los archivos sean accesibles.\n\n"
             f"Detalle técnico: {detail}")
+
+
+    def closeEvent(self, event) -> None:
+        if self.exporting:
+            QMessageBox.warning(
+                self,
+                "Exportación en curso",
+                "El PDF final todavía se está creando. Esperá a que termine antes de cerrar la aplicación.",
+            )
+            event.ignore()
+            return
+        super().closeEvent(event)
