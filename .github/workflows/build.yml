@@ -72,7 +72,7 @@ jobs:
           - runner: macos-15-intel
             arch_slug: Intel
             arch_label: Intel
-            python_version: "3.12"
+            python_version: "3.11"
           - runner: macos-latest
             arch_slug: Apple-Silicon
             arch_label: Apple Silicon
