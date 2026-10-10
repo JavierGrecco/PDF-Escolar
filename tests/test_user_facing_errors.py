@@ -3,7 +3,11 @@ from __future__ import annotations
 
 import pytest
 
-from pdf_escolar.ui.messages import friendly_export_error, friendly_pdf_load_error
+from pdf_escolar.ui.messages import (
+    friendly_export_error,
+    friendly_pdf_load_error,
+    safe_exception_detail,
+)
 
 
 @pytest.mark.parametrize(
@@ -53,3 +57,11 @@ def test_export_errors_are_friendly_and_never_echo_diagnostics(detail, expected)
 def test_unexpected_error_values_fall_back_to_spanish_messages(detail):
     assert "No pudimos abrir este archivo" in friendly_pdf_load_error(detail)
     assert "Revisá que los archivos originales" in friendly_export_error(detail)
+
+
+def test_a_broken_exception_formatter_cannot_break_error_handling():
+    class UnprintableError(Exception):
+        def __str__(self):
+            raise RuntimeError("diagnóstico interno")
+
+    assert safe_exception_detail(UnprintableError()) == ""
