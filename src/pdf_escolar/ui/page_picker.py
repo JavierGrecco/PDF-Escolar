@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from threading import Event
 
 import pypdfium2 as pdfium
 from PySide6.QtCore import QObject, QRunnable, QSize, QThreadPool, QTimer, Qt, Signal, Slot
@@ -32,27 +33,38 @@ class ThumbnailTask(QRunnable):
         self.pdf_path = pdf_path
         self.page_indexes = page_indexes
         self.signals = ThumbnailSignals()
+        self._cancelled = Event()
+
+    def cancel(self) -> None:
+        self._cancelled.set()
 
     @Slot()
     def run(self) -> None:
         document = None
         try:
+            if self._cancelled.is_set():
+                return
             document = pdfium.PdfDocument(self.pdf_path)
             for page_index in self.page_indexes:
+                if self._cancelled.is_set():
+                    break
                 try:
-                    self.signals.ready.emit(page_index, render_page_thumbnail(document, page_index))
+                    image = render_page_thumbnail(document, page_index)
+                    if not self._cancelled.is_set():
+                        self.signals.ready.emit(page_index, image)
                 except Exception as exc:
-                    self.signals.failed.emit(page_index, str(exc))
+                    if not self._cancelled.is_set():
+                        self.signals.failed.emit(page_index, str(exc))
         except Exception as exc:
-            for page_index in self.page_indexes:
-                self.signals.failed.emit(page_index, str(exc))
+            if not self._cancelled.is_set():
+                for page_index in self.page_indexes:
+                    self.signals.failed.emit(page_index, str(exc))
         finally:
             try:
                 if document is not None:
                     document.close()
             finally:
                 self.signals.finished.emit(id(self))
-
 
 class PagePickerDialog(QDialog):
     """Select pages visually, rendering only 30 thumbnails at a time."""
@@ -190,6 +202,8 @@ class PagePickerDialog(QDialog):
 
     def _show_page_group(self) -> None:
         self.thumbnail_timer.stop()
+        for task in tuple(self.tasks):
+            task.cancel()
         self.current_task_id = None
         self.list_widget.blockSignals(True)
         self.list_widget.clear()
@@ -327,6 +341,12 @@ class PagePickerDialog(QDialog):
             )
             return
         super().accept()
+
+    def done(self, result: int) -> None:
+        self.thumbnail_timer.stop()
+        for task in tuple(self.tasks):
+            task.cancel()
+        super().done(result)
 
     def selected_ranges(self) -> str:
         return format_page_ranges(sorted(index + 1 for index in self.selected_pages))
