@@ -26,18 +26,31 @@ Este archivo es el punto de continuidad del trabajo sobre el ciclo de vida de la
 
 En Ubuntu, Ruff termina correctamente y las aserciones de las pruebas gráficas terminan en verde, pero el proceso Python se cae durante la salida con el mensaje de Qt `QObject: shared QObject was deleted directly` y un `Segmentation fault` o `Bus error`. En ejecuciones previas del conjunto completo llegaron a pasar 39 tests antes de que el proceso fallara al salir.
 
-En la ejecución de diagnóstico con HEAD `cb401bb2b5bd8368859e7e2f9e8cabe75be630a4`:
+En la ejecución diagnóstica con HEAD `1e2d5e482fdd79fd962617e09ef68467f1878d30`:
 - Windows: éxito.
 - macOS: éxito.
 - macOS Intel / conjunto de dependencias antiguo: éxito.
-- Ubuntu: fallo al finalizar el primer grupo de tres pruebas gráficas, pese a que las tres aserciones pasan.
+- Ubuntu: falla en la salida del proceso; el job conservó el código de salida y falló como corresponde.
+- El job de Ubuntu ejecutó cada uno de los seis tests GUI en procesos independientes y luego prefijos acumulativos.
 
-Las pruebas del organizador ejecutadas individualmente pasaron. Eso todavía no identifica una causa raíz; podría ser la combinación de pruebas/objetos Qt al terminar el proceso. No considerar resuelto el problema ni ignorar el código de salida del proceso.
+Resultados individuales:
+- `test_main_window_starts_in_a_safe_empty_state`: 1 passed, salida 0.
+- `test_document_card_displays_the_full_pdf_name_and_page_count`: 1 passed, luego el warning de Qt y salida `-11` (SIGSEGV).
+- `test_page_order_dialog_supports_drag_and_button_reordering`: 1 passed, salida 0.
+- `test_last_open_directory_uses_a_saved_existing_folder`: 1 passed, salida 0.
+- `test_document_cards_can_be_reordered_by_drop_and_buttons`: 1 passed, salida 0.
+- `test_hidden_page_order_dialog_does_not_start_thumbnail_tasks`: 1 passed, salida 0.
+
+El prefijo de los primeros dos tests terminó bien, pero al agregar el tercero hubo SIGSEGV; los prefijos posteriores también fallaron al salir. Esto muestra que no basta con decir que “se cae la combinación de diálogos”: el test de la tarjeta también reproduce el problema cuando se ejecuta aislado como primer widget del proceso.
+
+Como referencia, el CI histórico de `main` en la ejecución [38064894022](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38064894022) acabó con Ruff verde y `33 passed` en Ubuntu, sin crash. Aún falta una comparación controlada de la prueba de tarjeta sobre el mismo commit base y con el mismo entorno.
+
+HEAD posterior `6fddf937004931771977edd51035d640bb7d897d` mueve imports auxiliares a los tests que realmente los necesitan, para comprobar si retener referencias de clases Qt en el módulo de tests contribuye al crash. Esa hipótesis aún no está confirmada; su CI está ejecutándose. No considerar resuelto el problema ni ignorar el código de salida.
 
 ## Próximos pasos obligatorios
 
-- [ ] Guardar este checkpoint en un commit (no depender solo del historial de conversación).
-- [ ] Aislar el cierre anómalo ejecutando cada una de las seis pruebas GUI en procesos independientes en Ubuntu; anotar cuál reproduce el fallo.
+- [x] Guardar este checkpoint en un commit (no depender solo del historial de conversación).
+- [x] Aislar el cierre anómalo ejecutando cada una de las seis pruebas GUI en procesos independientes en Ubuntu; anotar cuál reproduce el fallo.\n- [ ] Comparar la prueba de tarjeta de manera aislada en la rama base con el mismo entorno y la misma versión de PySide6.
 - [ ] Comparar con la misma prueba aislada sobre `main` antes de atribuir el defecto a estos cambios.
 - [ ] Corregir la causa raíz y añadir una regresión que falle antes de la corrección.
 - [ ] Restaurar `.github/workflows/tests.yml` a una matriz normal que ejecute `ruff` y el conjunto completo de tests; retirar los filtros y comandos de diagnóstico.
