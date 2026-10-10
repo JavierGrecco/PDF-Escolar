@@ -1,10 +1,10 @@
 # Instalación en Windows
 
-La descarga recomendada para una persona usuaria es `PDF-Escolar-Instalador-…-Windows.exe`.
+Hay dos formas de usar PDF Escolar:
 
-- Incluye el ejecutable autocontenido generado por PyInstaller: Python y las dependencias no se instalan por separado.
-- Se instala en la carpeta local del usuario, sin necesitar permisos de administrador.
-- Crea un acceso directo en el menú Inicio y permite crear otro en el escritorio.
-- Puede desinstalarse desde Configuración de Windows > Aplicaciones.
+- **Sin instalar:** descargá `PDF-Escolar.exe` desde la carpeta [descargas](../../descargas/). Hacé doble clic y se abre la aplicación.
+- **Con instalación clásica:** descargá `PDF-Escolar-Instalador-Windows.exe` desde [descargas](../../descargas/) y seguí el asistente.
 
-Las compilaciones de CI no están firmadas digitalmente. Windows puede mostrar una advertencia de SmartScreen; la firma de código debe configurarse antes de una distribución pública final.
+El ejecutable incluye Python y las bibliotecas necesarias; no tenés que instalarlas por separado. El instalador clásico se instala en la carpeta del usuario, agrega un acceso directo al menú Inicio y permite crear otro en el escritorio. Se puede quitar desde Configuración de Windows > Aplicaciones.
+
+**Aviso:** estas compilaciones no están firmadas digitalmente. Windows puede mostrar una advertencia de SmartScreen. La firma de código debe configurarse antes de una distribución pública de producción.
