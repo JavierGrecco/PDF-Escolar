@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
 from pdf_escolar.pdf_preview import render_page_thumbnail
 from pdf_escolar.ui.messages import safe_exception_detail, show_notice
+from pdf_escolar.ui.window_geometry import fit_window_to_screen
 
 
 PAGES_PER_VIEW = 30
@@ -94,12 +95,21 @@ class PagePickerDialog(QDialog):
             self.selected_pages = set()
 
         self.setWindowTitle("Elegir páginas")
-        self.setMinimumSize(780, 620)
-        self.resize(960, 760)
+        self.compact_layout = fit_window_to_screen(
+            self,
+            preferred_size=(960, 760),
+            minimum_size=(780, 620),
+            parent=parent,
+        )
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(24, 22, 24, 20)
-        root.setSpacing(14)
+        root.setContentsMargins(
+            12 if self.compact_layout else 24,
+            10 if self.compact_layout else 22,
+            12 if self.compact_layout else 24,
+            10 if self.compact_layout else 20,
+        )
+        root.setSpacing(6 if self.compact_layout else 14)
 
         title = QLabel(f"Elegí las páginas de {Path(pdf_path).name}")
         title.setObjectName("dialogTitle")

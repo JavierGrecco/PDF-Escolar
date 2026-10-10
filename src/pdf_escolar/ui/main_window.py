@@ -21,6 +21,7 @@ from pdf_escolar.ui.messages import (
     friendly_export_error, friendly_pdf_load_error, safe_exception_detail, show_notice
 )
 from pdf_escolar.ui.page_order import PageOrderDialog
+from pdf_escolar.ui.window_geometry import fit_window_to_screen
 from pdf_escolar.ui.page_picker import PagePickerDialog
 from pdf_escolar.ui.pdf_tools_dialog import PdfToolsDialog
 
@@ -370,8 +371,11 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("PDF Escolar")
-        self.setMinimumSize(720, 600)
-        self.resize(920, 780)
+        self.compact_layout = fit_window_to_screen(
+            self,
+            preferred_size=(920, 780),
+            minimum_size=(720, 600),
+        )
         self.pool = QThreadPool(self)
         self.documents: dict[str, tuple[DocumentInfo, DocumentCard]] = {}
         self.pending: set[str] = set()
@@ -386,8 +390,13 @@ class MainWindow(QMainWindow):
         central.setObjectName("central")
         self.setCentralWidget(central)
         root = QVBoxLayout(central)
-        root.setContentsMargins(26, 22, 26, 20)
-        root.setSpacing(15)
+        root.setContentsMargins(
+            14 if self.compact_layout else 26,
+            12 if self.compact_layout else 22,
+            14 if self.compact_layout else 26,
+            10 if self.compact_layout else 20,
+        )
+        root.setSpacing(8 if self.compact_layout else 15)
         header = QHBoxLayout()
         mark = QLabel("PE")
         mark.setObjectName("brandMark")
