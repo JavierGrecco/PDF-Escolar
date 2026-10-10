@@ -6,7 +6,7 @@
 
 **No necesitás instalar Python, abrir una terminal ni escribir comandos.** Los paquetes incluyen el programa y sus dependencias.
 
-Todavía no hay una versión estable publicada en *Releases*. Mientras tanto, podés descargar los paquetes de prueba generados automáticamente en [esta compilación de PDF Escolar](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38021953109). En la sección **Artifacts** al pie de la ejecución, elegí el paquete que corresponda a tu equipo. Estos paquetes de prueba caducan el **9 de noviembre de 2026**.
+Todavía no hay una versión estable publicada en *Releases*. Mientras tanto, podés descargar los paquetes de prueba generados automáticamente en [esta compilación de PDF Escolar](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38022280751). En la sección **Artifacts** al pie de la ejecución, elegí el paquete que corresponda a tu equipo. Estos paquetes de prueba caducan el **9 de noviembre de 2026**.
 
 ### Windows
 
