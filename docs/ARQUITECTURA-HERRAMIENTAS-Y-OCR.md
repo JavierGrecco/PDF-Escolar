@@ -86,6 +86,14 @@ La siguiente evolución de cara al usuario contempla:
 
 La propuesta de interacción, modelo conceptual, arquitectura técnica y etapas están documentados en [EDITOR-VISUAL-Y-COMPOSICION.md](EDITOR-VISUAL-Y-COMPOSICION.md). Esa guía es una hoja de ruta, no una afirmación de que el editor completo ya esté en el instalador. El trabajo se implementará por etapas y no debe perjudicar la sencillez de la ventana inicial.
 
+## Experiencia de orden, previsualización y apariencia
+
+La experiencia visual debe evolucionar sin entorpecer el flujo sencillo actual. La siguiente mejora prioritaria es ampliar las miniaturas y añadir una vista de revisión interactiva antes de exportar. Desde esa revisión deben poder corregirse el orden y la selección de páginas, con la misma secuencia de datos que alimenta el exportador.
+
+También se documentó una propuesta para el estado vacío y los temas: respetar Sistema como predeterminado, ofrecer Claro y Oscuro como elecciones explícitas y mantener una paleta semántica centralizada. En modo oscuro, la zona de trabajo puede ser oscura, pero la página PDF debe conservar la apariencia real de su contenido. Se deberán probar los diálogos y controles, y verificar contraste y foco, no solo la ventana principal.
+
+La especificación, etapas y criterios de aceptación están en [EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md](EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md). Es un plan, no una afirmación de que la interfaz o los temas ya existan.
+
 ## Criterios de aceptación de OCR
 
 - Los PDF del usuario nunca se envían a un servicio remoto.
