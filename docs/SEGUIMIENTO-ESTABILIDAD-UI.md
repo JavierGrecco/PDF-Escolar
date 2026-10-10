@@ -8,7 +8,7 @@
 - Los problemas al abrir múltiples PDF se resumen en una sola advertencia, con detalles técnicos expandibles.
 - Los cambios que invalidan un orden manual ahora lo comunican al usuario.
 - Se añadieron pruebas de regresión para esos estados. La CI del PR pasó en Ubuntu, Windows, macOS y el conjunto de dependencias para macOS Intel; los tres paquetes y su verificación también pasaron.
-- En `main`, la ejecución de pruebas posterior al merge terminó correctamente en las cuatro plataformas. La compilación posterior al merge está en curso; no declarar las descargas actualizadas hasta que termine el job de sincronización.
+- En `main`, las pruebas y los tres paquetes se completaron correctamente. El job `Guardar instaladores en el repositorio` terminó en éxito y las descargas actuales ya están sincronizadas.
 
 
 Última actualización: 2026-10-10
@@ -17,10 +17,10 @@ Este documento mantiene el estado técnico del trabajo para que pueda retomarse 
 
 ## Estado final en GitHub
 
-- **PR #11:** [Endurecer tareas de miniaturas y cierre de ventanas](https://github.com/JavierGrecco/PDF-Escolar/pull/11), fusionado y cerrado.
-- **Commit de integración:** [`ff5a949b077e23b58e8bfb434dc8fc3e22c00f64`](https://github.com/JavierGrecco/PDF-Escolar/commit/ff5a949b077e23b58e8bfb434dc8fc3e22c00f64).
-- **Commit que actualizó las descargas:** [`c5d65c45b30db30a44d55a9e07e4d0be2793a4a2`](https://github.com/JavierGrecco/PDF-Escolar/commit/c5d65c45b30db30a44d55a9e07e4d0be2793a4a2).
-- **Versión de los instaladores en `descargas/`:** `0.1.0-dev.113`, compilada desde `ff5a949b077e23b58e8bfb434dc8fc3e22c00f64`.
+- **PR #12:** [UX: simplificar carga y avisos de PDF](https://github.com/JavierGrecco/PDF-Escolar/pull/12), fusionado y cerrado.
+- **Commit de integración UX:** [`539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`](https://github.com/JavierGrecco/PDF-Escolar/commit/539cf15734fb4385ab3c705c2bcc3ad23dc1a1de).
+- **Último commit de descargas:** [`f52f70c7ecf7d3ae259313174476729862de5618`](https://github.com/JavierGrecco/PDF-Escolar/commit/f52f70c7ecf7d3ae259313174476729862de5618).
+- **Versión actual en `descargas/`:** `0.1.0-dev.115`, compilada desde `539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`.
 - **Historial incremental previo al squash:** [`archive/pr11-ui-task-lifecycle-before-squash`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-ui-task-lifecycle-before-squash).
 - **Snapshot del commit squash previo a la última limpieza de diálogos:** [`archive/pr11-squashed-ci-passed`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-squashed-ci-passed).
 
@@ -49,29 +49,30 @@ Las ejecuciones siguientes finalizaron con éxito:
 
 - [Tests del commit final del PR](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069733708): Ubuntu, Windows, macOS y macOS Intel.
 - [Builds del commit final del PR](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069733710): portable/instalador de Windows, DMG macOS Intel, DMG macOS Apple Silicon y verificación de artefactos.
-- [Tests de `main` tras la integración](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031705): las cuatro plataformas en verde.
-- [Build y sincronización de descargas tras la integración](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031656): los tres paquetes compilados y el job `Guardar instaladores en el repositorio` en éxito.
+- [Tests de `main` tras el PR #11](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031705): las cuatro plataformas en verde.
+- [Tests de `main` tras el PR #12](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224623): las cuatro plataformas en verde.
+- [Build y sincronización de descargas tras el PR #12](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224574): Windows, macOS Intel y macOS Apple Silicon, y sincronización a `main`, todos en éxito.
 
 ## Descargas actuales
 
 El archivo [`descargas/INFORMACION-DE-DESCARGA.txt`](https://github.com/JavierGrecco/PDF-Escolar/blob/main/descargas/INFORMACION-DE-DESCARGA.txt) confirma:
 
-- Versión: `0.1.0-dev.113`.
-- Compilación: [Actions run 38070031656](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031656).
-- Código fuente: `ff5a949b077e23b58e8bfb434dc8fc3e22c00f64`.
+- Versión: `0.1.0-dev.115`.
+- Compilación: [Actions run 38071224574](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224574).
+- Código fuente: `539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`.
 
-SHA-256 de los archivos visibles en `descargas/`:
+SHA-256 verificados en `descargas/INFORMACION-DE-DESCARGA.txt`:
 ```text
-f0570580fd7cde162a9eebf1aaeac4cdf1a4fecb492936d152210c22c628e0ff  descargas/PDF-Escolar.exe
-e2909f7255896cca780cc826065ca70e6865822e86796586abc8eaac07a71d34  descargas/PDF-Escolar-Instalador-Windows.exe
-91b324d8d12ee5fa9847d959275573a4e491407d5ca216c1c4c01a9ba27f888f  descargas/PDF-Escolar-macOS-Intel.dmg
-24065cef8cf33943cbe7bcb4ddca7c4fe3095a3a9954192eda455a04d057f02c  descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
+ba330a8e34e3da328946e3cb8f25742bbafacb8e42364810bbc1af5a5a19c9bd  descargas/PDF-Escolar.exe
+6da66906906543ded912b009284f9ae4e4180f383cf29e593d9fb0ca950363ca  descargas/PDF-Escolar-Instalador-Windows.exe
+cbf0a7bd79fa256961ce942e3372bcadc5e9a4836ca2f216908ec59a870d19a7  descargas/PDF-Escolar-macOS-Intel.dmg
+38bb78cf5693e3718879805eeed295cf73e21afa41bf4dc05827de964661c6a8  descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
 ```
 
-## Único pendiente manual
+## Pendiente antes de una versión estable
 
-Probar en un equipo físico el arrastre para reordenar documentos y páginas, tanto con mouse como con touchpad. La CI verifica las pruebas automatizadas, pero no puede sustituir esa comprobación de interacción real.
+La CI valida el código y compila los paquetes, pero no reemplaza probarlos en equipos reales. Antes de declarar una versión estable, completar `docs/PRUEBAS-MANUALES.md`, en particular: instalar y abrir los paquetes en computadoras limpias con Windows, macOS Intel y Apple Silicon; probar arrastrar con mouse y touchpad; comprobar nombres largos y escalado de pantalla; y confirmar los casos de error y el orden del PDF exportado. También queda por resolver la firma digital/notarización para una distribución pública con menos advertencias de seguridad.
 
 ## Criterio de continuidad
 
-No hay cambios de código del PR pendientes de integrar ni descargas pendientes de sincronizar en este checkpoint. Si aparece un nuevo problema de estabilidad, reproducirlo con la matriz normal, registrar el commit exacto y conservar los códigos de salida reales de cada proceso.
+No hay PR abiertos pendientes de integrar ni descargas pendientes de sincronizar en este checkpoint. Las versiones `0.1.0-dev` siguen siendo de desarrollo hasta completar las pruebas manuales y la preparación de firma/notarización para una distribución pública. Si aparece un nuevo problema de estabilidad, reproducirlo con la matriz normal, registrar el commit exacto y conservar los códigos de salida reales de cada proceso.
