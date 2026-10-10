@@ -1,5 +1,6 @@
 from pathlib import Path
 import pikepdf
+import pdf_escolar.pdf_engine as pdf_engine
 import pytest
 from pdf_escolar.pdf_engine import (
     PdfPageRef, PdfSource, combine_pages_in_order, combine_selected_pages, inspect_pdf
@@ -150,3 +151,36 @@ def test_invalid_explicit_page_reference_preserves_existing_output(tmp_path):
 
     assert page_widths(output) == [800]
     assert not list(tmp_path.glob(".existing_*.tmp.pdf"))
+
+def test_export_reuses_open_pdfs_when_pages_are_interleaved(tmp_path, monkeypatch):
+    first, second, output = (
+        tmp_path / "first.pdf",
+        tmp_path / "second.pdf",
+        tmp_path / "interleaved.pdf",
+    )
+    make_pdf(first, [100, 200])
+    make_pdf(second, [400, 500])
+    source_paths = {first.resolve(), second.resolve()}
+    open_calls = []
+    real_open = pdf_engine.pikepdf.open
+
+    def tracked_open(path, *args, **kwargs):
+        candidate = Path(path).resolve()
+        if candidate in source_paths:
+            open_calls.append(candidate)
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(pdf_engine.pikepdf, "open", tracked_open)
+    references = [
+        PdfPageRef(str(source), 0)
+        for _ in range(10)
+        for source in (first, second)
+    ]
+
+    count = combine_pages_in_order(references, str(output))
+
+    assert count == 20
+    assert page_widths(output) == [width for _ in range(10) for width in (100, 400)]
+    # Each unique PDF opens once for validation and once for export, rather than
+    # reopening on every A/B/A/B transition.
+    assert len(open_calls) == 4

@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path
+from threading import Event
 
 import pypdfium2 as pdfium
 from PySide6.QtCore import QObject, QRunnable, QSize, QThreadPool, QTimer, Qt, Signal, Slot
@@ -29,7 +30,7 @@ from pdf_escolar.pdf_preview import render_page_thumbnail
 class PageOrderSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)
-    finished = Signal(int)
+    finished = Signal(str)
 
 
 class PageOrderThumbnailTask(QRunnable):
@@ -39,6 +40,10 @@ class PageOrderThumbnailTask(QRunnable):
         super().__init__()
         self.requests = requests
         self.signals = PageOrderSignals()
+        self._cancelled = Event()
+
+    def cancel(self) -> None:
+        self._cancelled.set()
 
     @Slot()
     def run(self) -> None:
@@ -50,29 +55,34 @@ class PageOrderThumbnailTask(QRunnable):
                 )
 
             for path, entries in grouped.items():
+                if self._cancelled.is_set():
+                    break
                 document = None
                 try:
                     document = pdfium.PdfDocument(path)
                     for item_id, reference in entries:
+                        if self._cancelled.is_set():
+                            break
                         try:
                             image_bytes = render_page_thumbnail(document, reference.page_index)
-                            self.signals.ready.emit(item_id, image_bytes)
+                            if not self._cancelled.is_set():
+                                self.signals.ready.emit(item_id, image_bytes)
                         except Exception as exc:
-                            self.signals.failed.emit(item_id, str(exc))
+                            if not self._cancelled.is_set():
+                                self.signals.failed.emit(item_id, str(exc))
                 except Exception as exc:
-                    for item_id, _reference in entries:
-                        self.signals.failed.emit(item_id, str(exc))
+                    if not self._cancelled.is_set():
+                        for item_id, _reference in entries:
+                            self.signals.failed.emit(item_id, str(exc))
                 finally:
                     if document is not None:
                         document.close()
         except Exception as exc:
-            for item_id, _reference in self.requests:
-                self.signals.failed.emit(item_id, str(exc))
+            if not self._cancelled.is_set():
+                for item_id, _reference in self.requests:
+                    self.signals.failed.emit(item_id, str(exc))
         finally:
-            # Always release the task from the dialog, even if path handling or
-            # cleanup unexpectedly raises while rendering thumbnails.
-            self.signals.finished.emit(id(self))
-
+            self.signals.finished.emit(str(id(self)))
 
 class PageOrderDialog(QDialog):
     """Arrange selected pages across source PDFs using drag-and-drop or buttons."""
@@ -268,12 +278,12 @@ class PageOrderDialog(QDialog):
         if item is not None:
             item.setToolTip(f"{item.toolTip()}\nVista previa no disponible: {detail}")
 
-    @Slot(int)
-    def _task_finished(self, task_id: int) -> None:
+    @Slot(str)
+    def _task_finished(self, finished_token: str) -> None:
         # This is a bound QObject slot, so Qt queues the callback to the GUI
         # thread. QRunnable auto-deletion stays disabled while the Python
         # wrapper is retained in self.tasks.
-        task = next((item for item in self.tasks if id(item) == task_id), None)
+        task = next((item for item in self.tasks if str(id(item)) == finished_token), None)
         if task is None:
             return
         for signal, slot in (

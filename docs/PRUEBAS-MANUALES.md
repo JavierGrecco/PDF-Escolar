@@ -21,11 +21,14 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] La selección inicial incluye todas las páginas.
 - [ ] Escribir `3, 1` en el Libro A muestra dos páginas seleccionadas y conserva ese orden al exportar.
 - [ ] «Elegir visualmente» abre las miniaturas; al confirmar la selección, los rangos se actualizan.
+- [ ] Abrir y cancelar rápidamente el selector de miniaturas no cierra la aplicación ni deja la ventana bloqueada.
+- [ ] Cambiar entre grupos de miniaturas varias veces; la barra de carga corresponde al grupo actual y no desaparece antes de tiempo.
 - [ ] Las flechas cambian el orden de los documentos y deshabilitan el movimiento cuando ya están al principio o al final.
 - [ ] Arrastrar el control ↕ con mouse funciona para reordenar los documentos; soltar antes y después de una tarjeta produce el orden esperado.
 - [ ] Repetir el arrastre usando el touchpad, sin mouse externo.
 - [ ] «Ordenar páginas…» muestra miniaturas de ambos PDF, con el nombre del archivo y número de página.
 - [ ] En el organizador, mover páginas con arrastre, Subir, Bajar y Restablecer orden inicial actualiza el orden esperado.
+- [ ] Desplazarse rápidamente por las miniaturas y cerrar el organizador no bloquea la aplicación ni produce cierres inesperados.
 - [ ] Crear una secuencia mezclada, por ejemplo B-DOS, A-TRES, B-UNO, A-UNO; exportarla y verificar visualmente que ese sea el orden final.
 - [ ] Cancelar el organizador no cambia el orden previamente aplicado; cancelar Guardar no crea un archivo.
 - [ ] Cambiar un rango o quitar/agregar un PDF después de ordenar páginas no deja una secuencia vieja; volver a ordenar si hace falta.
