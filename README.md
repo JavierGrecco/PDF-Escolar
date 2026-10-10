@@ -30,6 +30,7 @@ En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaci
 - **Elegir páginas:** seleccionar miniaturas visualmente o ingresar números y rangos, como `1-8, 12, 20-25`.
 - **Reordenar con libertad:** cambiar el orden de los documentos y mezclar páginas individuales mediante miniaturas, arrastre o botones.
 - **Guardar un PDF nuevo:** elegir dónde guardarlo, sin alterar los documentos originales.
+- **Herramientas PDF:** rotar páginas, recortar márgenes y separar páginas en archivos independientes, con operaciones que conservan el contenido del PDF sin convertirlo en imagen.
 - **Seguir trabajando con facilidad:** la aplicación recuerda la última carpeta usada para elegir archivos.
 
 ## Cómo usarlo
@@ -39,6 +40,8 @@ En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaci
 3. Ordená los documentos y, si querés mezclar páginas de distintas fuentes, elegí **Ordenar páginas…**.
 4. Revisá el orden final y pulsá **Crear PDF final**.
 5. Elegí dónde guardar el documento nuevo.
+
+Para otras tareas, abrí **Herramientas PDF** desde la ventana principal. Podés girar páginas, recortar márgenes en milímetros o generar un PDF por página. Estas operaciones crean archivos nuevos y no reemplazan los originales.
 
 ## Seguridad y estado de los instaladores
 
@@ -51,6 +54,10 @@ Los PDF se procesan en el equipo y los originales no se modifican. La integraci�
 - ¿Encontraste un problema o querés proponer una mejora? [Abrí un issue](https://github.com/JavierGrecco/PDF-Escolar/issues/new).
 - ¿Querés comprobar el funcionamiento antes de distribuir una versión? Consultá la [lista de pruebas manuales](docs/PRUEBAS-MANUALES.md).
 - ¿Buscás el código fuente? [Explorá el repositorio](https://github.com/JavierGrecco/PDF-Escolar).
+
+## Herramientas avanzadas y OCR
+
+PDF Escolar incorpora operaciones propias de rotación, recorte de márgenes y separación de páginas. Para el reconocimiento de texto en documentos escaneados estamos evaluando una integración local empaquetada por separado: queremos que funcione sin pedir a las personas usuarias que instalen Python, Tesseract u otras herramientas manualmente. El OCR se publicará cuando el componente y sus dependencias estén validados en Windows y macOS.
 
 ## Para desarrolladores
 
