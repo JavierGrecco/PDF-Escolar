@@ -385,7 +385,7 @@ class PdfToolsDialog(QDialog):
             show_notice(
                 self,
                 "Revisá la selección",
-                safe_exception_detail(exc) or "No pudimos validar las páginas.",
+                friendly_pdf_tool_error(safe_exception_detail(exc)),
                 icon=QMessageBox.Icon.Warning,
             )
             return
