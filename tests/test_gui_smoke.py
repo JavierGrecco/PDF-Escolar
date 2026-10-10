@@ -10,14 +10,13 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
     from PySide6.QtWidgets import QApplication
-except ImportError:
-    # Ubuntu's hosted runner can omit a Qt system library; the shipped
-    # Windows/macOS builds are still smoke-tested where Qt is available.
+    from pdf_escolar.ui.main_window import MainWindow
+except ImportError as exc:
+    # Ubuntu's hosted runner can omit a Qt system library such as libEGL.
+    # Windows/macOS build jobs still package the GUI and run the test when Qt is available.
     if sys.platform.startswith("linux"):
-        pytest.skip("Qt GUI system libraries are unavailable on this Linux runner.", allow_module_level=True)
+        pytest.skip(f"Qt GUI system libraries are unavailable on this Linux runner: {exc}", allow_module_level=True)
     raise
-
-from pdf_escolar.ui.main_window import MainWindow
 
 
 @pytest.fixture(scope="session")
