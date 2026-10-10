@@ -8,7 +8,7 @@ from PySide6.QtCore import QObject, QRunnable, QSize, Qt, QThreadPool, Signal, S
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QListView, QListWidget, QListWidgetItem,
-    QProgressBar, QPushButton, QVBoxLayout, QWidget
+    QProgressBar, QPushButton, QVBoxLayout, QWidget, QMessageBox
 )
 
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
@@ -122,6 +122,16 @@ class PagePickerDialog(QDialog):
         root.addWidget(self.list_widget, 1)
 
         toolbar = QHBoxLayout()
+        self.mark_all_button = QPushButton("Marcar todas")
+        self.mark_all_button.setObjectName("secondaryButton")
+        self.mark_all_button.setToolTip("Incluir todas las páginas de este PDF")
+        self.mark_all_button.clicked.connect(lambda: self.set_all_checked(True))
+        toolbar.addWidget(self.mark_all_button)
+        self.clear_all_button = QPushButton("Desmarcar todas")
+        self.clear_all_button.setObjectName("secondaryButton")
+        self.clear_all_button.setToolTip("Empezar una selección nueva para este PDF")
+        self.clear_all_button.clicked.connect(lambda: self.set_all_checked(False))
+        toolbar.addWidget(self.clear_all_button)
         self.mark_button = QPushButton("Marcar este grupo")
         self.mark_button.setObjectName("secondaryButton")
         self.mark_button.clicked.connect(lambda: self.set_visible_checked(True))
@@ -238,6 +248,14 @@ class PagePickerDialog(QDialog):
         count = len(self.selected_pages)
         self.selected_label.setText(f"{count} página{'s' if count != 1 else ''} seleccionada{'s' if count != 1 else ''}")
 
+    def set_all_checked(self, checked: bool) -> None:
+        self.selected_pages = set(range(self.total_pages)) if checked else set()
+        self.list_widget.blockSignals(True)
+        for page_index, item in self.page_indexes.items():
+            item.setCheckState(Qt.CheckState.Checked if checked else Qt.CheckState.Unchecked)
+        self.list_widget.blockSignals(False)
+        self._update_selected_label()
+
     def set_visible_checked(self, checked: bool) -> None:
         self.list_widget.blockSignals(True)
         for page_index, item in self.page_indexes.items():
@@ -261,6 +279,16 @@ class PagePickerDialog(QDialog):
                 self.page_start + PAGES_PER_VIEW,
             )
             self._show_page_group()
+
+    def accept(self) -> None:
+        if not self.selected_pages:
+            QMessageBox.warning(
+                self,
+                "No hay páginas seleccionadas",
+                "Marcá al menos una página para poder continuar.",
+            )
+            return
+        super().accept()
 
     def selected_ranges(self) -> str:
         return format_page_ranges(sorted(index + 1 for index in self.selected_pages))
