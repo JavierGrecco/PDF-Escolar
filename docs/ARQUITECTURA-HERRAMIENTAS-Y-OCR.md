@@ -70,10 +70,14 @@ RapidOCR y sus modelos actuales tienen licencias Apache-2.0 y ofrecen rutas para
 - Los PDFs de prueba demuestran que se puede extraer el texto reconocido en Linux, Windows y macOS.
 - El componente OCR y sus licencias quedan documentados, versionados y verificables por SHA-256.
 
-## Secuencia de entrega
+## Estado de implementación y entrega
 
-1. Incorporar las herramientas nativas y sus pruebas automatizadas.
-2. Prototipar el componente OCR autónomo y medir tamaño, compatibilidad y dependencias reales en CI.
-3. Integrar la detección, instalación segura y ejecución del complemento en la interfaz.
-4. Validar OCR manualmente con documentos reales en español y equipos limpios.
-5. Publicar el componente OCR y actualizar la aplicación solo cuando la experiencia completa sea fiable.
+- Las herramientas nativas de rotación, recorte y separación ya están integradas en main.
+- Se está construyendo el complemento OCR como aplicación auxiliar independiente con OCRmyPDF 17.13.0 y Tesseract. No forma parte del entorno Python principal de PDF Escolar.
+- La interfaz tiene selector de idioma, instalación por usuario, validación SHA-256 del paquete, extracción segura y ejecución aislada. El PDF de entrada nunca se envía a GitHub ni a otro servicio.
+- El flujo de compilación de OCR genera ZIP por plataforma y ejecuta una prueba de extremo a extremo: crea un PDF escaneado sin texto digital, ejecuta OCR en español y verifica que el resultado permite extraer el texto esperado.
+- Las descargas de OCR se mantienen fuera de la carpeta descargas y del historial habitual de la aplicación; el complemento se publica como una release separada con etiquetas ocr-engine-v.
+- La publicación para usuarios debe esperar a que los tres paquetes superen el flujo y se validen manualmente en Windows, Mac Intel y Apple Silicon. El complemento macOS tiene un requisito propio de macOS 14 o posterior; la aplicación principal conserva la compatibilidad de su conjunto actual de dependencias.
+- Si una versión del complemento no puede verificarse mediante el digest SHA-256 publicado por GitHub, la aplicación rechaza la instalación.
+
+El primer paquete público debe considerarse una versión de prueba hasta verificar el OCR con fotocopias reales, páginas giradas, documentos parcialmente digitales y archivos protegidos o dañados.
