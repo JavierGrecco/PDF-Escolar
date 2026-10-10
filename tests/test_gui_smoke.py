@@ -320,3 +320,24 @@ def test_pdf_tools_dialog_switches_between_native_operations(application):
         assert not dialog.split_note.isHidden()
     finally:
         _dispose_widget(dialog, application)
+
+
+def test_pdf_tools_dialog_exposes_optional_local_ocr(application):
+    from pdf_escolar.ui.pdf_tools_dialog import PdfToolsDialog
+
+    dialog = PdfToolsDialog()
+    try:
+        ocr_index = dialog.operation_selector.findData("ocr")
+        assert ocr_index >= 0
+        dialog.operation_selector.setCurrentIndex(ocr_index)
+        assert not dialog.ocr_panel.isHidden()
+        assert dialog.run_button.text() == "Crear PDF buscable"
+        assert dialog.ocr_language.currentData() == ["spa"]
+        assert "OCR" in dialog.install_ocr_button.text()
+        assert "Tus PDF nunca se suben" in dialog.ocr_panel.findChild(QLabel, "ocrDisclaimer").text()
+
+        split_index = dialog.operation_selector.findData("split")
+        dialog.operation_selector.setCurrentIndex(split_index)
+        assert dialog.ocr_panel.isHidden()
+    finally:
+        _dispose_widget(dialog, application)

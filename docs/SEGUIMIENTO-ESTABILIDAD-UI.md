@@ -1,78 +1,44 @@
-# Seguimiento de estabilidad de la interfaz
+# Seguimiento de estabilidad, publicaciones y estado actual
 
-## Actualización de usabilidad — 2026-10-10
+**Última revisión:** 10 de octubre de 2026.
 
-- **PR #12:** [simplificar carga y avisos de PDF](https://github.com/JavierGrecco/PDF-Escolar/pull/12), fusionado.
-- **Commit integrado:** [`539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`](https://github.com/JavierGrecco/PDF-Escolar/commit/539cf15734fb4385ab3c705c2bcc3ad23dc1a1de).
-- El área para agregar archivos se compacta al cargar PDF, pero conserva la opción de arrastrar y soltar.
-- Los problemas al abrir múltiples PDF se resumen en una sola advertencia, con detalles técnicos expandibles.
-- Los cambios que invalidan un orden manual ahora lo comunican al usuario.
-- Se añadieron pruebas de regresión para esos estados. La CI del PR pasó en Ubuntu, Windows, macOS y el conjunto de dependencias para macOS Intel; los tres paquetes y su verificación también pasaron.
-- En `main`, las pruebas y los tres paquetes se completaron correctamente. El job `Guardar instaladores en el repositorio` terminó en éxito y las descargas actuales ya están sincronizadas.
+Este documento es el punto de continuidad técnica. La información de la sección «Estado actual» es la vigente; los hitos anteriores son historial y no deben usarse para inferir qué binarios están actualmente en `descargas/`.
 
+## Estado actual
 
-Última actualización: 2026-10-10
+- La aplicación principal funciona y se prueba mediante GitHub Actions en Ubuntu, Windows, macOS Apple Silicon y el conjunto de dependencias heredado de Mac Intel.
+- El código ya integrado incluye selección y orden visual de páginas, combinación no destructiva y herramientas PDF nativas de rotación, recorte de márgenes y separación.
+- La dirección de producto para el editor visual de composición está documentada en [EDITOR-VISUAL-Y-COMPOSICION.md](EDITOR-VISUAL-Y-COMPOSICION.md). Esa hoja de ruta no implica que la interfaz completa esté disponible en los instaladores.
+- La beta OCR usa un complemento separado con OCRmyPDF y Tesseract. El motor se compila para Windows x64 y macOS Apple Silicon (M1 o posterior, macOS 15+). No se ofrecerá OCR para Mac Intel; las herramientas PDF existentes sí siguen estando disponibles allí.
+- Los artefactos de CI de un PR prueban ese commit; no son sinónimo de un lanzamiento en GitHub Releases ni de una actualización de los enlaces de `descargas/`.
+- Los instaladores no están firmados ni notarizados en esta etapa. La validación de Actions tampoco sustituye las pruebas manuales en equipos reales.
+- No debe declararse una versión beta publicada hasta comprobar que existe la release de la aplicación y la release del complemento OCR, que incluyen sus paquetes para todas las plataformas admitidas, y que `descargas/INFORMACION-DE-DESCARGA.txt` identifica la versión sincronizada.
 
-Este documento mantiene el estado técnico del trabajo para que pueda retomarse sin depender del historial de conversación.
+## Comprobaciones a la hora de retomar el trabajo
 
-## Estado final en GitHub
+1. Revisar el [estado de GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions).
+2. Consultar [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases) para verificar versiones y activos reales.
+3. Abrir [INFORMACION-DE-DESCARGA.txt](../descargas/INFORMACION-DE-DESCARGA.txt) y confirmar versión, commit, ejecución y SHA-256 de los cuatro paquetes.
+4. Completar [PRUEBAS-MANUALES.md](PRUEBAS-MANUALES.md) con Windows, Mac Intel y Apple Silicon, según la función que se valida. OCR solo se prueba en Windows x64 y Apple Silicon con macOS 15+.
+5. Reproducir fallos desde el log específico y el SHA exacto. No resumir una ejecución fallida como «CI verde» porque otros sistemas hayan terminado con éxito.
 
-- **PR #12:** [UX: simplificar carga y avisos de PDF](https://github.com/JavierGrecco/PDF-Escolar/pull/12), fusionado y cerrado.
-- **Commit de integración UX:** [`539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`](https://github.com/JavierGrecco/PDF-Escolar/commit/539cf15734fb4385ab3c705c2bcc3ad23dc1a1de).
-- **Último commit de descargas:** [`f52f70c7ecf7d3ae259313174476729862de5618`](https://github.com/JavierGrecco/PDF-Escolar/commit/f52f70c7ecf7d3ae259313174476729862de5618).
-- **Versión actual en `descargas/`:** `0.1.0-dev.115`, compilada desde `539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`.
-- **Historial incremental previo al squash:** [`archive/pr11-ui-task-lifecycle-before-squash`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-ui-task-lifecycle-before-squash).
-- **Snapshot del commit squash previo a la última limpieza de diálogos:** [`archive/pr11-squashed-ci-passed`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-squashed-ci-passed).
+## Historial técnico previo
 
-## Funcionalidades de usuario conservadas
+Los siguientes hitos documentan la evolución anterior de la interfaz y el motor; los enlaces son registros históricos:
 
-Las cuatro mejoras pedidas ya estaban en `main` antes del PR #11 y permanecen allí:
-1. Mostrar el nombre y la cantidad de páginas de cada PDF.
-2. Reordenar documentos con arrastrar/soltar y controles para subir/bajar.
-3. Recordar la última carpeta utilizada al agregar archivos.
-4. Ordenar páginas individuales visualmente, incluso alternando entre distintos PDF, y exportar respetando esa secuencia.
+- **PR #11:** estabilidad del ciclo de vida de miniaturas y tareas de interfaz, caché limitada de PDF fuente y limpieza al cerrar los diálogos.
+- **PR #12:** simplificación de la carga de archivos, agrupación de errores y comunicación de cambios que invalidan el orden manual.
+- Las ejecuciones anteriores de tests y builds verificaron Ubuntu, Windows, macOS Apple Silicon y el conjunto legado de macOS Intel. Para el estado actual, consultá las ejecuciones enlazadas en Actions, no solo los IDs históricos de este apartado.
 
-El PR #11 fue la etapa de estabilidad y rendimiento que vino después.
+## Descargas y checksums
 
-## Cambios fusionados
+La fuente de verdad para la compilación que está en los enlaces directos es el contenido actual de [descargas/INFORMACION-DE-DESCARGA.txt](../descargas/INFORMACION-DE-DESCARGA.txt). No copies checksums históricos en esta guía: al sincronizar nuevos binarios, ese manifiesto se regenera con el commit, la ejecución y los SHA-256 del lote publicado.
 
-- Selector y organizador de páginas con cancelación de tareas de miniaturas obsoletas.
-- Pools de miniaturas vinculados a sus diálogos; al finalizar los diálogos modales, se detienen las tareas, se espera a que los pools terminen y se marca el diálogo para destrucción diferida.
-- Retención y liberación explícita de tareas `QRunnable`, con señales de finalización y manejo de excepciones.
-- Tareas de inspección/exportación gestionadas hasta su finalización.
-- Caché LRU limitada a ocho PDF fuente abiertos para evitar reabrir repetidamente archivos al exportar secuencias intercaladas.
-- Pruebas de cancelación, limpieza de widgets y reutilización de fuentes; actualización de las pruebas manuales.
+## Criterio de salida de beta
 
-## Validación de CI
-
-Las ejecuciones siguientes finalizaron con éxito:
-
-- [Tests del commit final del PR](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069733708): Ubuntu, Windows, macOS y macOS Intel.
-- [Builds del commit final del PR](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069733710): portable/instalador de Windows, DMG macOS Intel, DMG macOS Apple Silicon y verificación de artefactos.
-- [Tests de `main` tras el PR #11](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031705): las cuatro plataformas en verde.
-- [Tests de `main` tras el PR #12](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224623): las cuatro plataformas en verde.
-- [Build y sincronización de descargas tras el PR #12](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224574): Windows, macOS Intel y macOS Apple Silicon, y sincronización a `main`, todos en éxito.
-
-## Descargas actuales
-
-El archivo [`descargas/INFORMACION-DE-DESCARGA.txt`](https://github.com/JavierGrecco/PDF-Escolar/blob/main/descargas/INFORMACION-DE-DESCARGA.txt) confirma:
-
-- Versión: `0.1.0-dev.115`.
-- Compilación: [Actions run 38071224574](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38071224574).
-- Código fuente: `539cf15734fb4385ab3c705c2bcc3ad23dc1a1de`.
-
-SHA-256 verificados en `descargas/INFORMACION-DE-DESCARGA.txt`:
-```text
-ba330a8e34e3da328946e3cb8f25742bbafacb8e42364810bbc1af5a5a19c9bd  descargas/PDF-Escolar.exe
-6da66906906543ded912b009284f9ae4e4180f383cf29e593d9fb0ca950363ca  descargas/PDF-Escolar-Instalador-Windows.exe
-cbf0a7bd79fa256961ce942e3372bcadc5e9a4836ca2f216908ec59a870d19a7  descargas/PDF-Escolar-macOS-Intel.dmg
-38bb78cf5693e3718879805eeed295cf73e21afa41bf4dc05827de964661c6a8  descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
-```
-
-## Pendiente antes de una versión estable
-
-La CI valida el código y compila los paquetes, pero no reemplaza probarlos en equipos reales. Antes de declarar una versión estable, completar `docs/PRUEBAS-MANUALES.md`, en particular: instalar y abrir los paquetes en computadoras limpias con Windows, macOS Intel y Apple Silicon; probar arrastrar con mouse y touchpad; comprobar nombres largos y escalado de pantalla; y confirmar los casos de error y el orden del PDF exportado. También queda por resolver la firma digital/notarización para una distribución pública con menos advertencias de seguridad.
-
-## Criterio de continuidad
-
-No hay PR abiertos pendientes de integrar ni descargas pendientes de sincronizar en este checkpoint. Las versiones `0.1.0-dev` siguen siendo de desarrollo hasta completar las pruebas manuales y la preparación de firma/notarización para una distribución pública. Si aparece un nuevo problema de estabilidad, reproducirlo con la matriz normal, registrar el commit exacto y conservar los códigos de salida reales de cada proceso.
+Antes de quitar la etiqueta beta:
+- probar instalación, apertura y desinstalación en Windows y apertura desde Aplicaciones en macOS;
+- comprobar en PDF reales la calidad de OCR, páginas giradas, documentos mixtos, escaneos inclinados y errores de entrada;
+- confirmar que la capa de texto permite buscar, seleccionar y copiar sin degradar la imagen;
+- cerrar los problemas críticos de integridad y de instalación;
+- definir firma/notarización y notas de publicación para los instaladores públicos.

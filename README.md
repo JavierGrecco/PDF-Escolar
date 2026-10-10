@@ -31,6 +31,7 @@ En Mac, abrí el archivo DMG y arrastrá **PDF Escolar** a la carpeta **Aplicaci
 - **Reordenar con libertad:** cambiar el orden de los documentos y mezclar páginas individuales mediante miniaturas, arrastre o botones.
 - **Guardar un PDF nuevo:** elegir dónde guardarlo, sin alterar los documentos originales.
 - **Herramientas PDF:** rotar páginas, recortar márgenes y separar páginas en archivos independientes, con operaciones que conservan el contenido del PDF sin convertirlo en imagen.
+- **OCR local (beta):** convertir documentos escaneados en PDF buscables, para localizar, seleccionar y copiar texto reconocido. Requiere instalar un complemento opcional.
 - **Seguir trabajando con facilidad:** la aplicación recuerda la última carpeta usada para elegir archivos.
 
 ## Cómo usarlo
@@ -55,9 +56,21 @@ Los PDF se procesan en el equipo y los originales no se modifican. La integraci�
 - ¿Querés comprobar el funcionamiento antes de distribuir una versión? Consultá la [lista de pruebas manuales](docs/PRUEBAS-MANUALES.md).
 - ¿Buscás el código fuente? [Explorá el repositorio](https://github.com/JavierGrecco/PDF-Escolar).
 
-## Herramientas avanzadas y OCR
+## OCR local — versión beta
 
-PDF Escolar incorpora operaciones propias de rotación, recorte de márgenes y separación de páginas. Para el reconocimiento de texto en documentos escaneados estamos evaluando una integración local empaquetada por separado: queremos que funcione sin pedir a las personas usuarias que instalen Python, Tesseract u otras herramientas manualmente. El OCR se publicará cuando el componente y sus dependencias estén validados en Windows y macOS.
+La beta incorpora **Crear PDF buscable (OCR)** en «Herramientas PDF». El complemento opcional permite reconocer texto de documentos escaneados, conservando la imagen de la página con una capa de texto que se puede buscar, seleccionar y copiar.
+
+- En la primera instalación se necesita conexión a Internet para descargar el complemento desde GitHub. Después, el reconocimiento funciona sin conexión.
+- Los documentos se procesan en la computadora; no se suben a ningún servidor.
+- Disponible para **Windows x64** y **Mac con Apple Silicon (M1 o posterior) con macOS 15 o posterior**.
+- **OCR no está disponible en Mac Intel**. La aplicación principal y sus herramientas de rotación, recorte y separación siguen funcionando en esos equipos.
+- Esta es una versión beta: recomendamos comprobar el resultado con documentos propios no confidenciales antes de confiar en OCR para trabajos importantes. Los instaladores todavía no están firmados ni notarizados.
+
+El complemento y sus avisos de licencia se distribuyen en una publicación separada: [Descargas OCR en Releases](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/ocr-engine-v0.1.0-beta.1).
+
+## Hacia dónde va el proyecto
+
+Estamos construyendo de forma incremental un editor visual para elegir varias regiones de una página, quitar zonas sin seleccionar manualmente todo lo demás, ordenar y combinar fragmentos de distintos PDF y agregar consignas con tipografía y formato. La interfaz completa todavía no forma parte de esta beta. La dirección de producto y sus etapas están documentadas en [Editor visual y composición](docs/EDITOR-VISUAL-Y-COMPOSICION.md).
 
 ## Para desarrolladores
 

@@ -63,6 +63,7 @@ Confirmá que los originales sigan iguales después de las pruebas.
 ### macOS Intel y Apple Silicon
 
 - [ ] Probar el arrastre con el panel táctil en un MacBook y con mouse si está disponible.
+- [ ] Confirmar que la aplicación principal abre, importa y exporta PDF en Mac Intel y Apple Silicon.
 - [ ] Confirmar que el nombre de los PDF sigue legible con el escalado y tamaño de ventana habituales.
 
 - [ ] Usar el paquete correspondiente a la arquitectura del equipo.
@@ -93,3 +94,24 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Intentar separar páginas en una carpeta con nombres de salida existentes; no se reemplaza ningún archivo previo.
 - [ ] Confirmar que el PDF de origen permanece intacto en todas las operaciones.
 - [ ] Cerrar la ventana mientras una operación está en curso; la ventana espera al final de la operación en vez de terminar el trabajo de forma insegura.
+
+
+## Reconocimiento de texto (OCR)
+
+Estas pruebas requieren una versión de prueba que incluya una publicación del complemento OCR. En la primera ejecución se necesita conexión a Internet para instalarlo; después, desactivá la conexión para comprobar que el reconocimiento sigue siendo local.
+
+- [ ] En un equipo compatible, elegir «Crear PDF buscable (OCR)» y confirmar que la aplicación explica qué componente se descargará y que los PDF no se suben.
+- [ ] Instalar el complemento y comprobar que se guarda en el perfil del usuario sin pedir permisos de administrador.
+- [ ] Probar un escaneo en español, guardar el resultado como un PDF nuevo y verificar que los originales no cambian.
+- [ ] Abrir el PDF generado en un lector y buscar una palabra visible en el escaneo; confirmar que se puede seleccionar y copiar texto reconocido.
+- [ ] Comparar visualmente el original y el resultado; la capa de texto no debe reemplazar la imagen de la página.
+- [ ] Repetir con «Español e inglés» en un documento bilingüe.
+- [ ] Probar un PDF que ya contiene texto digital: el reconocimiento debe omitir ese texto cuando corresponda y no deteriorar su apariencia.
+- [ ] Seleccionar rangos concretos, por ejemplo 2-3; comprobar que el resultado conserva todas las páginas y aplica OCR solo a las seleccionadas.
+- [ ] Probar un PDF con páginas giradas o ligeramente inclinadas y revisar el resultado.
+- [ ] Probar un PDF protegido con contraseña o dañado; se debe mostrar un aviso entendible y no reemplazar ningún archivo de salida previo.
+- [ ] Cerrar la aplicación durante una operación larga solo después de confirmar que el flujo espera a que el proceso termine y no deja un archivo parcial.
+- [ ] Desconectar Internet y volver a ejecutar OCR; la función debe trabajar con el complemento ya instalado.
+- [ ] En Mac con Apple Silicon y macOS 15 o posterior, comprobar la instalación y ejecución de OCR.
+- [ ] En Mac Intel y en Mac Apple Silicon con macOS anterior a 15, confirmar que se indica que OCR no está disponible sin afectar las demás herramientas PDF.
+- [ ] Registrar sistema operativo, versión del complemento, idioma, tamaño aproximado del escaneo y resultado de la prueba.

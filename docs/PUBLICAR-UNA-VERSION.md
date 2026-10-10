@@ -25,6 +25,14 @@ El flujo compila y verifica los paquetes, los adjunta a una publicación `v...` 
 
 Para refrescar los enlaces directos sin publicar una versión, ejecutá el flujo manualmente y activá **Actualizar también los binarios de descargas/**. Es una acción deliberada: los binarios nuevos se guardan en Git y aumentan el historial, por lo que conviene reservarla para una compilación que realmente quieras distribuir. Los cambios de código y las compilaciones automáticas no reemplazan por sí solos esos archivos.
 
+## Publicación inicial coordinada de la beta OCR
+
+La primera integración de OCR publica dos artefactos relacionados: la aplicación beta `v0.1.0-beta.1` (que contiene el botón OCR) y el complemento `ocr-engine-v0.1.0-beta.1` (el motor opcional). El flujo de OCR no sustituye la publicación de la aplicación: si solo se publica el motor, la versión de PDF Escolar ya instalada no obtiene la interfaz nueva.
+
+La primera publicación se activa de forma deliberada al integrar el PR de OCR con los marcadores `[publish-app-beta]` y `[publish-ocr-beta]` en el título del commit de integración. El workflow construye y comprueba todos los paquetes antes de publicarlos como versiones beta y sincroniza los enlaces directos de `descargas/`. Si el build o el smoke test falla, no se publica una versión estable ni debe anunciarse la beta como disponible.
+
+Para versiones posteriores, publicá la aplicación con **Build installers** (`release_version`) y el complemento con **Build OCR companion** (`release_version`) por separado. No uses una etiqueta de la aplicación como si fuera la etiqueta del motor OCR.
+
 ## ¿Qué versión conviene publicar?
 
 - **Vista previa de prueba:** usá una versión con guion, por ejemplo `0.1.0-beta.1`. GitHub la marcará como *pre-release*. Es lo recomendado mientras la aplicación no tenga firma digital y pruebas manuales en equipos limpios.

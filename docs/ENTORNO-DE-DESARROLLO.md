@@ -58,3 +58,14 @@ Las pruebas deben crear sus propios PDF temporales. No subas libros, documentos 
 ## Licencias
 
 El código propio está bajo MIT. Antes de distribuir un ejecutable, revisá las licencias y avisos de las dependencias incluidas.
+
+
+## Componente OCR opcional
+
+El OCR no forma parte de las dependencias instaladas en el entorno principal. `ocrmypdf`, Tesseract y los modelos de idioma se construyen como un complemento separado para evitar acoplar el conjunto de dependencias de la app a un motor nativo más pesado.
+
+- Las dependencias de construcción específicas están fijadas en [`packaging/ocr/requirements.txt`](../packaging/ocr/requirements.txt).
+- El flujo [Build OCR companion](../.github/workflows/build-ocr.yml) construye y prueba el ejecutable para Windows x64 y macOS Apple Silicon. Es preferible usar ese flujo reproducible para crear paquetes distribuidos, en vez de copiar una instalación local de Tesseract.
+- La prueba de extremo a extremo [`packaging/ocr/smoke_test.py`](../packaging/ocr/smoke_test.py) requiere el ejecutable ya empaquetado; crea un escaneo sintético, ejecuta el OCR y verifica que se pueda extraer el texto esperado.
+- No hace falta descargar el complemento OCR para desarrollar o probar las demás herramientas PDF. Las pruebas de `ocr_companion` usan instalaciones simuladas y no descargan versiones reales.
+- La matriz OCR no incluye Mac Intel. El complemento se construye en runners macOS 15 Apple Silicon, de acuerdo con los requisitos binarios actuales de pikepdf. La aplicación principal conserva su conjunto de dependencias específico para Mac Intel y debe seguir superando las pruebas de CI correspondientes.
