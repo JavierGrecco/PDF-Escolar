@@ -539,10 +539,11 @@ class PageOrderDialog(QDialog):
         viewer.setWindowTitle(
             f"{Path(reference.path).name} · página {reference.page_index + 1}"
         )
-        screen = self.screen().availableGeometry()
-        viewer.resize(
-            max(640, min(1180, int(screen.width() * 0.9))),
-            max(480, min(920, int(screen.height() * 0.9))),
+        fit_window_to_screen(
+            viewer,
+            preferred_size=(1180, 920),
+            minimum_size=(640, 480),
+            parent=self,
         )
         layout = QVBoxLayout(viewer)
         heading = QLabel(
