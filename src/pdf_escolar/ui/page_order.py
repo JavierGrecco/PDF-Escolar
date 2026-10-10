@@ -437,6 +437,13 @@ class PageOrderDialog(QDialog):
 
         item_id = int(item.data(Qt.ItemDataRole.UserRole))
         self._refresh_preview_metadata()
+        if not self.isVisible():
+            # Do not start workers from a dialog that has not been shown yet.
+            # This keeps construction cheap and avoids racing modal cleanup.
+            self.preview_image.setPixmap(QPixmap())
+            self.preview_image.setText("La vista previa se cargará al abrir el organizador.")
+            self.enlarge_button.setEnabled(False)
+            return
         if self.current_preview_id == item_id:
             if not self.preview_pixmap.isNull():
                 self._refresh_preview_pixmap()
@@ -546,6 +553,7 @@ class PageOrderDialog(QDialog):
         super().showEvent(event)
         if self.pages:
             self.thumbnail_timer.start(0)
+            self._load_current_preview()
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
