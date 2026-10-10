@@ -168,6 +168,7 @@ class PageOrderDialog(QDialog):
         self.thumbnail_timer = QTimer(self)
         self.thumbnail_timer.setSingleShot(True)
         self.thumbnail_timer.timeout.connect(self._queue_visible_thumbnails)
+        self.finished.connect(self._on_dialog_finished)
 
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
@@ -328,11 +329,11 @@ class PageOrderDialog(QDialog):
             self.list_widget.setCurrentItem(self.items_by_id[current_id])
         self._queue_visible_thumbnails()
 
-    def done(self, result: int) -> None:
+    @Slot(int)
+    def _on_dialog_finished(self, _result: int) -> None:
         self.thumbnail_timer.stop()
         for task in tuple(self.tasks):
             task.cancel()
-        super().done(result)
 
     def ordered_pages(self) -> list[PdfPageRef]:
         return [
