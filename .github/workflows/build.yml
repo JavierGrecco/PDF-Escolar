@@ -262,6 +262,7 @@ jobs:
         run: |
           mkdir -p dist/dmg-root
           cp -R dist/PDF-Escolar.app dist/dmg-root/
+          cp dist/THIRD-PARTY-NOTICES.txt dist/dmg-root/THIRD-PARTY-NOTICES.txt
           ln -s /Applications dist/dmg-root/Applications
           cat > dist/dmg-root/LEEME.txt <<'EOF'
           PDF ESCOLAR
