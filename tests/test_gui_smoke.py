@@ -124,6 +124,18 @@ def test_pdf_tools_content_scrolls_without_hiding_action_buttons(application):
         _dispose_widget(dialog, application)
 
 
+def test_help_menu_includes_third_party_licenses(application):
+    window = MainWindow()
+    try:
+        menu = window.help_button.menu()
+        assert menu is not None
+        labels = [action.text() for action in menu.actions()]
+        assert "Cómo usar" in labels
+        assert "Licencias y componentes" in labels
+    finally:
+        _dispose_widget(window, application)
+
+
 def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path):
     settings = QSettings()
     old_value = settings.value("last_open_directory", None)

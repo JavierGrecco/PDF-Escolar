@@ -88,12 +88,16 @@ jobs:
       - name: Generate application icon
         run: python tools/create_icon.py
 
+      - name: Generate third-party license notices
+        run: python tools/generate_third_party_notices.py --output dist/THIRD-PARTY-NOTICES.txt
+
       - name: Build self-contained Windows application
         shell: pwsh
         run: >-
           pyinstaller --noconfirm --clean --onefile --windowed
           --name PDF-Escolar --paths src
           --icon assets/pdf-escolar.ico
+          --add-data "dist/THIRD-PARTY-NOTICES.txt;pdf_escolar"
           --collect-all pikepdf --collect-all pypdfium2 --collect-all PIL
           src/pdf_escolar/__main__.py
 
@@ -132,6 +136,16 @@ jobs:
           $installedExe = Join-Path $installDir "PDF-Escolar.exe"
           if (-not (Test-Path $installedExe -PathType Leaf)) {
             throw "La instalación terminó, pero no se encontró PDF-Escolar.exe."
+          }
+          $installedNotices = Join-Path $installDir "THIRD-PARTY-NOTICES.txt"
+          if (-not (Test-Path $installedNotices -PathType Leaf)) {
+            throw "La instalación no incluyó el archivo de avisos de terceros."
+          }
+          $noticeText = Get-Content -Raw $installedNotices
+          foreach ($component in @("PySide6", "pikepdf", "pypdfium2", "Pillow")) {
+            if ($noticeText -notmatch [regex]::Escape($component)) {
+              throw "El inventario de licencias no contiene el componente $component."
+            }
           }
 
           $appProcess = Start-Process -FilePath $installedExe -PassThru
@@ -225,6 +239,9 @@ jobs:
       - name: Generate application icon
         run: python tools/create_icon.py
 
+      - name: Generate third-party license notices
+        run: python tools/generate_third_party_notices.py --output dist/THIRD-PARTY-NOTICES.txt
+
       - name: Create macOS icon
         shell: bash
         run: |
@@ -246,6 +263,7 @@ jobs:
           pyinstaller --noconfirm --clean --windowed
           --name PDF-Escolar --paths src
           --icon assets/pdf-escolar.icns
+          --add-data "dist/THIRD-PARTY-NOTICES.txt:pdf_escolar"
           --collect-all pikepdf --collect-all pypdfium2 --collect-all PIL
           src/pdf_escolar/__main__.py
 
@@ -254,6 +272,7 @@ jobs:
         run: |
           mkdir -p dist/dmg-root
           cp -R dist/PDF-Escolar.app dist/dmg-root/
+          cp dist/THIRD-PARTY-NOTICES.txt dist/dmg-root/THIRD-PARTY-NOTICES.txt
           ln -s /Applications dist/dmg-root/Applications
           cat > dist/dmg-root/LEEME.txt <<'EOF'
           PDF ESCOLAR
@@ -291,6 +310,12 @@ jobs:
           plist="$app/Contents/Info.plist"
           test -d "$app"
           test -L "$mountpoint/Applications"
+          notices="$mountpoint/THIRD-PARTY-NOTICES.txt"
+          test -s "$notices"
+          grep -qi "PySide6" "$notices"
+          app_notices="$(find "$app" -type f -name 'THIRD-PARTY-NOTICES.txt' -print -quit)"
+          test -n "$app_notices"
+          grep -qi "pypdfium2" "$app_notices"
           plutil -lint "$plist"
           executable_name="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$plist")"
           executable="$app/Contents/MacOS/$executable_name"
