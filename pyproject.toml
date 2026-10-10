@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0,<9", "pyinstaller>=6.10,<7", "ruff>=0.11,<1"]
+dev = ["pytest>=8.0,<10", "pyinstaller>=6.10,<7", "ruff>=0.11,<1"]
 
 [project.scripts]
 pdf-escolar = "pdf_escolar.app:main"
