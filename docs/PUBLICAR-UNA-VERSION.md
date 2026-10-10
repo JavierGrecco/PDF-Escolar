@@ -7,9 +7,10 @@
 1. Abrí el flujo [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml).
 2. Pulsá **Run workflow** y elegí la rama `main`.
 3. Dejá vacío el campo **Versión para publicar**.
-4. Pulsá **Run workflow**.
+4. Por defecto, dejá desmarcada la opción **Actualizar también los binarios de descargas/**. Activala solo si querés reemplazar los archivos directos del repositorio.
+5. Pulsá **Run workflow**.
 
-El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon. Si las tres compilaciones y la verificación de archivos terminan correctamente, actualiza los cuatro instaladores de la carpeta [descargas](../descargas/) y genera `INFORMACION-DE-DESCARGA.txt` con sus hashes SHA-256. **No crea una publicación en Releases.**
+El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon. Las pruebas comprueban la instalación, apertura y desinstalación en Windows, y la integridad y el contenido del DMG en macOS. Si no activás la opción de sincronización, los paquetes quedan como artefactos temporales de la ejecución y **no se modifica `descargas/` ni se crea una publicación en Releases**. Esto evita guardar repetidamente binarios grandes en el historial de Git.
 
 ## Publicar una versión descargable
 
@@ -18,11 +19,11 @@ El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon. Si 
 3. En **Versión para publicar**, escribí la versión sin la letra `v`. Por ejemplo, `0.1.0-beta.1`.
 4. Pulsá **Run workflow**.
 
-El flujo compila y verifica los paquetes, los adjunta a una publicación `v...` en **Releases** y también actualiza los archivos directos de la carpeta `descargas/`. No hace falta abrir una terminal ni escribir comandos.
+El flujo compila y verifica los paquetes, los adjunta a una publicación `v...` en **Releases** y actualiza los archivos directos de la carpeta `descargas/`. Esta actualización de los binarios queda vinculada a una publicación intencional, no a cada cambio de código. No hace falta abrir una terminal ni escribir comandos.
 
 **Importante:** los paquetes generados al probar cambios en una rama o en un pull request no actualizan `descargas/` ni se publican en Releases. Hasta ejecutar manualmente uno de los dos pasos anteriores, los enlaces directos siguen apuntando a los últimos archivos guardados en esa carpeta.
 
-También se puede hacer un refresco puntual con un commit integrado en `main` cuyo título incluya literalmente `[sync-downloads]`. Eso compila los tres paquetes, actualiza `descargas/` y no crea una publicación en Releases. Usá esa marca solo cuando quieras actualizar los binarios: el commit resultante vuelve a guardar esos archivos grandes en el historial de Git.
+Para refrescar los enlaces directos sin publicar una versión, ejecutá el flujo manualmente y activá **Actualizar también los binarios de descargas/**. Es una acción deliberada: los binarios nuevos se guardan en Git y aumentan el historial, por lo que conviene reservarla para una compilación que realmente quieras distribuir. Los cambios de código y las compilaciones automáticas no reemplazan por sí solos esos archivos.
 
 ## ¿Qué versión conviene publicar?
 
