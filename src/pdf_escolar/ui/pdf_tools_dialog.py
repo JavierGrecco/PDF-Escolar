@@ -318,13 +318,13 @@ class PdfToolsDialog(QDialog):
             self.ocr_status.setText(
                 f"Complemento instalado ({tag}). El OCR se ejecuta localmente."
             )
-            self.install_ocr_button.setEnabled(True)
+            self.install_ocr_button.setEnabled(not self._busy)
             self.install_ocr_button.setText("Actualizar complemento OCR")
         else:
             self.ocr_status.setText(
                 "El OCR es opcional y requiere descargar un complemento adicional la primera vez."
             )
-            self.install_ocr_button.setEnabled(True)
+            self.install_ocr_button.setEnabled(not self._busy)
             self.install_ocr_button.setText("Instalar complemento OCR")
 
     def choose_source(self) -> None:
@@ -371,6 +371,11 @@ class PdfToolsDialog(QDialog):
             return
 
         operation = str(self.operation_selector.currentData())
+        if operation == "ocr":
+            support_problem = platform_support_error()
+            if support_problem:
+                show_notice(self, "OCR no disponible", support_problem, icon=QMessageBox.Icon.Warning)
+                return
         try:
             pages = self._selected_pages(source)
             if operation == "crop" and not any(spin.value() > 0 for spin in self.margins.values()):
