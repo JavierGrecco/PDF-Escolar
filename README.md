@@ -70,7 +70,15 @@ El complemento y sus avisos de licencia se distribuyen en una publicación separ
 
 ## Hacia dónde va el proyecto
 
-Estamos construyendo de forma incremental un editor visual para elegir varias regiones de una página, quitar zonas sin seleccionar manualmente todo lo demás, ordenar y combinar fragmentos de distintos PDF y agregar consignas con tipografía y formato. La interfaz completa todavía no forma parte de esta beta. La dirección de producto y sus etapas están documentadas en [Editor visual y composición](docs/EDITOR-VISUAL-Y-COMPOSICION.md).
+La próxima mejora se centra en que puedas **identificar cada hoja, ver el resultado final y corregir el orden antes de guardar**. La hoja de ruta contempla miniaturas ajustables, vista ampliada, una previsualización interactiva que permite reordenar páginas sin volver al inicio y un estado vacío que mantenga la apariencia de la aplicación antes de cargar archivos.
+
+También estamos definiendo una experiencia visual consistente para Windows y macOS: respetar el tema del sistema por defecto, ofrecer alternativas clara y oscura, mejorar la legibilidad y conservar el aspecto original de las páginas PDF en pantalla. La elección de temas y el editor visual descritos en la documentación son propuestas de evolución; no forman parte de la beta actual.
+
+Después se incorporarán de forma gradual la rotación y el recorte visual en la previsualización, y un modo de creación más avanzado para seleccionar regiones, excluir zonas, recomponer fragmentos de varios documentos e insertar consignas con texto enriquecido. La interfaz completa todavía no está implementada.
+
+- [Hoja de ruta de experiencia, previsualización y temas](docs/EXPERIENCIA-PREVISUALIZACION-Y-TEMAS.md)
+- [Editor visual y composición](docs/EDITOR-VISUAL-Y-COMPOSICION.md)
+- [Arquitectura de herramientas PDF y OCR](docs/ARQUITECTURA-HERRAMIENTAS-Y-OCR.md)
 
 ## Para desarrolladores
 
