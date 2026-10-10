@@ -20,6 +20,14 @@ class PdfSource:
     page_ranges: str
 
 
+@dataclass(frozen=True)
+class PdfPageRef:
+    """A single zero-based page reference in a source PDF."""
+
+    path: str
+    page_index: int
+
+
 def inspect_pdf(path: str) -> int:
     """Open a PDF and return its number of pages."""
     with pikepdf.open(path) as pdf:
@@ -34,39 +42,67 @@ def combine_selected_pages(
     output_path: str,
     progress_callback: Callable[[int, int, str], None] | None = None,
 ) -> int:
-    """Combine selections into a verified temporary PDF before publishing it.
-
-    Every selection is validated before writing starts. Input documents are
-    opened one at a time; the original files are never modified. Output is
-    atomically moved into the destination only after it can be reopened and
-    its page count matches the planned export.
-    """
+    """Expand page ranges in source order and write the resulting page sequence."""
     source_list = list(sources)
     if not source_list:
         raise ValueError("Agregá al menos un archivo PDF.")
+
+    references: list[PdfPageRef] = []
+    # Validate every range before creating a temporary file or touching the target.
+    for source in source_list:
+        with pikepdf.open(source.path) as input_pdf:
+            page_indexes = parse_page_ranges(source.page_ranges, len(input_pdf.pages))
+        references.extend(PdfPageRef(source.path, index) for index in page_indexes)
+
+    return combine_pages_in_order(references, output_path, progress_callback)
+
+
+def combine_pages_in_order(
+    pages: Iterable[PdfPageRef],
+    output_path: str,
+    progress_callback: Callable[[int, int, str], None] | None = None,
+) -> int:
+    """Combine individual PDF pages in the exact supplied order.
+
+    The selected sequence is validated before a temporary output is created.
+    The result is reopened and checked before an atomic replacement publishes it.
+    Source documents are never modified.
+    """
+    references = [
+        PdfPageRef(str(Path(page.path).expanduser().resolve()), page.page_index)
+        for page in pages
+    ]
+    if not references:
+        raise ValueError("Seleccioná al menos una página para crear el PDF.")
 
     target = Path(output_path).expanduser().resolve()
     if target.suffix.lower() != ".pdf":
         raise ValueError("El archivo de salida debe tener extensión .pdf.")
 
-    input_paths = {Path(source.path).expanduser().resolve() for source in source_list}
+    input_paths = {Path(page.path).resolve() for page in references}
     if target in input_paths:
         raise ValueError("El archivo de salida no puede reemplazar uno de los PDF originales.")
     if not target.parent.is_dir():
         raise ValueError("La carpeta de destino no existe.")
 
-    # Preflight makes range errors fail before a temporary output is created.
-    plan: list[tuple[PdfSource, list[int]]] = []
-    total_pages = 0
-    for source in source_list:
-        with pikepdf.open(source.path) as input_pdf:
-            page_indexes = parse_page_ranges(source.page_ranges, len(input_pdf.pages))
-        plan.append((source, page_indexes))
-        total_pages += len(page_indexes)
+    # Preflight all paths and page indexes before creating the temporary output.
+    page_counts: dict[str, int] = {}
+    for page in references:
+        if not isinstance(page.page_index, int) or page.page_index < 0:
+            raise ValueError("La referencia contiene un número de página inválido.")
+        if page.path not in page_counts:
+            with pikepdf.open(page.path) as input_pdf:
+                count = len(input_pdf.pages)
+            if count == 0:
+                raise ValueError(f"El PDF «{Path(page.path).name}» no contiene páginas.")
+            page_counts[page.path] = count
+        if page.page_index >= page_counts[page.path]:
+            raise ValueError(
+                f"El PDF «{Path(page.path).name}» tiene {page_counts[page.path]} páginas; "
+                f"no existe la página {page.page_index + 1}."
+            )
 
-    if total_pages == 0:
-        raise ValueError("La selección no contiene páginas para exportar.")
-
+    total_pages = len(references)
     handle = tempfile.NamedTemporaryFile(
         prefix=f".{target.stem}_",
         suffix=".tmp.pdf",
@@ -80,19 +116,29 @@ def combine_selected_pages(
     update_step = max(1, total_pages // 100)
     try:
         with pikepdf.Pdf.new() as output_pdf:
-            for source, page_indexes in plan:
-                with pikepdf.open(source.path) as input_pdf:
-                    for page_index in page_indexes:
-                        output_pdf.pages.append(input_pdf.pages[page_index])
-                        exported += 1
-                        if progress_callback and (
-                            exported % update_step == 0 or exported == total_pages
-                        ):
-                            progress_callback(
-                                exported,
-                                total_pages,
-                                f"Combinando páginas: {exported:,} de {total_pages:,}…",
-                            )
+            current_path: str | None = None
+            current_pdf = None
+            try:
+                for page in references:
+                    if page.path != current_path:
+                        if current_pdf is not None:
+                            current_pdf.close()
+                        current_pdf = pikepdf.open(page.path)
+                        current_path = page.path
+
+                    output_pdf.pages.append(current_pdf.pages[page.page_index])
+                    exported += 1
+                    if progress_callback and (
+                        exported % update_step == 0 or exported == total_pages
+                    ):
+                        progress_callback(
+                            exported,
+                            total_pages,
+                            f"Combinando páginas: {exported:,} de {total_pages:,}…",
+                        )
+            finally:
+                if current_pdf is not None:
+                    current_pdf.close()
             output_pdf.save(str(temp_path))
 
         with pikepdf.open(str(temp_path)) as verification:
