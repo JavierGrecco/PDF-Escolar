@@ -22,8 +22,11 @@ En Mac, abrí el archivo descargado y arrastrá **PDF Escolar** a la carpeta **A
 
 1. Abrí PDF Escolar y agregá los PDF que quieras usar.
 2. Entrá en **Elegir visualmente** para marcar las páginas. También podés escribir números o rangos, por ejemplo: `1-8, 12, 20-25`.
-3. Ordená los documentos con las flechas.
-4. Pulsá **Crear PDF final** y elegí dónde guardar el archivo nuevo.
+3. Ordená los documentos con las flechas o arrastrá el control ↕ con el mouse o el touchpad.
+4. Pulsá **Ordenar páginas…** para ver las miniaturas de las páginas elegidas de todos los PDF y mezclarlas en el orden que necesites. Podés arrastrarlas o usar **Subir** y **Bajar**.
+5. Pulsá **Crear PDF final** y elegí dónde guardar el archivo nuevo. El resultado respeta el orden visual que confirmaste.
+
+La última carpeta desde la que agregaste PDF se recuerda para la próxima vez que uses el selector de archivos.
 
 Tus documentos se procesan en tu computadora. Los PDF originales no se modifican.
 
