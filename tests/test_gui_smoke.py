@@ -9,6 +9,7 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
+    from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView
     from pdf_escolar.pdf_engine import PdfPageRef
     from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
@@ -55,10 +56,15 @@ def test_document_card_displays_the_full_pdf_name_and_page_count(application):
         DocumentInfo("/tmp/Material de matemática - 4.º grado.pdf", 145, 1024 * 1024)
     )
     try:
+        card.resize(720, 300)
+        card.show()
+        application.processEvents()
         name = card.findChild(QLabel, "fileName")
         metadata = card.findChild(QLabel, "fileMetadata")
         assert name is not None
         assert name.text() == "Material de matemática - 4.º grado.pdf"
+        assert name.isVisible()
+        assert name.width() > 200
         assert metadata is not None
         assert "145 páginas" in metadata.text()
         assert name.wordWrap()
@@ -88,3 +94,17 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
         ]
     finally:
         dialog.close()
+
+def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path):
+    settings = QSettings()
+    old_value = settings.value("last_open_directory", None)
+    settings.setValue("last_open_directory", str(tmp_path))
+    window = MainWindow()
+    try:
+        assert window._last_open_directory() == str(tmp_path)
+    finally:
+        window.close()
+        if old_value is None:
+            settings.remove("last_open_directory")
+        else:
+            settings.setValue("last_open_directory", old_value)
