@@ -39,7 +39,10 @@ except ImportError as exc:
 
 @pytest.fixture(scope="session")
 def application():
-    return QApplication.instance() or QApplication([])
+    app = QApplication.instance() or QApplication([])
+    app.setOrganizationName("PDF Escolar")
+    app.setApplicationName("PDF Escolar")
+    return app
 
 
 def test_main_window_starts_in_a_safe_empty_state(application):
