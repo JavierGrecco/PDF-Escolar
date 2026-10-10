@@ -174,13 +174,15 @@ jobs:
         with:
           generate_release_notes: true
           files: |
+            dist/PDF-Escolar.exe
             dist/PDF-Escolar-Instalador-*-Windows.exe
             dist/PDF-Escolar-Instalador-*-macOS-Intel.dmg
             dist/PDF-Escolar-Instalador-*-macOS-Apple-Silicon.dmg
           body: |
             ## Descargas
 
-            - **Windows:** descargá el instalador `PDF-Escolar-Instalador-…-Windows.exe`, ejecutalo y seguí el asistente.
+            - **Windows (portable):** descargá `PDF-Escolar.exe`, hacé doble clic y la aplicación se abre. No instala nada ni requiere Python.
+            - **Windows (instalación clásica):** descargá `PDF-Escolar-Instalador-…-Windows.exe` y seguí el asistente en español.
             - **macOS Intel:** descargá el instalador cuyo nombre termina en `macOS-Intel.dmg`.
             - **macOS Apple Silicon (M1/M2/M3/M4):** descargá el instalador cuyo nombre termina en `macOS-Apple-Silicon.dmg`.
 

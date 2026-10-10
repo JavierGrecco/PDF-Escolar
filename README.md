@@ -1,81 +1,64 @@
 # PDF Escolar
 
-**Elegí páginas de tus libros PDF y guardalas en un solo documento.** Todo funciona localmente en tu computadora.
+**Elegí páginas de tus libros PDF y guardalas en un único documento.** Una aplicación de escritorio en español, diseñada para usarse sin conocimientos técnicos.
 
-PDF Escolar está pensado para personas que quieren resolver esta tarea sin aprender herramientas técnicas.
+## Descargar y abrir
 
-## Para usar PDF Escolar (sin comandos ni Python)
+**No necesitás instalar Python, abrir una terminal ni escribir comandos.** Los paquetes incluyen el programa y sus dependencias.
 
-**No hace falta abrir Terminal, usar PowerShell, escribir comandos ni instalar Python.** Cuando descargues una versión empaquetada, la aplicación incluye Python y sus dependencias.
+Todavía no hay una versión estable publicada en *Releases*. Mientras tanto, podés descargar los paquetes de prueba generados automáticamente en [esta compilación de PDF Escolar](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38021953109). En la sección **Artifacts** al pie de la ejecución, elegí el paquete que corresponda a tu equipo. Estos paquetes de prueba caducan el **9 de noviembre de 2026**.
 
 ### Windows
 
-1. Descargá `PDF-Escolar-Instalador-…-Windows.exe` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
-2. Hacé doble clic en el instalador y seguí los pasos. Podés elegir crear un acceso directo en el escritorio.
-3. Abrí **PDF Escolar** desde el menú Inicio o desde el acceso directo.
+Hay dos opciones:
 
-Las compilaciones de prueba no están firmadas digitalmente y Windows puede mostrar una advertencia de seguridad. La distribución pública requiere firma de código.
+**Opción recomendada para abrirlo directamente: PDF-Escolar.exe**
+
+1. Descargá el artefacto `pdf-escolar-windows` y descomprimí el ZIP.
+2. Hacé doble clic en `PDF-Escolar.exe`.
+3. La aplicación se abre; no tenés que instalar nada.
+
+El ejecutable portable es un único archivo que incluye Python y las bibliotecas necesarias. Al abrirlo, prepara automáticamente sus componentes temporales y arranca la interfaz.
+
+**Opción alternativa: instalador de Windows**
+
+Ejecutá `PDF-Escolar-Instalador-…-Windows.exe` y seguí el asistente en español. Esta opción crea una entrada en el menú Inicio y permite generar un acceso directo en el escritorio.
 
 ### macOS
 
-1. Si tu Mac tiene procesador **Intel**, descargá `PDF-Escolar-Instalador-…-macOS-Intel.dmg`. Si tiene **Apple Silicon (M1, M2, M3 o M4)**, descargá `PDF-Escolar-Instalador-…-macOS-Apple-Silicon.dmg` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
-2. Abrí el archivo descargado y arrastrá **PDF Escolar** a **Aplicaciones**.
-3. Abrí PDF Escolar desde Aplicaciones.
+Elegí el paquete según el procesador de tu Mac:
 
-El paquete Intel se construye con Qt 6.4 para apuntar a macOS Catalina 10.15. Antes de declarar compatibilidad de producción, debe probarse en un Mac con Catalina real. Las compilaciones de prueba no están firmadas ni notarizadas por Apple, por lo que macOS puede mostrar una advertencia. Para una distribución pública fluida se necesita una cuenta Apple Developer y configurar la firma y notarización.
+- **Mac Intel:** `PDF-Escolar-Instalador-…-macOS-Intel.dmg`.
+- **Mac Apple Silicon (M1, M2, M3 o M4):** `PDF-Escolar-Instalador-…-macOS-Apple-Silicon.dmg`.
 
-> Si todavía no hay una versión publicada en Releases, se puede consultar [GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions) para ver las compilaciones de prueba. Esos artefactos sirven para validar el programa, no son instaladores finales firmados.
+Abrí el archivo `.dmg`, arrastrá **PDF Escolar** a **Aplicaciones** y luego abrí la aplicación desde esa carpeta. No necesitás instalar Python ni abrir Terminal.
 
-## Cómo se usa
+El paquete Intel se compila con dependencias orientadas a macOS Catalina 10.15, pero la compatibilidad final debe validarse en una Mac con Catalina real antes de declarar una versión de producción.
 
-1. **Agregá tus PDF.** Seleccioná uno o varios archivos con el botón o arrastralos a la ventana.
-2. **Elegí las páginas.** En cada documento, pulsá **Elegir visualmente** para ver miniaturas y marcar páginas. Si solo necesitás unas pocas de un libro largo, usá **Desmarcar todas** y después marcá las páginas deseadas. También se pueden escribir rangos, por ejemplo `1-8, 12, 20-25`.
-3. **Ordená los archivos.** Usá las flechas para cambiar qué libro aparece primero en el documento final.
-4. **Creá el PDF.** Pulsá **Crear PDF final** y elegí dónde guardarlo. Al terminar, podés abrir la carpeta del resultado.
+### Aviso de seguridad
 
-Los documentos se procesan en la computadora: no se suben a Internet. Los PDF originales permanecen intactos.
+Los paquetes de prueba actuales no están firmados digitalmente. Windows puede mostrar una advertencia de SmartScreen, y macOS puede advertir que la aplicación no está firmada ni notarizada. No se debe confundir la compilación correcta con una distribución pública firmada: para una publicación de producción se deben configurar los certificados de firma y, en macOS, la notarización de Apple.
 
-## Sobre archivos grandes
+## Cómo usar la aplicación
 
-La aplicación procesa archivos locales y crea las miniaturas en grupos pequeños para evitar convertir un libro entero en imágenes de una sola vez. El tiempo de proceso depende del tamaño del libro, la cantidad de páginas seleccionadas y la computadora disponible. También necesitás espacio libre para guardar el documento final.
+1. **Agregá los PDF.** Elegí uno o varios archivos con el botón o arrastralos a la ventana.
+2. **Seleccioná las páginas.** Pulsá **Elegir visualmente** para ver las miniaturas y marcar las páginas que necesitás. En libros largos, podés usar **Desmarcar todas** y luego marcar solo las páginas elegidas. También podés escribir rangos como `1-8, 12, 20-25`.
+3. **Ordená los documentos.** Usá las flechas para definir qué libro aparece primero en el PDF final.
+4. **Creá el archivo final.** Pulsá **Crear PDF final**, elegí dónde guardarlo y abrí la carpeta de destino al terminar.
 
-## Para desarrolladores (solo para colaborar con el proyecto)
+## Privacidad e integridad
 
-Esta sección es únicamente para quienes quieran ejecutar o modificar el código fuente. **No es necesaria para instalar ni usar la aplicación empaquetada.**
+Los documentos se procesan en tu computadora y no se suben a Internet. PDF Escolar no modifica los archivos originales: crea un documento nuevo y comprueba el resultado antes de guardarlo.
 
-Requiere Python 3.11, 3.12 o 3.13.
+## Entorno de desarrollo (opcional)
 
-### Preparar el entorno
+Esta sección es para quien quiera mantener o modificar el código fuente. No hace falta leerla para instalar ni usar PDF Escolar.
 
-macOS:
+Consultá la guía de [preparación del entorno de desarrollo](docs/ENTORNO-DE-DESARROLLO.md).
 
-    python3 -m venv .venv
-    source .venv/bin/activate
-    python -m pip install --upgrade pip
-    python -m pip install -e ".[dev]"
-    python -m pdf_escolar
+## Proyecto
 
-Windows PowerShell:
-
-    py -3.12 -m venv .venv
-    .\.venv\Scripts\Activate.ps1
-    python -m pip install --upgrade pip
-    python -m pip install -e ".[dev]"
-    python -m pdf_escolar
-
-### Comprobaciones
-
-    python -m ruff check .
-    python -m pytest -q
-
-Las compilaciones se generan en GitHub Actions para Windows, macOS Intel y Apple Silicon. Para publicar una versión descargable, el workflow se ejecuta con una etiqueta Git cuyo nombre empiece con `v`, por ejemplo `v0.1.0`.
-
-## Calidad y distribución
-
-- Interfaz en español, selección visual por miniaturas y ayuda dentro de la aplicación.
-- Motor PDF separado de la interfaz gráfica.
-- Pruebas automáticas en Linux, Windows y macOS.
-- Cada instalador incluye el intérprete y las dependencias; el usuario final no necesita Python.
-- Las versiones de producción deben probarse con libros grandes reales y en computadoras limpias.
-- La distribución pública debe incluir firma de Windows y firma/notarización de macOS.
-- El código propio está bajo licencia MIT. Las dependencias mantienen sus propias licencias y avisos.
+- [Código fuente y versiones](https://github.com/JavierGrecco/PDF-Escolar)
+- [Compilaciones y pruebas automatizadas](https://github.com/JavierGrecco/PDF-Escolar/actions)
+- [Versiones publicadas](https://github.com/JavierGrecco/PDF-Escolar/releases)
+- [Licencia MIT](LICENSE)
