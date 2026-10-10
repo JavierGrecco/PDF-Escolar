@@ -1,0 +1,28 @@
+# Publicar una versión descargable
+
+**Esta guía es solo para quien mantiene el repositorio.** Quien utiliza PDF Escolar no debe seguir estos pasos: descarga la versión publicada desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+
+## Publicar desde la web de GitHub
+
+1. Abrí el flujo [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml).
+2. Pulsá **Run workflow** y elegí la rama `main`.
+3. En **Versión para publicar**, escribí la versión sin la letra `v`. Por ejemplo, `0.1.0-beta.1`.
+4. Pulsá **Run workflow**.
+
+El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon. Si todas las compilaciones terminan correctamente, crea la publicación `v...` en **Releases** y adjunta los instaladores. No hace falta abrir una terminal ni escribir comandos.
+
+## ¿Qué versión conviene publicar?
+
+- **Vista previa de prueba:** usá una versión con guion, por ejemplo `0.1.0-beta.1`. GitHub la marcará como *pre-release*. Es lo recomendado mientras la aplicación no tenga firma digital y pruebas manuales en equipos limpios.
+- **Versión estable:** usá una versión como `0.1.0` solo después de hacer pruebas manuales en los sistemas que se anuncian como compatibles y resolver la firma/notarización si se distribuirá públicamente.
+
+## ¿Cuánto duran los archivos?
+
+Los paquetes bajo **Artifacts** son compilaciones temporales y, en este repositorio público, se configuran para conservarse 90 días como máximo. Los instaladores adjuntos a una publicación en **Releases** no tienen esa caducidad automática; siguen disponibles mientras no se eliminen la publicación o sus archivos y el repositorio siga disponible.
+
+## Descargas de la publicación
+
+- `PDF-Escolar.exe`: aplicación portable para Windows, sin instalación.
+- `PDF-Escolar-Instalador-…-Windows.exe`: instalador tradicional para Windows.
+- `PDF-Escolar-Instalador-…-macOS-Intel.dmg`: Mac con procesador Intel.
+- `PDF-Escolar-Instalador-…-macOS-Apple-Silicon.dmg`: Mac con Apple Silicon (M1, M2, M3, M4 o posterior).
