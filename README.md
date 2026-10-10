@@ -10,7 +10,7 @@ PDF Escolar está pensado para personas que quieren resolver esta tarea sin apre
 
 ### Windows
 
-1. Descargá el archivo `PDF-Escolar-Instalador-…-Windows.exe` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+1. Descargá `PDF-Escolar-Instalador-…-Windows.exe` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
 2. Hacé doble clic en el instalador y seguí los pasos. Podés elegir crear un acceso directo en el escritorio.
 3. Abrí **PDF Escolar** desde el menú Inicio o desde el acceso directo.
 
@@ -18,13 +18,13 @@ Las compilaciones de prueba no están firmadas digitalmente y Windows puede most
 
 ### macOS
 
-1. Descargá `PDF-Escolar-Instalador-…-macOS.dmg` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
+1. Si tu Mac tiene procesador **Intel**, descargá `PDF-Escolar-Instalador-…-macOS-Intel.dmg`. Si tiene **Apple Silicon (M1, M2, M3 o M4)**, descargá `PDF-Escolar-Instalador-…-macOS-Apple-Silicon.dmg` desde [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases).
 2. Abrí el archivo descargado y arrastrá **PDF Escolar** a **Aplicaciones**.
 3. Abrí PDF Escolar desde Aplicaciones.
 
-Las compilaciones de prueba no están firmadas ni notarizadas por Apple, por lo que macOS puede mostrar una advertencia. Para una distribución pública fluida se necesita una cuenta Apple Developer y configurar la firma y notarización.
+El paquete Intel se construye con Qt 6.4 para apuntar a macOS Catalina 10.15. Antes de declarar compatibilidad de producción, debe probarse en un Mac con Catalina real. Las compilaciones de prueba no están firmadas ni notarizadas por Apple, por lo que macOS puede mostrar una advertencia. Para una distribución pública fluida se necesita una cuenta Apple Developer y configurar la firma y notarización.
 
-> Si todavía no hay una versión publicada en Releases, se puede consultar [GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions) para ver las compilaciones de prueba. Esos artefactos son para validar el programa, no instaladores finales firmados.
+> Si todavía no hay una versión publicada en Releases, se puede consultar [GitHub Actions](https://github.com/JavierGrecco/PDF-Escolar/actions) para ver las compilaciones de prueba. Esos artefactos sirven para validar el programa, no son instaladores finales firmados.
 
 ## Cómo se usa
 
@@ -68,14 +68,14 @@ Windows PowerShell:
     python -m ruff check .
     python -m pytest -q
 
-Las compilaciones de escritorio se generan en GitHub Actions para cada sistema operativo. Para publicar una versión descargable, el workflow se ejecuta con una etiqueta Git cuyo nombre empiece con `v`, por ejemplo `v0.1.0`.
+Las compilaciones se generan en GitHub Actions para Windows, macOS Intel y Apple Silicon. Para publicar una versión descargable, el workflow se ejecuta con una etiqueta Git cuyo nombre empiece con `v`, por ejemplo `v0.1.0`.
 
 ## Calidad y distribución
 
-- Interfaz de escritorio en español con selección visual por miniaturas.
+- Interfaz en español, selección visual por miniaturas y ayuda dentro de la aplicación.
 - Motor PDF separado de la interfaz gráfica.
 - Pruebas automáticas en Linux, Windows y macOS.
-- Compilaciones separadas por sistema operativo; cada descarga incluye su runtime y dependencias.
-- Las versiones de producción deben probarse con libros reales y en computadoras limpias.
+- Cada instalador incluye el intérprete y las dependencias; el usuario final no necesita Python.
+- Las versiones de producción deben probarse con libros grandes reales y en computadoras limpias.
 - La distribución pública debe incluir firma de Windows y firma/notarización de macOS.
 - El código propio está bajo licencia MIT. Las dependencias mantienen sus propias licencias y avisos.
