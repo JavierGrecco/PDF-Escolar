@@ -34,6 +34,8 @@ Para refrescar los enlaces directos sin publicar una versión, ejecutá el flujo
 
 Los paquetes bajo **Artifacts** son compilaciones temporales y, en este repositorio público, se configuran para conservarse 90 días como máximo. Los instaladores adjuntos a una publicación en **Releases** no tienen esa caducidad automática; siguen disponibles mientras no se eliminen la publicación o sus archivos y el repositorio siga disponible.
 
+**Sobre el tamaño del historial:** los binarios que ya se guardaron en commits anteriores siguen formando parte del historial de Git. Esta política evita volver a guardarlos por cada cambio de código, pero no borra lo acumulado. Eliminar blobs antiguos requiere reescribir el historial y coordinar una actualización forzada de las ramas; es una tarea de mantenimiento separada y no se hace automáticamente.
+
 ## Descargas de la publicación
 
 - `PDF-Escolar.exe`: aplicación portable para Windows, sin instalación.
