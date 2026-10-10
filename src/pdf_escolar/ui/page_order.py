@@ -150,6 +150,10 @@ class PageOrderDialog(QDialog):
         self.loading_bar.hide()
         root.addWidget(self.loading_bar)
 
+        self.thumbnail_timer = QTimer(self)
+        self.thumbnail_timer.setSingleShot(True)
+        self.thumbnail_timer.timeout.connect(self._queue_visible_thumbnails)
+
         buttons = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Ok
         )
@@ -203,8 +207,10 @@ class PageOrderDialog(QDialog):
             QProgressBar#loadingBar::chunk { background:#3157C8; border-radius:3px; }
         """)
 
+    def showEvent(self, event) -> None:
+        super().showEvent(event)
         if self.pages:
-            QTimer.singleShot(0, self._queue_visible_thumbnails)
+            self.thumbnail_timer.start(0)
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
