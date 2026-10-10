@@ -231,10 +231,7 @@ class PageOrderDialog(QDialog):
         task = PageOrderThumbnailTask(requests)
         task.signals.ready.connect(self._thumbnail_ready)
         task.signals.failed.connect(self._thumbnail_failed)
-        task.signals.finished.connect(self._thumbnails_finished)
-        task.signals.finished.connect(
-            lambda *args, current=task: self.tasks.discard(current)
-        )
+        task.signals.finished.connect(lambda *args, current=task: self._task_finished(current))
         self.tasks.add(task)
         from PySide6.QtCore import QThreadPool
 
@@ -255,8 +252,8 @@ class PageOrderDialog(QDialog):
         if item is not None:
             item.setToolTip(f"{item.toolTip()}\nVista previa no disponible: {detail}")
 
-    @Slot()
-    def _thumbnails_finished(self) -> None:
+    def _task_finished(self, task: QRunnable) -> None:
+        self.tasks.discard(task)
         if not self.tasks:
             self.loading_bar.hide()
 
@@ -279,16 +276,13 @@ class PageOrderDialog(QDialog):
         self._queue_visible_thumbnails()
 
     def restore_initial_order(self) -> None:
-        items = sorted(
-            (self.list_widget.item(row) for row in range(self.list_widget.count())),
-            key=lambda item: int(item.data(Qt.ItemDataRole.UserRole)),
-        )
+        items = [self.list_widget.takeItem(0) for _ in range(self.list_widget.count())]
+        items.sort(key=lambda item: int(item.data(Qt.ItemDataRole.UserRole)))
         current_id = (
             int(self.list_widget.currentItem().data(Qt.ItemDataRole.UserRole))
             if self.list_widget.currentItem() is not None
             else None
         )
-        self.list_widget.clear()
         for item in items:
             self.list_widget.addItem(item)
         if current_id is not None:
