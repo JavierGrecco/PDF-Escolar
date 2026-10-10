@@ -194,4 +194,4 @@ def test_cancelled_page_order_thumbnail_task_finishes_without_opening_a_pdf():
     task.cancel()
     task.run()
 
-    assert finished == [id(task)]
+    assert len(finished) == 1 and finished[0] is task
