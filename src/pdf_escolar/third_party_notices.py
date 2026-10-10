@@ -11,13 +11,32 @@ NOTICE_FILENAME = "THIRD-PARTY-NOTICES.txt"
 
 def load_third_party_notices() -> str:
     """Return the generated notices, falling back to the source-tree template."""
+    candidates: list[Path] = []
     bundle_root = getattr(sys, "_MEIPASS", None)
     if bundle_root:
-        bundled = Path(bundle_root) / "pdf_escolar" / NOTICE_FILENAME
+        root = Path(bundle_root)
+        candidates.extend(
+            (
+                root / "pdf_escolar" / NOTICE_FILENAME,
+                root / NOTICE_FILENAME,
+            )
+        )
+
+    executable_dir = Path(sys.executable).resolve().parent
+    candidates.extend(
+        (
+            executable_dir / NOTICE_FILENAME,
+            executable_dir.parent / "Resources" / "pdf_escolar" / NOTICE_FILENAME,
+            executable_dir.parent / "Resources" / NOTICE_FILENAME,
+            Path(__file__).resolve().parent / NOTICE_FILENAME,
+        )
+    )
+    for candidate in candidates:
         try:
-            return bundled.read_text(encoding="utf-8")
+            if candidate.is_file():
+                return candidate.read_text(encoding="utf-8")
         except OSError:
-            pass
+            continue
 
     template = (
         Path(__file__).resolve().parents[2]
