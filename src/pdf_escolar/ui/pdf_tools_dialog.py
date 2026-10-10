@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from threading import Event
 
-from PySide6.QtCore import QObject, QRunnable, Qt, Signal, Slot
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 from PySide6.QtWidgets import (
     QComboBox,
     QDialog,
