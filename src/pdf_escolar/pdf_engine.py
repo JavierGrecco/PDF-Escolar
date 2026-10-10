@@ -23,7 +23,10 @@ class PdfSource:
 def inspect_pdf(path: str) -> int:
     """Open a PDF and return its number of pages."""
     with pikepdf.open(path) as pdf:
-        return len(pdf.pages)
+        page_count = len(pdf.pages)
+    if page_count == 0:
+        raise ValueError("El PDF no contiene páginas.")
+    return page_count
 
 
 def combine_selected_pages(

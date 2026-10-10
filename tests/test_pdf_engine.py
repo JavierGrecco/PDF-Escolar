@@ -67,3 +67,11 @@ def test_output_requires_pdf_extension(tmp_path):
     make_pdf(source, [200])
     with pytest.raises(ValueError, match="extensión .pdf"):
         combine_selected_pages([PdfSource(str(source), "1")], str(tmp_path / "result.txt"))
+
+
+def test_inspect_pdf_rejects_a_document_without_pages(tmp_path):
+    source = tmp_path / "empty.pdf"
+    with pikepdf.Pdf.new() as pdf:
+        pdf.save(source)
+    with pytest.raises(ValueError, match="no contiene páginas"):
+        inspect_pdf(str(source))
