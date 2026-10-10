@@ -5,7 +5,7 @@ from collections import defaultdict
 from pathlib import Path
 
 import pypdfium2 as pdfium
-from PySide6.QtCore import QObject, QRunnable, QSize, QTimer, Qt, Signal, Slot
+from PySide6.QtCore import QObject, QRunnable, QSize, QThreadPool, QTimer, Qt, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
     QAbstractItemView,
@@ -73,6 +73,7 @@ class PageOrderDialog(QDialog):
         super().__init__(parent)
         self.pages = list(pages)
         self.tasks: set[QRunnable] = set()
+        self.thumbnail_pool = QThreadPool(self)
         self.requested_thumbnails: set[int] = set()
         self.items_by_id: dict[int, QListWidgetItem] = {}
 
@@ -242,9 +243,7 @@ class PageOrderDialog(QDialog):
         task.signals.failed.connect(self._thumbnail_failed)
         task.signals.finished.connect(self._task_finished)
         self.tasks.add(task)
-        from PySide6.QtCore import QThreadPool
-
-        QThreadPool.globalInstance().start(task)
+        self.thumbnail_pool.start(task)
 
     @Slot(int, bytes)
     def _thumbnail_ready(self, item_id: int, image_bytes: bytes) -> None:
