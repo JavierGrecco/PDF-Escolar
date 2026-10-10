@@ -1,6 +1,7 @@
 name: Build desktop artifacts
 
 on:
+  pull_request:
   workflow_dispatch:
   push:
     tags:
