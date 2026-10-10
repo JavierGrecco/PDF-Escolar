@@ -112,9 +112,6 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-15-intel
-            arch_slug: Intel
-            arch_label: Intel
           - runner: macos-latest
             arch_slug: Apple-Silicon
             arch_label: Apple Silicon
@@ -237,11 +234,9 @@ jobs:
             Complemento opcional de reconocimiento de texto (OCR) para PDF Escolar.
 
             - Windows x64: descargá `PDF-Escolar-OCR-Windows-x64.zip`.
-            - macOS Intel: descargá `PDF-Escolar-OCR-macOS-Intel.zip`.
             - macOS Apple Silicon: descargá `PDF-Escolar-OCR-macOS-Apple-Silicon.zip`.
 
             El reconocimiento se procesa localmente. El paquete incluye Tesseract y los modelos español, inglés y orientación. La aplicación principal se descarga por separado. Revisá los avisos y las licencias incluidos en cada ZIP.
           files: |
             dist/PDF-Escolar-OCR-Windows-x64.zip
-            dist/PDF-Escolar-OCR-macOS-Intel.zip
             dist/PDF-Escolar-OCR-macOS-Apple-Silicon.zip
