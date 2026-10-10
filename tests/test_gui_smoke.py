@@ -295,3 +295,28 @@ def test_cancelled_page_order_thumbnail_task_finishes_without_opening_a_pdf():
     task.run()
 
     assert finished == [str(id(task))]
+
+
+
+def test_pdf_tools_dialog_switches_between_native_operations(application):
+    from pdf_escolar.ui.pdf_tools_dialog import PdfToolsDialog
+
+    dialog = PdfToolsDialog()
+    try:
+        assert dialog.operation_selector.currentData() == "rotate"
+        assert not dialog.rotate_panel.isHidden()
+        assert dialog.crop_panel.isHidden()
+        assert dialog.run_button.text() == "Procesar PDF"
+
+        dialog.operation_selector.setCurrentIndex(1)
+        assert dialog.operation_selector.currentData() == "crop"
+        assert dialog.rotate_panel.isHidden()
+        assert not dialog.crop_panel.isHidden()
+
+        dialog.operation_selector.setCurrentIndex(2)
+        assert dialog.operation_selector.currentData() == "split"
+        assert dialog.rotate_panel.isHidden()
+        assert dialog.crop_panel.isHidden()
+        assert not dialog.split_note.isHidden()
+    finally:
+        _dispose_widget(dialog, application)
