@@ -110,6 +110,7 @@ class DropArea(QFrame):
 
 class DocumentCard(QFrame):
     remove_requested = Signal(str)
+    move_requested = Signal(str, int)
     ranges_changed = Signal()
 
     def __init__(self, document: DocumentInfo):
@@ -135,10 +136,29 @@ class DocumentCard(QFrame):
         column.addWidget(name)
         column.addWidget(metadata)
         top.addLayout(column, 1)
+        order_controls = QHBoxLayout()
+        self.move_up_button = QPushButton("↑")
+        self.move_up_button.setObjectName("secondaryButton")
+        self.move_up_button.setToolTip("Mover este PDF antes")
+        self.move_up_button.setAccessibleName("Mover archivo hacia arriba")
+        self.move_up_button.setFixedWidth(38)
+        self.move_up_button.clicked.connect(lambda: self.move_requested.emit(document.path, -1))
+        order_controls.addWidget(self.move_up_button)
+
+        self.move_down_button = QPushButton("↓")
+        self.move_down_button.setObjectName("secondaryButton")
+        self.move_down_button.setToolTip("Mover este PDF después")
+        self.move_down_button.setAccessibleName("Mover archivo hacia abajo")
+        self.move_down_button.setFixedWidth(38)
+        self.move_down_button.clicked.connect(lambda: self.move_requested.emit(document.path, 1))
+        order_controls.addWidget(self.move_down_button)
+
         remove = QPushButton("Quitar")
         remove.setObjectName("secondaryButton")
+        remove.setToolTip("Quitar este archivo de la selección")
         remove.clicked.connect(lambda: self.remove_requested.emit(document.path))
-        top.addWidget(remove, 0, Qt.AlignmentFlag.AlignTop)
+        order_controls.addWidget(remove)
+        top.addLayout(order_controls, 0)
         layout.addLayout(top)
         layout.addWidget(QLabel("Páginas que querés incluir"))
         row = QHBoxLayout()
@@ -320,6 +340,7 @@ class MainWindow(QMainWindow):
         info = DocumentInfo(path, page_count, size)
         card = DocumentCard(info)
         card.remove_requested.connect(self.remove_file)
+        card.move_requested.connect(self.move_file)
         card.ranges_changed.connect(self._refresh_export_state)
         self.cards_layout.insertWidget(self.cards_layout.count() - 1, card)
         self.documents[path] = (info, card)
@@ -349,6 +370,29 @@ class MainWindow(QMainWindow):
         elif not self.pending:
             self.status.setText("No hay archivos cargados. Podés volver a intentarlo.")
 
+    @Slot(str, int)
+    def move_file(self, path: str, offset: int):
+        ordered = list(self.documents.items())
+        current_index = next((i for i, (key, _) in enumerate(ordered) if key == path), None)
+        if current_index is None:
+            return
+        target_index = current_index + offset
+        if target_index < 0 or target_index >= len(ordered):
+            return
+        ordered[current_index], ordered[target_index] = ordered[target_index], ordered[current_index]
+        self.documents = dict(ordered)
+        for index, (_key, (_info, card)) in enumerate(self.documents.items()):
+            self.cards_layout.removeWidget(card)
+            self.cards_layout.insertWidget(index, card)
+        self._refresh_order_buttons()
+
+    def _refresh_order_buttons(self):
+        ordered_cards = list(self.documents.values())
+        last_index = len(ordered_cards) - 1
+        for index, (_info, card) in enumerate(ordered_cards):
+            card.move_up_button.setEnabled(index > 0)
+            card.move_down_button.setEnabled(index < last_index)
+
     @Slot(str)
     def remove_file(self, path: str):
         entry = self.documents.pop(path, None)
@@ -366,6 +410,7 @@ class MainWindow(QMainWindow):
             self.file_count.setText("Revisando archivos…")
         else:
             self.file_count.setText("Todavía no agregaste archivos")
+        self._refresh_order_buttons()
         self._refresh_export_state()
 
     def _refresh_export_state(self):

@@ -7,15 +7,17 @@ import pypdfium2 as pdfium
 from PySide6.QtCore import QObject, QRunnable, QSize, Qt, QThreadPool, Signal, Slot
 from PySide6.QtGui import QIcon, QPixmap
 from PySide6.QtWidgets import (
-    QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QListWidget, QListWidgetItem,
+    QDialog, QDialogButtonBox, QHBoxLayout, QLabel, QListView, QListWidget, QListWidgetItem,
     QProgressBar, QPushButton, QVBoxLayout, QWidget
 )
 
 from pdf_escolar.page_ranges import format_page_ranges, parse_page_ranges
-from pdf_escolar.pdf_preview import THUMBNAIL_MAX_SIZE, render_page_thumbnail
+from pdf_escolar.pdf_preview import render_page_thumbnail
 
 
 PAGES_PER_VIEW = 30
+
+
 class ThumbnailSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)
@@ -108,11 +110,11 @@ class PagePickerDialog(QDialog):
 
         self.list_widget = QListWidget()
         self.list_widget.setObjectName("thumbnailGrid")
-        self.list_widget.setViewMode(QListWidget.ViewMode.IconMode)
-        self.list_widget.setFlow(QListWidget.Flow.LeftToRight)
+        self.list_widget.setViewMode(QListView.ViewMode.IconMode)
+        self.list_widget.setFlow(QListView.Flow.LeftToRight)
         self.list_widget.setWrapping(True)
-        self.list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
-        self.list_widget.setMovement(QListWidget.Movement.Static)
+        self.list_widget.setResizeMode(QListView.ResizeMode.Adjust)
+        self.list_widget.setMovement(QListView.Movement.Static)
         self.list_widget.setIconSize(QSize(116, 148))
         self.list_widget.setGridSize(QSize(136, 184))
         self.list_widget.setSpacing(7)
