@@ -22,7 +22,7 @@ PAGES_PER_VIEW = 30
 class ThumbnailSignals(QObject):
     ready = Signal(int, bytes)
     failed = Signal(int, str)
-    finished = Signal(int)
+    finished = Signal(object)
 
 
 class ThumbnailTask(QRunnable):
@@ -64,7 +64,7 @@ class ThumbnailTask(QRunnable):
                 if document is not None:
                     document.close()
             finally:
-                self.signals.finished.emit(id(self))
+                self.signals.finished.emit(self)
 
 class PagePickerDialog(QDialog):
     """Select pages visually, rendering only 30 thumbnails at a time."""
@@ -269,9 +269,9 @@ class PagePickerDialog(QDialog):
             item.setText(f"Página {page_index + 1}\nVista previa no disponible")
             item.setToolTip(detail)
 
-    @Slot(int)
-    def _task_finished(self, task_id: int) -> None:
-        task = next((item for item in self.tasks if id(item) == task_id), None)
+    @Slot(object)
+    def _task_finished(self, finished_task: object) -> None:
+        task = next((item for item in self.tasks if item is finished_task), None)
         if task is None:
             return
         for signal, slot in (
