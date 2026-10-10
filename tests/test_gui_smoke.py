@@ -12,11 +12,8 @@ try:
     from PySide6.QtCore import QSettings
     from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView
     from pdf_escolar.pdf_engine import PdfPageRef
-    from pdf_escolar.ui.main_window import (
-        DocumentCard, DocumentInfo, ExportTask, InspectTask, MainWindow
-    )
-    from pdf_escolar.ui.page_order import PageOrderDialog, PageOrderThumbnailTask
-    from pdf_escolar.ui.page_picker import PagePickerDialog, ThumbnailTask
+    from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
+    from pdf_escolar.ui.page_order import PageOrderDialog
 except ImportError as exc:
     # Some Linux runners lack system libraries needed by Qt. Skip only those
     # known runtime-library errors; application import regressions must fail CI.
@@ -140,6 +137,7 @@ def test_hidden_page_order_dialog_does_not_start_thumbnail_tasks(application):
         dialog.close()
 
 def test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible(application):
+    from pdf_escolar.ui.page_picker import PagePickerDialog
     dialog = PagePickerDialog("/tmp/not-opened.pdf", 1, "1")
     try:
         application.processEvents()
@@ -151,6 +149,7 @@ def test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible(appl
 
 
 def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
+    from pdf_escolar.ui.main_window import ExportTask, InspectTask
     inspect_task = InspectTask([])
     export_task = ExportTask([], "/tmp/not-created.pdf")
 
@@ -159,6 +158,7 @@ def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
 
 
 def test_page_picker_keeps_the_current_page_group_responsive(application):
+    from pdf_escolar.ui.page_picker import PagePickerDialog
     dialog = PagePickerDialog("/tmp/not-opened.pdf", 65, "1, 35")
     try:
         assert dialog.next_button.isEnabled()
@@ -174,6 +174,7 @@ def test_page_picker_keeps_the_current_page_group_responsive(application):
         dialog.pool.waitForDone()
 
 def test_cancelled_page_picker_thumbnail_task_finishes_without_opening_a_pdf():
+    from pdf_escolar.ui.page_picker import ThumbnailTask
     task = ThumbnailTask("/tmp/not-opened.pdf", [0])
     finished = []
     task.signals.finished.connect(finished.append)
@@ -185,6 +186,7 @@ def test_cancelled_page_picker_thumbnail_task_finishes_without_opening_a_pdf():
 
 
 def test_cancelled_page_order_thumbnail_task_finishes_without_opening_a_pdf():
+    from pdf_escolar.ui.page_order import PageOrderThumbnailTask
     task = PageOrderThumbnailTask(
         [(0, PdfPageRef("/tmp/not-opened.pdf", 0))]
     )
