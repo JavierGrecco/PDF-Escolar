@@ -9,8 +9,8 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QDesktopServices, QDrag, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QApplication, QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit,
-    QMainWindow, QMessageBox, QPushButton, QProgressBar, QScrollArea, QSizePolicy,
-    QVBoxLayout, QWidget
+    QMainWindow, QMessageBox, QMenu, QPlainTextEdit, QPushButton, QProgressBar,
+    QScrollArea, QSizePolicy, QVBoxLayout, QWidget
 )
 from pdf_escolar import __version__
 from pdf_escolar.page_ranges import parse_page_ranges
@@ -24,6 +24,7 @@ from pdf_escolar.ui.page_order import PageOrderDialog
 from pdf_escolar.ui.window_geometry import fit_window_to_screen
 from pdf_escolar.ui.page_picker import PagePickerDialog
 from pdf_escolar.ui.pdf_tools_dialog import PdfToolsDialog
+from pdf_escolar.third_party_notices import load_third_party_notices
 
 
 @dataclass(frozen=True)
@@ -416,9 +417,13 @@ class MainWindow(QMainWindow):
         self.tools_button.setToolTip("Rotar páginas, recortar márgenes o separar un PDF en archivos individuales")
         self.tools_button.clicked.connect(self.open_pdf_tools)
         header.addWidget(self.tools_button, 0, Qt.AlignmentFlag.AlignTop)
-        self.help_button = QPushButton("Cómo usar")
+        self.help_button = QPushButton("Ayuda")
         self.help_button.setObjectName("secondaryButton")
-        self.help_button.clicked.connect(self.show_help)
+        self.help_button.setToolTip("Consultar cómo usar PDF Escolar y sus licencias")
+        help_menu = QMenu(self.help_button)
+        help_menu.addAction("Cómo usar", self.show_help)
+        help_menu.addAction("Licencias y componentes", self.show_licenses)
+        self.help_button.setMenu(help_menu)
         header.addWidget(self.help_button, 0, Qt.AlignmentFlag.AlignTop)
         version = QLabel(f"Versión {__version__}")
         version.setObjectName("versionLabel")
@@ -542,6 +547,43 @@ class MainWindow(QMainWindow):
             "o separar un documento en archivos individuales.",
             icon=QMessageBox.Icon.Information,
         )
+
+    def show_licenses(self) -> None:
+        """Show the license manifest generated for this packaged build."""
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Licencias y componentes")
+        fit_window_to_screen(
+            dialog,
+            preferred_size=(900, 720),
+            minimum_size=(520, 400),
+            parent=self,
+        )
+
+        layout = QVBoxLayout(dialog)
+        layout.setContentsMargins(16, 14, 16, 14)
+        layout.setSpacing(10)
+
+        introduction = QLabel(
+            "Acá podés consultar las versiones de las bibliotecas incluidas y los avisos "
+            "de licencia disponibles para esta compilación. Cada componente conserva "
+            "sus propias condiciones."
+        )
+        introduction.setWordWrap(True)
+        layout.addWidget(introduction)
+
+        manifest = QPlainTextEdit(dialog)
+        manifest.setObjectName("licenseManifest")
+        manifest.setReadOnly(True)
+        manifest.setLineWrapMode(QPlainTextEdit.LineWrapMode.WidgetWidth)
+        manifest.setPlainText(load_third_party_notices())
+        layout.addWidget(manifest, 1)
+
+        close_button = QPushButton("Cerrar")
+        close_button.setObjectName("primaryButton")
+        close_button.clicked.connect(dialog.accept)
+        layout.addWidget(close_button, 0, Qt.AlignmentFlag.AlignRight)
+        dialog.exec()
+        dialog.deleteLater()
 
     def _last_open_directory(self) -> str:
         """Return the last folder used to add PDFs, falling back to the home folder."""
