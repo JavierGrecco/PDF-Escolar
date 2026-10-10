@@ -654,6 +654,7 @@ class PageOrderDialog(QDialog):
         item = self.list_widget.takeItem(row)
         self.list_widget.insertItem(row + 1, item)
         self.list_widget.setCurrentItem(item)
+        self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
 
     def restore_initial_order(self) -> None:
