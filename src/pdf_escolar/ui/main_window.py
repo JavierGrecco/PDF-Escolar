@@ -689,7 +689,12 @@ class MainWindow(QMainWindow):
             return
 
         dialog = PageOrderDialog(pages, self)
-        if dialog.exec() == QDialog.DialogCode.Accepted:
+        result = dialog.exec()
+        # Wait for any in-flight thumbnail task before this modal dialog can be
+        # destroyed; that keeps signal objects and QRunnable wrappers alive on
+        # the GUI thread even if the user applies/cancels while previews load.
+        dialog.thumbnail_pool.waitForDone()
+        if result == QDialog.DialogCode.Accepted:
             self.custom_page_order = dialog.ordered_pages()
             self.status.setText(
                 "Orden personalizado aplicado. El PDF final respetará esta secuencia."
