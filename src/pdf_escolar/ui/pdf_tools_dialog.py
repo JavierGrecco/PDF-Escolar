@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QDialog,
     QDialogButtonBox,
     QDoubleSpinBox,
+    QFrame,
     QFileDialog,
     QFormLayout,
     QHBoxLayout,
@@ -18,6 +19,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QProgressBar,
     QPushButton,
+    QScrollArea,
     QVBoxLayout,
     QWidget,
 )
@@ -33,6 +35,7 @@ from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import inspect_pdf
 from pdf_escolar.pdf_tools import crop_pdf_pages, rotate_pdf_pages, split_pdf_by_page
 from pdf_escolar.ui.messages import friendly_pdf_tool_error, safe_exception_detail, show_notice
+from pdf_escolar.ui.window_geometry import fit_window_to_screen
 
 
 class PdfToolSignals(QObject):
@@ -144,8 +147,12 @@ class PdfToolsDialog(QDialog):
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
         self.setWindowTitle("Herramientas PDF")
-        self.setMinimumWidth(580)
-        self.resize(660, 620)
+        self.compact_layout = fit_window_to_screen(
+            self,
+            preferred_size=(660, 620),
+            minimum_size=(580, 520),
+            parent=parent,
+        )
         self.tasks: set[QRunnable] = set()
         self._busy = False
         self._close_requested = False
@@ -154,8 +161,24 @@ class PdfToolsDialog(QDialog):
         self._pending_ocr: dict[str, object] | None = None
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(24, 22, 24, 20)
-        root.setSpacing(13)
+        root.setContentsMargins(
+            12 if self.compact_layout else 24,
+            10 if self.compact_layout else 22,
+            12 if self.compact_layout else 24,
+            10 if self.compact_layout else 20,
+        )
+        root.setSpacing(8 if self.compact_layout else 13)
+
+        content_scroll = QScrollArea(self)
+        content_scroll.setObjectName("toolsContentScroll")
+        content_scroll.setWidgetResizable(True)
+        content_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        content = QWidget()
+        body = QVBoxLayout(content)
+        body.setContentsMargins(0, 0, 4, 0)
+        body.setSpacing(8 if self.compact_layout else 13)
+        content_scroll.setWidget(content)
+        root.addWidget(content_scroll, 1)
 
         title = QLabel("Herramientas para tus PDF")
         title.setObjectName("dialogTitle")
@@ -166,8 +189,8 @@ class PdfToolsDialog(QDialog):
         )
         subtitle.setObjectName("mutedText")
         subtitle.setWordWrap(True)
-        root.addWidget(title)
-        root.addWidget(subtitle)
+        body.addWidget(title)
+        body.addWidget(subtitle)
 
         source_row = QHBoxLayout()
         self.source_path = QLineEdit()
@@ -179,7 +202,7 @@ class PdfToolsDialog(QDialog):
         self.choose_source_button.setObjectName("secondaryButton")
         self.choose_source_button.clicked.connect(self.choose_source)
         source_row.addWidget(self.choose_source_button)
-        root.addLayout(source_row)
+        body.addLayout(source_row)
 
         operation_form = QFormLayout()
         operation_form.setSpacing(12)
@@ -190,7 +213,7 @@ class PdfToolsDialog(QDialog):
         self.operation_selector.addItem("Crear PDF buscable (OCR)", "ocr")
         self.operation_selector.currentIndexChanged.connect(self._update_operation_fields)
         operation_form.addRow("Qué querés hacer", self.operation_selector)
-        root.addLayout(operation_form)
+        body.addLayout(operation_form)
 
         self.pages_input = QLineEdit()
         self.pages_input.setPlaceholderText("Vacío = todas. Ej.: 1-4, 7, 9-12")
@@ -200,7 +223,7 @@ class PdfToolsDialog(QDialog):
         self.pages_label = QLabel("Páginas")
         pages_form = QFormLayout()
         pages_form.addRow(self.pages_label, self.pages_input)
-        root.addLayout(pages_form)
+        body.addLayout(pages_form)
 
         self.rotate_panel = QWidget()
         rotate_form = QFormLayout(self.rotate_panel)
@@ -209,7 +232,7 @@ class PdfToolsDialog(QDialog):
         self.degrees_selector.addItem("90° a la izquierda", -90)
         self.degrees_selector.addItem("180°", 180)
         rotate_form.addRow("Giro", self.degrees_selector)
-        root.addWidget(self.rotate_panel)
+        body.addWidget(self.rotate_panel)
 
         self.crop_panel = QWidget()
         crop_form = QFormLayout(self.crop_panel)
@@ -228,7 +251,7 @@ class PdfToolsDialog(QDialog):
             spin.setToolTip("Cantidad que se oculta desde ese borde, medida en milímetros.")
             self.margins[key] = spin
             crop_form.addRow(label, spin)
-        root.addWidget(self.crop_panel)
+        body.addWidget(self.crop_panel)
 
         self.split_note = QLabel(
             "Se creará un archivo por cada página elegida. Para no perder nada, "
@@ -236,7 +259,7 @@ class PdfToolsDialog(QDialog):
         )
         self.split_note.setObjectName("mutedText")
         self.split_note.setWordWrap(True)
-        root.addWidget(self.split_note)
+        body.addWidget(self.split_note)
 
         self.ocr_panel = QWidget()
         ocr_layout = QVBoxLayout(self.ocr_panel)
@@ -264,7 +287,7 @@ class PdfToolsDialog(QDialog):
         ocr_disclaimer.setObjectName("ocrDisclaimer")
         ocr_disclaimer.setWordWrap(True)
         ocr_layout.addWidget(ocr_disclaimer)
-        root.addWidget(self.ocr_panel)
+        body.addWidget(self.ocr_panel)
 
         self.status = QLabel("El procesamiento se realiza localmente en esta computadora.")
         self.status.setObjectName("mutedText")
