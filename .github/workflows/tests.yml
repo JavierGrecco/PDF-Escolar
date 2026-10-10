@@ -62,8 +62,10 @@ jobs:
       - name: Diagnose GUI shutdown in isolated processes (temporary)
         run: |
           python - <<'PY'
+          import os
           import subprocess
           import sys
+          from pathlib import Path
 
           tests = [
               "test_main_window_starts_in_a_safe_empty_state",
@@ -75,13 +77,16 @@ jobs:
           ]
           failures = []
 
-          def run_case(label, names):
+          def run_case(label, names, cwd=None, extra_env=None):
               command = [
                   sys.executable, "-m", "pytest", "-q", "-rs",
                   *[f"tests/test_gui_smoke.py::{name}" for name in names],
               ]
+              environment = os.environ.copy()
+              if extra_env:
+                  environment.update(extra_env)
               print(f"\\n===== {label} =====", flush=True)
-              result = subprocess.run(command, check=False)
+              result = subprocess.run(command, cwd=cwd, env=environment, check=False)
               print(f"===== exit={result.returncode}: {label} =====", flush=True)
               if result.returncode:
                   failures.append((label, result.returncode))
@@ -94,6 +99,37 @@ jobs:
           # between tests, and at which step it starts.
           for count in range(2, len(tests) + 1):
               run_case(f"combined prefix: first {count} tests", tests[:count])
+
+          # Re-run the card test and the first three baseline tests against the
+          # actual main branch source on this same Ubuntu runner. PYTHONPATH
+          # prioritizes that checkout over the editable PR install.
+          baseline = Path("/tmp/pdf-escolar-main-baseline")
+          fetched = subprocess.run(
+              ["git", "fetch", "--no-tags", "origin", "main"], check=False
+          )
+          if fetched.returncode:
+              failures.append(("fetch main baseline", fetched.returncode))
+          else:
+              checkout = subprocess.run(
+                  ["git", "worktree", "add", "--detach", str(baseline), "FETCH_HEAD"],
+                  check=False,
+              )
+              if checkout.returncode:
+                  failures.append(("create main baseline worktree", checkout.returncode))
+              else:
+                  baseline_env = {"PYTHONPATH": str(baseline / "src")}
+                  run_case(
+                      "main baseline: card test alone",
+                      ["test_document_card_displays_the_full_pdf_name_and_page_count"],
+                      cwd=baseline,
+                      extra_env=baseline_env,
+                  )
+                  run_case(
+                      "main baseline: first three GUI tests",
+                      tests[:3],
+                      cwd=baseline,
+                      extra_env=baseline_env,
+                  )
 
           if failures:
               print("\\nDiagnostic failures:", failures, flush=True)
