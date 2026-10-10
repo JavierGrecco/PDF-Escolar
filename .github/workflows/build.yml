@@ -72,15 +72,17 @@ jobs:
           - runner: macos-15-intel
             arch_slug: Intel
             arch_label: Intel
+            python_version: "3.12"
           - runner: macos-latest
             arch_slug: Apple-Silicon
             arch_label: Apple Silicon
+            python_version: "3.12"
     runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python_version }}
           cache: pip
 
       - name: Set package version
