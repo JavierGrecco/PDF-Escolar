@@ -29,6 +29,12 @@ def test_qt_license_files_with_licenses_suffix_are_detected():
     assert generator.is_license_candidate(
         PurePosixPath("PySide6/Qt/lib/qtwebenginecore_licenses.rtf")
     )
+    assert generator.is_license_candidate(
+        PurePosixPath("PySide6_Essentials-6.12.0.dist-info/LGPL-3.0-only.txt")
+    )
+    assert generator.is_license_candidate(
+        PurePosixPath("PySide6_Essentials-6.12.0.dist-info/GFDL-1.3-no-invariants-only.txt")
+    )
 
 
 def test_rtf_license_notice_is_readable():
