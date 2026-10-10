@@ -34,19 +34,34 @@ def test_platform_asset_selection(monkeypatch):
     assert ocr_companion.expected_asset_name() == "PDF-Escolar-OCR-macOS-Apple-Silicon.zip"
 
     monkeypatch.setattr(ocr_companion.platform, "machine", lambda: "x86_64")
-    assert ocr_companion.expected_asset_name() == "PDF-Escolar-OCR-macOS-Intel.zip"
+    with pytest.raises(ocr_companion.OCRCompanionError, match="Apple Silicon"):
+        ocr_companion.expected_asset_name()
 
 
 def test_ocr_companion_refuses_unsupported_macos(monkeypatch):
     monkeypatch.setattr(ocr_companion.sys, "platform", "darwin")
-    monkeypatch.setattr(ocr_companion.platform, "machine", lambda: "x86_64")
-    monkeypatch.setattr(ocr_companion.platform, "mac_ver", lambda: ("10.15.7", ("", "", ""), ""))
+    monkeypatch.setattr(ocr_companion.platform, "machine", lambda: "arm64")
+    monkeypatch.setattr(ocr_companion.platform, "mac_ver", lambda: ("13.6.0", ("", "", ""), ""))
 
     message = ocr_companion.platform_support_error()
 
     assert message is not None
     assert "macOS 14 o posterior" in message
     with pytest.raises(ocr_companion.OCRCompanionError, match="macOS 14"):
+        ocr_companion.expected_asset_name()
+
+
+def test_ocr_companion_explicitly_does_not_support_mac_intel(monkeypatch):
+    monkeypatch.setattr(ocr_companion.sys, "platform", "darwin")
+    monkeypatch.setattr(ocr_companion.platform, "machine", lambda: "x86_64")
+    monkeypatch.setattr(ocr_companion.platform, "mac_ver", lambda: ("15.0.0", ("", "", ""), ""))
+
+    message = ocr_companion.platform_support_error()
+
+    assert message is not None
+    assert "Apple Silicon" in message
+    assert "Mac Intel" in message
+    with pytest.raises(ocr_companion.OCRCompanionError, match="Apple Silicon"):
         ocr_companion.expected_asset_name()
 
 
