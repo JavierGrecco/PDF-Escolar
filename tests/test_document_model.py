@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 
@@ -120,7 +119,6 @@ def make_project() -> DocumentProject:
 
 
 def test_rotation_is_normalized_for_stable_project_serialization():
-    source = SourceDocument(path="/tmp/source.pdf", source_id="src")
     a = PdfFragment(source_id="src", page_index=0, rotation_degrees=-90)
     b = PdfFragment(source_id="src", page_index=0, rotation_degrees=270)
     c = PdfFragment(source_id="src", page_index=0, rotation_degrees=360)
