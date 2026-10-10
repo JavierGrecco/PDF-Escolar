@@ -34,3 +34,7 @@ Estas versiones todavía no están firmadas digitalmente. Windows o Mac pueden m
 ## Código fuente
 
 Si querés revisar o modificar el proyecto, podés [ver los archivos del repositorio](https://github.com/JavierGrecco/PDF-Escolar). Para usar la aplicación, seguí solamente los pasos de descarga de arriba.
+
+## Validar una versión
+
+Antes de considerar una versión lista para distribuir, conviene completar la [lista de pruebas manuales](docs/PRUEBAS-MANUALES.md). Las pruebas automáticas ayudan a detectar errores, pero no reemplazan probar los instaladores en computadoras reales.
