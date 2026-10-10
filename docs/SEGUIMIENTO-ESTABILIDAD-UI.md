@@ -2,44 +2,65 @@
 
 Última actualización: 2026-10-10
 
-Este documento conserva el contexto del trabajo técnico aunque se interrumpa la sesión. Si se retoma, revisar este archivo, el [PR #11](https://github.com/JavierGrecco/PDF-Escolar/pull/11) y el último commit de la rama.
+Este documento mantiene el estado técnico del trabajo para que pueda retomarse sin depender del historial de conversación.
 
-## Estado real en GitHub
+## Estado final en GitHub
 
-- Rama del PR: `fix/page-picker-task-lifecycle`.
-- PR: [#11 — Endurecer tareas de miniaturas y cierre de ventanas](https://github.com/JavierGrecco/PDF-Escolar/pull/11).
-- Rama base `main` observada: `f5357729797ed9d1a70ed917434eeead26fdb205`.
-- Historial de la implementación conservado en [`archive/pr11-ui-task-lifecycle-before-squash`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-ui-task-lifecycle-before-squash).
-- Commit consolidado con CI verde conservado en [`archive/pr11-squashed-ci-passed`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-squashed-ci-passed).
-- La matriz habitual de `.github/workflows/tests.yml` está restaurada, sin comandos temporales de diagnóstico.
-- Aún no marcar como integrado hasta que pase la CI del último commit y se complete la fusión del PR.
+- **PR #11:** [Endurecer tareas de miniaturas y cierre de ventanas](https://github.com/JavierGrecco/PDF-Escolar/pull/11), fusionado y cerrado.
+- **Commit de integración:** [`ff5a949b077e23b58e8bfb434dc8fc3e22c00f64`](https://github.com/JavierGrecco/PDF-Escolar/commit/ff5a949b077e23b58e8bfb434dc8fc3e22c00f64).
+- **Commit que actualizó las descargas:** [`c5d65c45b30db30a44d55a9e07e4d0be2793a4a2`](https://github.com/JavierGrecco/PDF-Escolar/commit/c5d65c45b30db30a44d55a9e07e4d0be2793a4a2).
+- **Versión de los instaladores en `descargas/`:** `0.1.0-dev.113`, compilada desde `ff5a949b077e23b58e8bfb434dc8fc3e22c00f64`.
+- **Historial incremental previo al squash:** [`archive/pr11-ui-task-lifecycle-before-squash`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-ui-task-lifecycle-before-squash).
+- **Snapshot del commit squash previo a la última limpieza de diálogos:** [`archive/pr11-squashed-ci-passed`](https://github.com/JavierGrecco/PDF-Escolar/tree/archive/pr11-squashed-ci-passed).
 
-## Funcionalidades y cambios
+## Funcionalidades de usuario conservadas
 
-Las cuatro mejoras funcionales solicitadas están en `main`: nombre y cantidad de páginas por PDF, reordenar documentos, recordar última carpeta y ordenar páginas visualmente entre varios PDF. Este PR #11 es un seguimiento de estabilidad/rendimiento, no la primera implementación de esas funciones.
+Las cuatro mejoras pedidas ya estaban en `main` antes del PR #11 y permanecen allí:
+1. Mostrar el nombre y la cantidad de páginas de cada PDF.
+2. Reordenar documentos con arrastrar/soltar y controles para subir/bajar.
+3. Recordar la última carpeta utilizada al agregar archivos.
+4. Ordenar páginas individuales visualmente, incluso alternando entre distintos PDF, y exportar respetando esa secuencia.
 
-1. El selector visual y el organizador cancelan tareas de miniaturas obsoletas y limitan el trabajo cuando los diálogos no están visibles.
-2. Las tareas `QRunnable` retienen sus wrappers hasta la señal de finalización; inspección/exportación liberan sus tareas explícitamente.
-3. El motor tiene una caché LRU acotada (máximo 8 PDF fuente abiertos) para exportar secuencias intercaladas.
-4. Las pruebas cubren orden, cancelación, reutilización de fuentes y limpieza explícita de widgets Qt.
-5. El pool del selector está asociado al propio diálogo. Al terminar cada diálogo modal, se detienen/cancelan las miniaturas, se espera a que el pool termine, se captura la selección y se llama a `deleteLater()` para evitar acumular ventanas hijas ocultas.
-6. El checklist manual ya no promete un aviso al cerrar la aplicación durante la exportación, comportamiento que no está implementado.
+El PR #11 fue la etapa de estabilidad y rendimiento que vino después.
 
-## Evidencia de CI ya comprobada
+## Cambios fusionados
 
-En el commit consolidado anterior `8b87b96966bd76e932fd5d7a6b1d1ae8c1c77031`:
-- [Tests run 38069169063](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069169063): Ubuntu, Windows, macOS y macOS Intel, todos en éxito. Ubuntu/macOS reportaron `39 passed`, Ruff verde y sin crash de Qt al salir.
-- [Build run 38069169154](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069169154): instalador de Windows, DMG Intel y DMG Apple Silicon en éxito, y `Verify generated installers` también pasó.
-- Durante el diagnóstico previo aparecieron SIGSEGV/SIGBUS en algunos subprocesos, incluso en ciertas comparaciones contra un worktree real de `main`. La matriz habitual normal fue la que confirmó estabilidad; no se ocultaron códigos de salida ni se omitieron pruebas.
-- La ejecución de PR no publica los paquetes dentro de `descargas/`; eso se ejecuta tras un push a `main`. Después de fusionar hay que verificar que el workflow de `main` actualice los binarios y `descargas/INFORMACION-DE-DESCARGA.txt`.
+- Selector y organizador de páginas con cancelación de tareas de miniaturas obsoletas.
+- Pools de miniaturas vinculados a sus diálogos; al finalizar los diálogos modales, se detienen las tareas, se espera a que los pools terminen y se marca el diálogo para destrucción diferida.
+- Retención y liberación explícita de tareas `QRunnable`, con señales de finalización y manejo de excepciones.
+- Tareas de inspección/exportación gestionadas hasta su finalización.
+- Caché LRU limitada a ocho PDF fuente abiertos para evitar reabrir repetidamente archivos al exportar secuencias intercaladas.
+- Pruebas de cancelación, limpieza de widgets y reutilización de fuentes; actualización de las pruebas manuales.
 
-## Próximos pasos
+## Validación de CI
 
-- [ ] Ejecutar y verificar CI/tests/paquetes sobre el commit actual, que añade la eliminación diferida de los diálogos tras capturar la selección.
-- [ ] Si la matriz normal y los builds están verdes, sacar el PR de borrador y fusionar.
-- [ ] Confirmar el workflow posterior a la fusión y la actualización de `descargas/`.
-- [ ] Hacer la prueba manual real de arrastrar/soltar con mouse y touchpad.
+Las ejecuciones siguientes finalizaron con éxito:
 
-## Criterio de finalización
+- [Tests del commit final del PR](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069733708): Ubuntu, Windows, macOS y macOS Intel.
+- [Builds del commit final del PR](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38069733710): portable/instalador de Windows, DMG macOS Intel, DMG macOS Apple Silicon y verificación de artefactos.
+- [Tests de `main` tras la integración](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031705): las cuatro plataformas en verde.
+- [Build y sincronización de descargas tras la integración](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031656): los tres paquetes compilados y el job `Guardar instaladores en el repositorio` en éxito.
 
-PR integrado, CI y builds verdes, descargas actualizadas, suite sin crash al finalizar y validación manual del arrastre/soltar documentada.
+## Descargas actuales
+
+El archivo [`descargas/INFORMACION-DE-DESCARGA.txt`](https://github.com/JavierGrecco/PDF-Escolar/blob/main/descargas/INFORMACION-DE-DESCARGA.txt) confirma:
+
+- Versión: `0.1.0-dev.113`.
+- Compilación: [Actions run 38070031656](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38070031656).
+- Código fuente: `ff5a949b077e23b58e8bfb434dc8fc3e22c00f64`.
+
+SHA-256 de los archivos visibles en `descargas/`:
+```text
+f0570580fd7cde162a9eebf1aaeac4cdf1a4fecb492936d152210c22c628e0ff  descargas/PDF-Escolar.exe
+e2909f7255896cca780cc826065ca70e6865822e86796586abc8eaac07a71d34  descargas/PDF-Escolar-Instalador-Windows.exe
+91b324d8d12ee5fa9847d959275573a4e491407d5ca216c1c4c01a9ba27f888f  descargas/PDF-Escolar-macOS-Intel.dmg
+24065cef8cf33943cbe7bcb4ddca7c4fe3095a3a9954192eda455a04d057f02c  descargas/PDF-Escolar-macOS-Apple-Silicon.dmg
+```
+
+## Único pendiente manual
+
+Probar en un equipo físico el arrastre para reordenar documentos y páginas, tanto con mouse como con touchpad. La CI verifica las pruebas automatizadas, pero no puede sustituir esa comprobación de interacción real.
+
+## Criterio de continuidad
+
+No hay cambios de código del PR pendientes de integrar ni descargas pendientes de sincronizar en este checkpoint. Si aparece un nuevo problema de estabilidad, reproducirlo con la matriz normal, registrar el commit exacto y conservar los códigos de salida reales de cada proceso.
