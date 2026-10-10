@@ -159,12 +159,22 @@ class PageOrderDialog(QDialog):
         root.setContentsMargins(22, 20, 22, 18)
         root.setSpacing(12)
 
-        title = QLabel("Ordená las páginas del PDF final")
+        title = QLabel(
+            "Revisá el PDF antes de guardarlo"
+            if confirm_label == "Continuar a guardar"
+            else "Ordená las páginas del PDF final"
+        )
         title.setObjectName("dialogTitle")
         subtitle = QLabel(
             "Arrastrá las miniaturas con el mouse o el panel táctil. "
-            "También podés seleccionar una página y usar Subir o Bajar. "
+            "Elegí Pequeñas, Medianas o Grandes para reconocer mejor cada hoja; "
+            "seleccioná una página para verla ampliada a un lado. " 
             "El orden de esta ventana será el del documento final."
+            + (
+                " Al continuar, vas a elegir dónde guardar el PDF."
+                if confirm_label == "Continuar a guardar"
+                else ""
+            )
         )
         subtitle.setObjectName("mutedText")
         subtitle.setWordWrap(True)
