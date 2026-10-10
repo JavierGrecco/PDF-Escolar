@@ -63,6 +63,32 @@ Confirmá que los originales sigan iguales después de las pruebas.
 
 ## Pruebas de distribución
 
+### Ventanas adaptables y escalado
+
+Estas pruebas requieren hacerlas en equipos reales; las pruebas automáticas no sustituyen la comprobación visual. Anotá resolución, sistema, porcentaje de escalado y versión de PDF Escolar.
+
+- [ ] En Windows, probar a 100 %, 125 % y 150 % de escalado; incluir una pantalla de portátil de 1366 × 768.
+- [ ] Abrir la ventana principal en una pantalla de poca altura y confirmar que los botones para agregar archivos, elegir páginas y crear el PDF se pueden alcanzar sin quedar fuera de la ventana.
+- [ ] Abrir «Elegir visualmente» y confirmar que las miniaturas, los controles de selección y los botones para confirmar/cancelar siguen visibles.
+- [ ] Abrir «Ordenar páginas…» y confirmar que la lista de miniaturas, los botones de subir/bajar, el restablecimiento y la confirmación se pueden usar con la ventana sin maximizar.
+- [ ] Reducir la altura de la ventana del organizador; comprobar que la vista previa conserva la proporción de la página y que no oculta los controles de orden.
+- [ ] Abrir la vista ampliada con páginas verticales, horizontales y de tamaños diferentes; verificar que la imagen no se deforma y que se puede cerrar con el control previsto.
+- [ ] En «Herramientas PDF», desplazar las opciones hasta el final; confirmar que los botones de ejecutar y cerrar permanecen visibles mientras el contenido se desplaza.
+- [ ] Mover y redimensionar las ventanas en Windows y macOS; confirmar que no quedan fuera del área de trabajo y que siguen respondiendo al cambiar entre pantallas.
+- [ ] Repetir con un PDF de muchas páginas y nombres de archivo largos, comprobando que las miniaturas y su identificación siguen siendo claras.
+- [ ] Registrar cualquier solapamiento, texto cortado, botón inaccesible o desplazamiento inesperado. No marcar la prueba como aprobada si solo pasó la suite automatizada.
+
+### Licencias y componentes de terceros
+
+- [ ] Abrir el menú «Ayuda» y elegir «Licencias y componentes».
+- [ ] Confirmar que se abre una ventana legible, que el texto se puede desplazar y que «Cerrar» vuelve a la aplicación sin perder el trabajo en curso.
+- [ ] Comprobar que el informe identifica el paquete de esta compilación y contiene versiones de PySide6/Qt, pikepdf, pypdfium2/PDFium, Pillow y PyInstaller.
+- [ ] Comprobar que el informe incluye los textos base oficiales de licencia de PySide con su origen y commit, además de los avisos encontrados en las dependencias instaladas.
+- [ ] En Windows, confirmar que el instalador incluye `THIRD-PARTY-NOTICES.txt` en la carpeta de instalación y que el ejecutable portable puede mostrar el mismo inventario desde Ayuda.
+- [ ] En macOS, confirmar que el DMG contiene una copia visible del archivo de avisos y que la aplicación instalada también lo muestra desde Ayuda.
+- [ ] Si un componente o su versión no aparece, conservar el archivo de avisos y anotar la versión exacta; no dar la auditoría legal por terminada solo porque el menú abre.
+- [ ] Registrar el sistema operativo, la arquitectura del paquete y la versión exacta de PDF Escolar probada.
+
 ### Windows
 
 - [ ] El ejecutable portable abre en una computadora que no tenga Python instalado.
