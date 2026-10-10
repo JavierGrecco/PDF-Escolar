@@ -72,7 +72,11 @@ RapidOCR es una alternativa con licencias permisivas en sus componentes principa
 
 ## Editor visual de composición: dirección de producto
 
-La rotación y el recorte actuales operan sobre páginas completas o sobre márgenes. No son aún el editor por regiones que queremos construir. La siguiente evolución del producto contempla:
+La rotación actual actúa sobre páginas enteras seleccionadas mediante números/rangos; no ofrece rotación libre arrastrando ni transformaciones de un fragmento. El recorte actual ajusta márgenes uniformes de una página; no permite seleccionar múltiples regiones arbitrarias ni excluir una zona dejando o recolocando automáticamente las demás. Esas herramientas actuales no deben confundirse con la composición visual futura.
+
+Ya está integrado el primer modelo de composición en `src/pdf_escolar/document_model.py`: representa fuentes, páginas, fragmentos, bloques de texto, rectángulos normalizados y proyectos `.pdfescolar`, e incluye la operación geométrica de exclusión de regiones. Aún no está conectado a una interfaz de edición ni a un exportador de páginas compuestas.
+
+La siguiente evolución de cara al usuario contempla:
 
 - seleccionar una o varias regiones de una página mediante arrastre;
 - conservar las regiones escogidas o excluir una zona sin seleccionar manualmente todo el resto;
