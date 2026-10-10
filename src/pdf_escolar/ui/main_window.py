@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from PySide6.QtCore import QObject, QRunnable, QThreadPool, Qt, Signal, Slot, QUrl
+from PySide6.QtCore import QObject, QRunnable, QSettings, QThreadPool, Qt, Signal, Slot, QUrl
 from PySide6.QtGui import QDesktopServices, QDragEnterEvent, QDropEvent
 from PySide6.QtWidgets import (
     QDialog, QFileDialog, QFrame, QHBoxLayout, QLabel, QLineEdit, QMainWindow,
@@ -345,8 +345,21 @@ class MainWindow(QMainWindow):
             "y el contenido se procesa en esta computadora.",
         )
 
+    def _last_open_directory(self) -> str:
+        """Return the last folder used to add PDFs, falling back to the home folder."""
+        settings = QSettings()
+        saved = settings.value("last_open_directory", "", type=str)
+        if saved and Path(saved).is_dir():
+            return saved
+        return str(Path.home())
+
     def choose_files(self):
-        paths, _ = QFileDialog.getOpenFileNames(self, "Seleccionar archivos PDF", str(Path.home()), "Documentos PDF (*.pdf)")
+        paths, _ = QFileDialog.getOpenFileNames(
+            self,
+            "Seleccionar archivos PDF",
+            self._last_open_directory(),
+            "Documentos PDF (*.pdf)",
+        )
         if paths:
             self.add_files(paths)
 
@@ -362,6 +375,9 @@ class MainWindow(QMainWindow):
                 accepted.append(resolved)
         if not accepted:
             return
+        # Keep the folder preference in the OS-native settings store. This also
+        # covers files added by drag-and-drop, not only via the open dialog.
+        QSettings().setValue("last_open_directory", str(Path(accepted[-1]).parent))
         self.pending.update(accepted)
         self._update_summary()
         self.status.setText("Revisando los archivos…")
