@@ -212,6 +212,37 @@ def test_editing_page_selection_explains_custom_order_reset(application):
         _dispose_widget(window, application)
 
 
+def test_preview_errors_are_presented_in_spanish_without_library_details(application):
+    from pdf_escolar.ui.page_picker import PagePickerDialog
+
+    dialog = PagePickerDialog("/tmp/not-opened.pdf", 1, "1")
+    try:
+        item = dialog.page_indexes[0]
+        dialog._thumbnail_failed(0, "stream ended unexpectedly at offset 123")
+
+        assert "No pudimos mostrar" in item.toolTip()
+        assert "stream ended" not in item.toolTip()
+    finally:
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
+        dialog.pool.waitForDone()
+        _dispose_widget(dialog, application)
+
+
+def test_order_preview_errors_are_presented_in_spanish(application):
+    dialog = PageOrderDialog([PdfPageRef("/tmp/not-opened.pdf", 0)])
+    try:
+        item = dialog.items_by_id[0]
+        dialog._thumbnail_failed(0, "invalid object at offset 999")
+
+        assert "Vista previa no disponible" in item.toolTip()
+        assert "invalid object" not in item.toolTip()
+        assert "La página sigue incluida" in item.toolTip()
+    finally:
+        _dispose_widget(dialog, application)
+
+
 def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
     from pdf_escolar.ui.main_window import ExportTask, InspectTask
     inspect_task = InspectTask([])
