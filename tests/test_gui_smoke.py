@@ -9,7 +9,7 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
-    from PySide6.QtCore import QSettings
+    from PySide6.QtCore import QEvent, QSettings
     from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView
     from pdf_escolar.pdf_engine import PdfPageRef
     from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
@@ -45,6 +45,14 @@ def application():
     return app
 
 
+def _dispose_widget(widget, application):
+    """Destroy a top-level Qt widget deterministically during test cleanup."""
+    widget.close()
+    widget.deleteLater()
+    application.sendPostedEvents(None, QEvent.Type.DeferredDelete)
+    application.processEvents()
+
+
 def test_main_window_starts_in_a_safe_empty_state(application):
     window = MainWindow()
     try:
@@ -52,7 +60,7 @@ def test_main_window_starts_in_a_safe_empty_state(application):
         assert not window.export_button.isEnabled()
         assert "Todavía no agregaste archivos" in window.file_count.text()
     finally:
-        window.close()
+        _dispose_widget(window, application)
 
 def test_document_card_displays_the_full_pdf_name_and_page_count(application):
     card = DocumentCard(
@@ -72,7 +80,7 @@ def test_document_card_displays_the_full_pdf_name_and_page_count(application):
         assert "145 páginas" in metadata.text()
         assert name.wordWrap()
     finally:
-        card.close()
+        _dispose_widget(card, application)
 
 
 def test_page_order_dialog_supports_drag_and_button_reordering(application):
@@ -96,7 +104,7 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
             references[1],
         ]
     finally:
-        dialog.close()
+        _dispose_widget(dialog, application)
 
 def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path):
     settings = QSettings()
@@ -106,7 +114,7 @@ def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path)
     try:
         assert window._last_open_directory() == str(tmp_path)
     finally:
-        window.close()
+        _dispose_widget(window, application)
         if old_value is None:
             settings.remove("last_open_directory")
         else:
@@ -125,7 +133,7 @@ def test_document_cards_can_be_reordered_by_drop_and_buttons(application):
         window.move_file(paths[2], -1)
         assert list(window.documents) == [paths[1], paths[2], paths[0]]
     finally:
-        window.close()
+        _dispose_widget(window, application)
 
 
 def test_hidden_page_order_dialog_does_not_start_thumbnail_tasks(application):
@@ -134,7 +142,7 @@ def test_hidden_page_order_dialog_does_not_start_thumbnail_tasks(application):
         application.processEvents()
         assert not dialog.tasks
     finally:
-        dialog.close()
+        _dispose_widget(dialog, application)
 
 def test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible(application):
     from pdf_escolar.ui.page_picker import PagePickerDialog
@@ -144,8 +152,11 @@ def test_page_picker_does_not_start_thumbnail_tasks_before_becoming_visible(appl
         assert not dialog.tasks
         assert dialog.pool.activeThreadCount() == 0
     finally:
-        dialog.close()
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
         dialog.pool.waitForDone()
+        _dispose_widget(dialog, application)
 
 
 def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
@@ -170,8 +181,11 @@ def test_page_picker_keeps_the_current_page_group_responsive(application):
         assert dialog.page_start == 0
         assert dialog.selected_pages == {0, 34}
     finally:
-        dialog.close()
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
         dialog.pool.waitForDone()
+        _dispose_widget(dialog, application)
 
 def test_cancelled_page_picker_thumbnail_task_finishes_without_opening_a_pdf():
     from pdf_escolar.ui.page_picker import ThumbnailTask
