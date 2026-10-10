@@ -10,6 +10,9 @@
 - Nombres de archivo con mayor visibilidad y recuento de páginas.
 - Creación local de un PDF nuevo, sin modificar los archivos originales.
 - Verificación del archivo final y pruebas automatizadas para las operaciones principales.
+- Área de carga compacta cuando ya hay PDF agregados, sin perder la opción de arrastrar y soltar.
+- Aviso único y comprensible cuando uno o varios PDF no se pueden abrir, con detalles técnicos opcionales.
+- Aviso explícito cuando cambiar páginas o documentos invalida el orden manual.
 
 ## Pendiente antes de una versión estable
 
