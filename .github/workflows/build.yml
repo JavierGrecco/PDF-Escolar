@@ -401,7 +401,6 @@ jobs:
       - name: Download all installer artifacts
         uses: actions/download-artifact@v8
         with:
-        with:
           pattern: pdf-escolar-*
           path: dist
           merge-multiple: true
