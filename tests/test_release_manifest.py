@@ -41,9 +41,16 @@ def test_release_manifest_contains_sha256_for_every_expected_asset(tmp_path):
     text = manifest.read_text(encoding="utf-8")
 
     assert manifest.name == "SHA256SUMS.txt"
-    assert "PDF Escolar v0.1.0-beta.2" in text
-    assert f"Commit de origen: {'a' * 40}" in text
-    assert "https://github.com/JavierGrecco/PDF-Escolar/actions/runs/12345" in text
+    lines = text.splitlines()
+    assert lines[:5] == [
+        "# PDF Escolar v0.1.0-beta.2",
+        f"# Commit de origen: {'a' * 40}",
+        "# Repositorio: JavierGrecco/PDF-Escolar",
+        "# Compilación: https://github.com/JavierGrecco/PDF-Escolar/actions/runs/12345",
+        "# SHA-256:",
+    ]
+    checksum_lines = [line for line in lines if len(line) > 66 and line[64:66] == "  "]
+    assert len(checksum_lines) == 4
     for asset in assets:
         assert f"{sha256(asset.read_bytes()).hexdigest()}  {asset.name}" in text
 
