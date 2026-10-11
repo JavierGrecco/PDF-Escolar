@@ -112,6 +112,46 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
     finally:
         _dispose_widget(dialog, application)
 
+def test_page_order_tiles_show_final_position_and_original_page(application):
+    references = [
+        PdfPageRef("/tmp/matematica.pdf", 2),
+        PdfPageRef("/tmp/historia.pdf", 4),
+    ]
+    dialog = PageOrderDialog(references)
+    try:
+        first = dialog.list_widget.item(0)
+        assert first.text() == "01 · matematica.pdf\nPág. original 3"
+        assert "Orden final: 1" in first.toolTip()
+        assert "Página original: 3" in first.toolTip()
+
+        dialog.list_widget.setCurrentRow(0)
+        dialog.move_selected_down()
+
+        first_after_move = dialog.list_widget.item(0)
+        assert first_after_move.text() == "01 · historia.pdf\nPág. original 5"
+        assert "Orden final: 1" in first_after_move.toolTip()
+        assert "historia.pdf" in first_after_move.toolTip()
+    finally:
+        _dispose_widget(dialog, application)
+
+
+def test_page_order_tiles_disambiguate_duplicate_source_filenames(application):
+    references = [
+        PdfPageRef("/tmp/grupo-a/material.pdf", 0),
+        PdfPageRef("/tmp/grupo-b/material.pdf", 1),
+    ]
+    dialog = PageOrderDialog(references)
+    try:
+        first_label = dialog.list_widget.item(0).text().splitlines()[0]
+        second_label = dialog.list_widget.item(1).text().splitlines()[0]
+        assert first_label == "01 · material.pdf · grupo-a"
+        assert second_label == "02 · material.pdf · grupo-b"
+        assert first_label != second_label
+        assert "/tmp/grupo-a/material.pdf" in dialog.list_widget.item(0).toolTip()
+    finally:
+        _dispose_widget(dialog, application)
+
+
 def test_pdf_tools_content_scrolls_without_hiding_action_buttons(application):
     dialog = PdfToolsDialog()
     try:
