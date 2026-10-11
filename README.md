@@ -38,6 +38,8 @@ Los cuatro enlaces anteriores apuntan a los archivos de la Release fija **v0.1.0
 
 También podés consultar los archivos y las notas de la versión en [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases). La versión de los enlaces directos se detalla en [la información de descarga](descargas/INFORMACION-DE-DESCARGA.txt), junto con el commit de origen y los SHA-256 de los archivos.
 
+Las nuevas publicaciones incluyen un archivo `SHA256SUMS.txt` para verificar que los instaladores descargados coincidan con los hashes calculados durante la compilación. La beta pública actual, `v0.1.0-beta.1`, es anterior a ese cambio y no incluye ese asset; para esa versión usá los hashes de `descargas/INFORMACION-DE-DESCARGA.txt`.
+
 ## Qué podés hacer con la beta pública
 
 - **Combinar PDF:** reunir páginas de distintos archivos en un solo documento.
