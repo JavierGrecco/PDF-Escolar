@@ -20,7 +20,7 @@ def _prepare_dist(dist: Path, version: str = "0.1.0-beta.2") -> list[Path]:
     assets = []
     for index, name in enumerate(names, start=1):
         path = dist / name
-        path.write_bytes((f"test asset {index}\\n" * index).encode("utf-8"))
+        path.write_bytes((f"test asset {index}\n" * index).encode("utf-8"))
         assets.append(path)
     return assets
 
