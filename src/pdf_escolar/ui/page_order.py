@@ -1,7 +1,7 @@
 """Dialog for visually reordering selected pages across multiple PDFs."""
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import Counter, defaultdict
 from pathlib import Path
 from threading import Event
 
@@ -32,6 +32,32 @@ from pdf_escolar.pdf_engine import PdfPageRef
 from pdf_escolar.pdf_preview import render_page_preview, render_page_thumbnail
 from pdf_escolar.ui.messages import safe_exception_detail
 from pdf_escolar.ui.window_geometry import fit_window_to_screen
+
+
+def _resolved_source_path(path: str) -> str:
+    """Return a stable key for matching pages to their source PDF."""
+    return str(Path(path).expanduser().resolve())
+
+
+def _source_display_labels(pages: list[PdfPageRef]) -> dict[str, str]:
+    """Give duplicate PDF filenames a short, distinguishable source label."""
+    paths = list(dict.fromkeys(_resolved_source_path(page.path) for page in pages))
+    filename_counts = Counter(Path(path).name.casefold() for path in paths)
+    labels: dict[str, str] = {}
+
+    for path in paths:
+        source = Path(path)
+        label = source.name
+        if filename_counts[label.casefold()] > 1:
+            label = f"{source.name} · {source.parent.name or source.parent}"
+        labels[path] = label
+
+    label_counts = Counter(label.casefold() for label in labels.values())
+    for path, label in tuple(labels.items()):
+        if label_counts[label.casefold()] > 1:
+            labels[path] = f"{Path(path).name} · {Path(path).parent}"
+
+    return labels
 
 
 class PageOrderSignals(QObject):
@@ -139,6 +165,7 @@ class PageOrderDialog(QDialog):
     ):
         super().__init__(parent)
         self.pages = list(pages)
+        self.source_labels = _source_display_labels(self.pages)
         self.confirm_label = confirm_label
         self.tasks: set[QRunnable] = set()
         self.preview_task: PageOrderPreviewTask | None = None
@@ -332,16 +359,14 @@ class PageOrderDialog(QDialog):
         buttons.rejected.connect(self.reject)
         root.addWidget(buttons)
 
-        for item_id, reference in enumerate(self.pages):
-            item = QListWidgetItem(
-                f"{Path(reference.path).name}\nPágina {reference.page_index + 1}"
-            )
+        for item_id, _reference in enumerate(self.pages):
+            item = QListWidgetItem()
             item.setData(Qt.ItemDataRole.UserRole, item_id)
-            item.setToolTip(f"{Path(reference.path)}\nPágina {reference.page_index + 1}")
             item.setSizeHint(QSize(158, 194))
             self.list_widget.addItem(item)
             self.items_by_id[item_id] = item
 
+        self._refresh_item_labels()
         self.list_widget.currentItemChanged.connect(self._current_item_changed)
         self.list_widget.model().rowsMoved.connect(self._items_reordered)
         if self.pages:
@@ -395,6 +420,26 @@ class PageOrderDialog(QDialog):
             QScrollArea#largePageScroll { background:#EEF2F8; border:0; }
         """)
 
+    def _refresh_item_labels(self) -> None:
+        """Show the final sequence number and the page's original source."""
+        for row in range(self.list_widget.count()):
+            item = self.list_widget.item(row)
+            item_id = int(item.data(Qt.ItemDataRole.UserRole))
+            reference = self.pages[item_id]
+            source_path = _resolved_source_path(reference.path)
+            source_label = self.source_labels.get(
+                source_path, Path(reference.path).name
+            )
+            item.setText(
+                f"{row + 1:02d} · {source_label}\n"
+                f"Pág. original {reference.page_index + 1}"
+            )
+            item.setToolTip(
+                f"Orden final: {row + 1}\n"
+                f"Archivo: {Path(reference.path).expanduser()}\n"
+                f"Página original: {reference.page_index + 1}"
+            )
+
     def _apply_thumbnail_size(self, *_args) -> None:
         """Change the grid density without changing the page order."""
         if not hasattr(self, "list_widget"):
@@ -421,6 +466,7 @@ class PageOrderDialog(QDialog):
         self._load_current_preview()
 
     def _items_reordered(self, *_args) -> None:
+        self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
 
@@ -662,6 +708,7 @@ class PageOrderDialog(QDialog):
         item = self.list_widget.takeItem(row)
         self.list_widget.insertItem(row - 1, item)
         self.list_widget.setCurrentItem(item)
+        self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
 
@@ -672,6 +719,7 @@ class PageOrderDialog(QDialog):
         item = self.list_widget.takeItem(row)
         self.list_widget.insertItem(row + 1, item)
         self.list_widget.setCurrentItem(item)
+        self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
 
@@ -688,6 +736,7 @@ class PageOrderDialog(QDialog):
             self.list_widget.addItem(item)
         if current_id is not None:
             self.list_widget.setCurrentItem(self.items_by_id[current_id])
+        self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
 
