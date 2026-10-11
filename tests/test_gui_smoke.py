@@ -148,6 +148,7 @@ def test_page_order_tiles_disambiguate_duplicate_source_filenames(application):
         assert second_label == "02 · material.pdf · grupo-b"
         assert first_label != second_label
         assert "/tmp/grupo-a/material.pdf" in dialog.list_widget.item(0).toolTip()
+        assert "Origen: material.pdf · grupo-a · página 1" == dialog.preview_source.text()
     finally:
         _dispose_widget(dialog, application)
 
