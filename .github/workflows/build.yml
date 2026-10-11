@@ -561,7 +561,8 @@ jobs:
           elif [[ -n "${RELEASE_VERSION:-}" ]]; then
             download_version="$RELEASE_VERSION"
           else
-            download_version="$RELEASE_VERSION"
+            echo "No se puede sincronizar descargas/ sin una versión explícita." >&2
+            exit 1
           fi
 
           {
