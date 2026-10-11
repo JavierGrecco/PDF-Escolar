@@ -8,6 +8,7 @@ Prepará dos PDF fáciles de reconocer:
 
 - **Libro A:** 3 páginas, con una palabra distinta en cada página: «A-UNO», «A-DOS» y «A-TRES».
 - **Libro B:** 2 páginas, con «B-UNO» y «B-DOS».
+- **Archivos con nombres repetidos:** guardá dos copias de PDF con el mismo nombre (por ejemplo, `Material.pdf`) en carpetas diferentes. Poné contenido fácil de distinguir en cada una.
 
 Confirmá que los originales sigan iguales después de las pruebas.
 
@@ -34,11 +35,16 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Las flechas cambian el orden de los documentos y deshabilitan el movimiento cuando ya están al principio o al final.
 - [ ] Arrastrar el control ↕ con mouse funciona para reordenar los documentos; soltar antes y después de una tarjeta produce el orden esperado.
 - [ ] Repetir el arrastre usando el panel táctil, sin mouse externo.
-- [ ] «Ordenar páginas…» muestra miniaturas de ambos PDF, con el nombre del archivo y número de página.
-- [ ] Cambiar entre miniaturas Pequeñas, Medianas y Grandes mejora la identificación sin cambiar la selección ni el orden.
-- [ ] Seleccionar cada miniatura actualiza la vista detallada, indicando posición en el PDF final, archivo de origen y número de página original.
+- [ ] «Ordenar páginas…» muestra en cada miniatura la posición que ocupa en el PDF final y el número de página original.
+- [ ] Mover páginas con arrastre, Subir o Bajar actualiza la numeración visible según la nueva posición, sin cambiar el número de página original.
+- [ ] Con los dos `Material.pdf` de carpetas diferentes, las miniaturas y la vista previa permiten distinguir a qué archivo pertenece cada página.
+- [ ] Pasar el cursor por una miniatura muestra la ruta completa de origen en el tooltip.
+- [ ] Cambiar entre miniaturas Pequeñas, Medianas y Grandes mejora la identificación sin cambiar la selección ni el orden; volver a cambiar el tamaño no pierde las etiquetas.
+- [ ] Seleccionar cada miniatura actualiza la vista detallada, indicando posición en el PDF final, archivo de origen (incluida la carpeta si hay nombres repetidos) y número de página original.
 - [ ] «Ampliar página…» abre una vista legible; recorrer páginas con orientaciones/tamaños distintos no deforma su proporción.
-- [ ] Mover una página con arrastre, Subir o Bajar cambia también la posición mostrada en el panel de vista previa.
+- [ ] Mover una página con arrastre, Subir o Bajar cambia también la posición mostrada en el panel de vista previa y en la etiqueta de la miniatura.
+- [ ] Usar «Restablecer orden inicial» devuelve las etiquetas de posición al orden original.
+- [ ] Si una miniatura no se puede generar, comprobar que el aviso es entendible, que la página sigue incluida y que el aviso no desaparece al moverla.
 - [ ] Pulsar «Crear PDF final» sin haber organizado antes abre la revisión interactiva antes del diálogo Guardar.
 - [ ] En la revisión final, reordenar páginas y continuar; comprobar que la secuencia exportada coincide exactamente con la confirmada.
 - [ ] Cancelar la revisión final no crea un archivo ni modifica los originales.
@@ -75,7 +81,7 @@ Estas pruebas requieren hacerlas en equipos reales; las pruebas automáticas no 
 - [ ] Abrir la vista ampliada con páginas verticales, horizontales y de tamaños diferentes; verificar que la imagen no se deforma y que se puede cerrar con el control previsto.
 - [ ] En «Herramientas PDF», desplazar las opciones hasta el final; confirmar que los botones de ejecutar y cerrar permanecen visibles mientras el contenido se desplaza.
 - [ ] Mover y redimensionar las ventanas en Windows y macOS; confirmar que no quedan fuera del área de trabajo y que siguen respondiendo al cambiar entre pantallas.
-- [ ] Repetir con un PDF de muchas páginas y nombres de archivo largos, comprobando que las miniaturas y su identificación siguen siendo claras.
+- [ ] Repetir con un PDF de muchas páginas, nombres de archivo largos y nombres duplicados en carpetas distintas; comprobar que se puede identificar cada página y que las etiquetas no se solapan ni se cortan.
 - [ ] Registrar cualquier solapamiento, texto cortado, botón inaccesible o desplazamiento inesperado. No marcar la prueba como aprobada si solo pasó la suite automatizada.
 
 ### Licencias y componentes de terceros
