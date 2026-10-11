@@ -17,7 +17,7 @@ on:
         required: false
         type: string
       sync_downloads:
-        description: "Actualizar también los binarios de descargas/ (solo para un refresco explícito; aumenta el historial de Git)."
+        description: "Sincronizar descargas/ con esta versión (requiere release_version y aumenta el historial de Git)."
         required: false
         default: false
         type: boolean
@@ -60,15 +60,10 @@ jobs:
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          $publishBeta = $env:GITHUB_EVENT_NAME -eq "push" -and $env:GITHUB_REF_NAME -eq "main" -and $env:COMMIT_MESSAGE.Contains("[publish-app-beta]")
           if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME.StartsWith("v")) {
             $version = $env:GITHUB_REF_NAME.Substring(1)
           } elseif (-not [string]::IsNullOrWhiteSpace($env:RELEASE_VERSION)) {
             $version = $env:RELEASE_VERSION
-          } elseif ($publishBeta) {
-            $version = "0.1.0-beta.1"
           } else {
             $version = "0.1.0-dev.$env:GITHUB_RUN_NUMBER"
           }
@@ -212,14 +207,11 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == v* ]]; then
             version="${GITHUB_REF_NAME#v}"
           elif [[ -n "${RELEASE_VERSION:-}" ]]; then
             version="$RELEASE_VERSION"
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF_NAME" == "main" && "${COMMIT_MESSAGE:-}" == *"[publish-app-beta]"* ]]; then
-            version="0.1.0-beta.1"
           else
             version="0.1.0-dev.${GITHUB_RUN_NUMBER}"
           fi
@@ -378,11 +370,6 @@ jobs:
         github.event_name == 'workflow_dispatch' &&
         github.ref == 'refs/heads/main' &&
         inputs.release_version != ''
-      ) ||
-      (
-        github.event_name == 'push' &&
-        github.ref == 'refs/heads/main' &&
-        contains(github.event.head_commit.message, '[publish-app-beta]')
       )
     needs: [windows, macos]
     runs-on: ubuntu-latest
@@ -417,8 +404,6 @@ jobs:
             tag="$GITHUB_REF_NAME"
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${RELEASE_VERSION:-}" ]]; then
             tag="v$RELEASE_VERSION"
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF_NAME" == "main" && "${COMMIT_MESSAGE:-}" == *"[publish-app-beta]"* ]]; then
-            tag="v0.1.0-beta.1"
           else
             echo "No se pudo determinar la versión para publicar." >&2
             exit 1
@@ -530,14 +515,10 @@ jobs:
       (
         github.event_name == 'workflow_dispatch' &&
         github.ref == 'refs/heads/main' &&
-        inputs.sync_downloads == true
-      ) ||
-      (
-        github.event_name == 'push' &&
-        github.ref == 'refs/heads/main' &&
-        contains(github.event.head_commit.message, '[publish-app-beta]')
+        inputs.sync_downloads == true &&
+        inputs.release_version != ''
       )
-    needs: [windows, macos]
+    needs: [windows, macos, publish-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write
