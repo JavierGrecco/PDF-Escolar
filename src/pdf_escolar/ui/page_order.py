@@ -476,16 +476,19 @@ class PageOrderDialog(QDialog):
             return
         item_id = int(item.data(Qt.ItemDataRole.UserRole))
         reference = self.pages[item_id]
+        source_label = self.source_labels.get(
+            _resolved_source_path(reference.path), Path(reference.path).name
+        )
         position = self.list_widget.row(item) + 1
         self.preview_title.setText(
             f"Página {position} de {self.list_widget.count()} del PDF final"
         )
         self.preview_source.setText(
-            f"Origen: {Path(reference.path).name} · página {reference.page_index + 1}"
+            f"Origen: {source_label} · página {reference.page_index + 1}"
         )
         self.preview_source.setToolTip(str(Path(reference.path).expanduser()))
         self.preview_source.setAccessibleName(
-            f"Archivo de origen {Path(reference.path).name}, página {reference.page_index + 1}"
+            f"Archivo de origen {source_label}, página {reference.page_index + 1}"
         )
 
     def _load_current_preview(self) -> None:
@@ -581,9 +584,12 @@ class PageOrderDialog(QDialog):
             return
         item_id = int(item.data(Qt.ItemDataRole.UserRole))
         reference = self.pages[item_id]
+        source_label = self.source_labels.get(
+            _resolved_source_path(reference.path), Path(reference.path).name
+        )
         viewer = QDialog(self)
         viewer.setWindowTitle(
-            f"{Path(reference.path).name} · página {reference.page_index + 1}"
+            f"{source_label} · página {reference.page_index + 1}"
         )
         fit_window_to_screen(
             viewer,
@@ -594,7 +600,7 @@ class PageOrderDialog(QDialog):
         layout = QVBoxLayout(viewer)
         heading = QLabel(
             f"Página {self.list_widget.row(item) + 1} del documento final · "
-            f"Página {reference.page_index + 1} de {Path(reference.path).name}"
+            f"Página {reference.page_index + 1} de {source_label}"
         )
         heading.setWordWrap(True)
         layout.addWidget(heading)
