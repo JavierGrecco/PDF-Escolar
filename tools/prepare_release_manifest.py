@@ -89,12 +89,11 @@ def write_release_manifest(
             raise ValueError(f"El artefacto está vacío: {path.name}")
 
     lines = [
-        f"PDF Escolar v{version}",
-        f"Commit de origen: {commit}",
-        f"Repositorio: {repository}",
-        f"Compilación: https://github.com/{repository}/actions/runs/{run_id}",
-        "",
-        "SHA-256:",
+        f"# PDF Escolar v{version}",
+        f"# Commit de origen: {commit}",
+        f"# Repositorio: {repository}",
+        f"# Compilación: https://github.com/{repository}/actions/runs/{run_id}",
+        "# SHA-256:",
     ]
     lines.extend(f"{sha256_file(path)}  {path.name}" for path in asset_paths)
 
