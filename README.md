@@ -24,15 +24,17 @@ No hace falta descargar el código fuente para usar la aplicación. Elegí el ar
 
 ### Windows
 
-- **[PDF-Escolar.exe — versión portable](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar.exe):** descargalo y hacé doble clic. No requiere instalación.
-- **[Instalador para Windows](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-Instalador-Windows.exe):** abrilo y seguí los pasos en pantalla.
+- **[PDF-Escolar.exe — versión portable](https://github.com/JavierGrecco/PDF-Escolar/releases/download/v0.1.0-beta.1/PDF-Escolar.exe):** descargalo y hacé doble clic. No requiere instalación.
+- **[Instalador para Windows](https://github.com/JavierGrecco/PDF-Escolar/releases/download/v0.1.0-beta.1/PDF-Escolar-Instalador-0.1.0-beta.1-Windows.exe):** abrilo y seguí los pasos en pantalla.
 
 ### macOS
 
-- **[Mac con procesador Intel](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Intel.dmg)**
-- **[Mac con chip Apple Silicon](https://github.com/JavierGrecco/PDF-Escolar/raw/refs/heads/main/descargas/PDF-Escolar-macOS-Apple-Silicon.dmg)** — M1, M2, M3, M4 y posteriores.
+- **[Mac con procesador Intel](https://github.com/JavierGrecco/PDF-Escolar/releases/download/v0.1.0-beta.1/PDF-Escolar-Instalador-0.1.0-beta.1-macOS-Intel.dmg)**
+- **[Mac con chip Apple Silicon](https://github.com/JavierGrecco/PDF-Escolar/releases/download/v0.1.0-beta.1/PDF-Escolar-Instalador-0.1.0-beta.1-macOS-Apple-Silicon.dmg)** — M1, M2, M3, M4 y posteriores.
 
 En Mac, abrí el archivo DMG y arrastrá PDF Escolar a la carpeta **Aplicaciones**.
+
+Los cuatro enlaces anteriores apuntan a los archivos de la Release fija **v0.1.0-beta.1**; así no descargás accidentalmente un binario distinto por un cambio posterior en la rama principal. Los archivos de `descargas/` y sus URLs directas anteriores se conservan por compatibilidad con enlaces externos.
 
 También podés consultar los archivos y las notas de la versión en [Releases](https://github.com/JavierGrecco/PDF-Escolar/releases). La versión de los enlaces directos se detalla en [la información de descarga](descargas/INFORMACION-DE-DESCARGA.txt), junto con el commit de origen y los SHA-256 de los archivos.
 
