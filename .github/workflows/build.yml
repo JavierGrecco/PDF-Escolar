@@ -60,15 +60,11 @@ jobs:
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          $publishBeta = $env:GITHUB_EVENT_NAME -eq "push" -and $env:GITHUB_REF_NAME -eq "main" -and $env:COMMIT_MESSAGE.Contains("[publish-app-beta]")
           if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME.StartsWith("v")) {
             $version = $env:GITHUB_REF_NAME.Substring(1)
           } elseif (-not [string]::IsNullOrWhiteSpace($env:RELEASE_VERSION)) {
             $version = $env:RELEASE_VERSION
-          } elseif ($publishBeta) {
-            $version = "0.1.0-beta.1"
           } else {
             $version = "0.1.0-dev.$env:GITHUB_RUN_NUMBER"
           }
@@ -212,14 +208,11 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == v* ]]; then
             version="${GITHUB_REF_NAME#v}"
           elif [[ -n "${RELEASE_VERSION:-}" ]]; then
             version="$RELEASE_VERSION"
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF_NAME" == "main" && "${COMMIT_MESSAGE:-}" == *"[publish-app-beta]"* ]]; then
-            version="0.1.0-beta.1"
           else
             version="0.1.0-dev.${GITHUB_RUN_NUMBER}"
           fi
@@ -351,6 +344,15 @@ jobs:
     needs: [windows, macos]
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout only the release validation script
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          sparse-checkout: |
+            tools/prepare_release_manifest.py
+          sparse-checkout-cone-mode: false
+
       - name: Download all generated packages
         uses: actions/download-artifact@v8
         with:
@@ -370,6 +372,18 @@ jobs:
           test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*-Apple-Silicon.zip' -print -quit)"
           ls -lh dist
 
+      - name: Validate package version and checksum manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/prepare_release_manifest.py \
+            --version "0.1.0-dev.${GITHUB_RUN_NUMBER}" \
+            --commit "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" \
+            --dist-dir dist
+          (cd dist && sha256sum --check SHA256SUMS.txt)
+
   publish-release:
     name: Publish downloadable installers
     if: >-
@@ -378,17 +392,21 @@ jobs:
         github.event_name == 'workflow_dispatch' &&
         github.ref == 'refs/heads/main' &&
         inputs.release_version != ''
-      ) ||
-      (
-        github.event_name == 'push' &&
-        github.ref == 'refs/heads/main' &&
-        contains(github.event.head_commit.message, '[publish-app-beta]')
       )
     needs: [windows, macos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
+      - name: Checkout only the release validation script
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+          sparse-checkout: |
+            tools/prepare_release_manifest.py
+          sparse-checkout-cone-mode: false
+
       - name: Download all installer artifacts
         uses: actions/download-artifact@v8
         with:
@@ -401,15 +419,12 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
           if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == v* ]]; then
             tag="$GITHUB_REF_NAME"
           elif [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" && -n "${RELEASE_VERSION:-}" ]]; then
             tag="v$RELEASE_VERSION"
-          elif [[ "$GITHUB_EVENT_NAME" == "push" && "$GITHUB_REF_NAME" == "main" && "${COMMIT_MESSAGE:-}" == *"[publish-app-beta]"* ]]; then
-            tag="v0.1.0-beta.1"
           else
             echo "No se pudo determinar la versión para publicar." >&2
             exit 1
@@ -420,6 +435,64 @@ jobs:
           else
             echo "prerelease=false" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Prevent overwriting a Release or reusing a tag from another commit
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          error_file="$(mktemp)"
+          if gh api "repos/$GITHUB_REPOSITORY/releases/tags/$RELEASE_TAG" >/dev/null 2>"$error_file"; then
+            echo "La Release $RELEASE_TAG ya existe. No se sobrescribirán assets publicados; elegí una versión nueva." >&2
+            rm -f "$error_file"
+            exit 1
+          elif ! grep -q "HTTP 404" "$error_file"; then
+            cat "$error_file" >&2
+            rm -f "$error_file"
+            exit 1
+          fi
+          rm -f "$error_file"
+
+          if tag_ref="$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq '[.object.type, .object.sha] | @tsv' 2>"$error_file")"; then
+            IFS=$'\t' read -r object_type object_sha <<< "$tag_ref"
+            depth=0
+            while [[ "$object_type" == "tag" ]]; do
+              depth=$((depth + 1))
+              if [[ "$depth" -gt 5 ]]; then
+                echo "El tag $RELEASE_TAG tiene demasiados niveles de anotación." >&2
+                exit 1
+              fi
+              tag_ref="$(gh api "repos/$GITHUB_REPOSITORY/git/tags/$object_sha" --jq '[.object.type, .object.sha] | @tsv')"
+              IFS=$'\t' read -r object_type object_sha <<< "$tag_ref"
+            done
+            if [[ "$object_type" != "commit" || "$object_sha" != "$GITHUB_SHA" ]]; then
+              echo "El tag $RELEASE_TAG no apunta al commit compilado ($GITHUB_SHA); se cancela la publicación." >&2
+              exit 1
+            fi
+          else
+            if ! grep -q "HTTP 404" "$error_file"; then
+              cat "$error_file" >&2
+              rm -f "$error_file"
+              exit 1
+            fi
+            echo "El tag $RELEASE_TAG todavía no existe; la Release se creará desde el commit compilado."
+          fi
+          rm -f "$error_file"
+
+      - name: Validate versioned assets and generate SHA-256 manifest
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python tools/prepare_release_manifest.py \
+            --version "${RELEASE_TAG#v}" \
+            --commit "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" \
+            --dist-dir dist
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v3
@@ -433,6 +506,7 @@ jobs:
             dist/PDF-Escolar-Instalador-*-Windows.exe
             dist/PDF-Escolar-Instalador-*-macOS-Intel.dmg
             dist/PDF-Escolar-Instalador-*-macOS-Apple-Silicon.dmg
+            dist/SHA256SUMS.txt
           body: |
             ## Descargas
 
@@ -444,6 +518,10 @@ jobs:
             En ambos casos, abrí el archivo `.dmg` y arrastrá PDF Escolar a Aplicaciones.
 
             No necesitás instalar Python ni abrir Terminal. Los documentos PDF se procesan localmente.
+
+            ### Verificación de descargas
+
+            El asset `SHA256SUMS.txt` incluye la versión, el commit de origen, la ejecución de compilación y los SHA-256 de los cuatro instaladores. Compará el hash del archivo descargado antes de instalarlo.
 
             ### OCR local (beta)
 
@@ -458,14 +536,10 @@ jobs:
       (
         github.event_name == 'workflow_dispatch' &&
         github.ref == 'refs/heads/main' &&
-        (inputs.sync_downloads == true || inputs.release_version != '')
-      ) ||
-      (
-        github.event_name == 'push' &&
-        github.ref == 'refs/heads/main' &&
-        contains(github.event.head_commit.message, '[publish-app-beta]')
+        inputs.sync_downloads == true &&
+        inputs.release_version != ''
       )
-    needs: [windows, macos]
+    needs: [windows, macos, publish-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -485,7 +559,6 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
           mkdir -p descargas
@@ -508,10 +581,9 @@ jobs:
             download_version="${GITHUB_REF_NAME#v}"
           elif [[ -n "${RELEASE_VERSION:-}" ]]; then
             download_version="$RELEASE_VERSION"
-          elif [[ "${GITHUB_EVENT_NAME:-}" == "push" && "${GITHUB_REF_NAME:-}" == "main" && "${COMMIT_MESSAGE:-}" == *"[publish-app-beta]"* ]]; then
-            download_version="0.1.0-beta.1"
           else
-            download_version="0.1.0-dev.${GITHUB_RUN_NUMBER}"
+            echo "No se puede sincronizar descargas/ sin una versión explícita." >&2
+            exit 1
           fi
 
           {
