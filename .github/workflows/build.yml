@@ -17,7 +17,7 @@ on:
         required: false
         type: string
       sync_downloads:
-        description: "Sincronizar descargas/ con esta versión (requiere release_version y aumenta el historial de Git)."
+        description: "Actualizar también los binarios de descargas/ (solo para un refresco explícito; aumenta el historial de Git)."
         required: false
         default: false
         type: boolean
@@ -60,6 +60,7 @@ jobs:
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
+        run: |
           if ($env:GITHUB_REF_TYPE -eq "tag" -and $env:GITHUB_REF_NAME.StartsWith("v")) {
             $version = $env:GITHUB_REF_NAME.Substring(1)
           } elseif (-not [string]::IsNullOrWhiteSpace($env:RELEASE_VERSION)) {
@@ -397,7 +398,6 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
           if [[ "$GITHUB_REF_TYPE" == "tag" && "$GITHUB_REF_NAME" == v* ]]; then
@@ -538,7 +538,6 @@ jobs:
         shell: bash
         env:
           RELEASE_VERSION: ${{ inputs.release_version }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           set -euo pipefail
           mkdir -p descargas
@@ -561,10 +560,8 @@ jobs:
             download_version="${GITHUB_REF_NAME#v}"
           elif [[ -n "${RELEASE_VERSION:-}" ]]; then
             download_version="$RELEASE_VERSION"
-          elif [[ "${GITHUB_EVENT_NAME:-}" == "push" && "${GITHUB_REF_NAME:-}" == "main" && "${COMMIT_MESSAGE:-}" == *"[publish-app-beta]"* ]]; then
-            download_version="0.1.0-beta.1"
           else
-            download_version="0.1.0-dev.${GITHUB_RUN_NUMBER}"
+            download_version="$RELEASE_VERSION"
           fi
 
           {
