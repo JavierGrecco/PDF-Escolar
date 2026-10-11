@@ -4,16 +4,16 @@ La herramienta [tools/analyze_git_history_size.py](../tools/analyze_git_history_
 
 ## Qué mide
 
-- Los objetos únicos alcanzables desde las referencias locales (opción \`--all\`) y el tamaño lógico total de los blobs. El contenido idéntico comparte el mismo SHA de Git y se cuenta una sola vez, aunque haya aparecido en varias rutas o commits.
+- Los objetos únicos alcanzables desde las referencias locales (opción `--all`) y el tamaño lógico total de los blobs. El contenido idéntico comparte el mismo SHA de Git y se cuenta una sola vez, aunque haya aparecido en varias rutas o commits.
 - Los blobs que superan el umbral elegido, con SHA, tamaño y una ruta representativa. La ruta no es una lista completa de todas las apariciones históricas.
-- Los archivos actualmente presentes en \`descargas/\` en \`HEAD\`, por separado, para distinguir el peso actual de los archivos conservados en el historial.
-- La información de almacenamiento local devuelta por \`git count-objects -vH\`, que ayuda a comparar tamaño lógico con almacenamiento comprimido.
+- Los archivos actualmente presentes en `descargas/` en `HEAD`, por separado, para distinguir el peso actual de los archivos conservados en el historial.
+- La información de almacenamiento local devuelta por `git count-objects -vH`, que ayuda a comparar tamaño lógico con almacenamiento comprimido.
 
-El tamaño lógico de los blobs **no equivale** al tamaño del directorio \`.git\` ni al campo \`size\` de la API de GitHub. El tamaño local de los packs depende de compresión, deltas y de qué objetos se hayan descargado. El inventario también puede ser incompleto si faltan referencias en el clon o si este es superficial.
+El tamaño lógico de los blobs **no equivale** al tamaño del directorio `.git` ni al campo `size` de la API de GitHub. El tamaño local de los packs depende de compresión, deltas y de qué objetos se hayan descargado. El inventario también puede ser incompleto si faltan referencias en el clon o si este es superficial.
 
 ## Ejecutar un inventario completo
 
-Conviene usar un clon espejo nuevo, que obtenga las ramas y etiquetas anunciadas por el remoto. Así no mezclamos el resultado con un clon de desarrollo que quizá solo tenga \`main\`.
+Conviene usar un clon espejo nuevo, que obtenga las ramas y etiquetas anunciadas por el remoto. Así no mezclamos el resultado con un clon de desarrollo que quizá solo tenga `main`.
 
 ### macOS o Linux
 
@@ -32,8 +32,8 @@ La herramienta solo requiere Git y la biblioteca estándar de Python. El informe
 ## Cómo interpretar el resultado
 
 1. Revisar los blobs mayores y comprobar si son distintas versiones históricas de binarios, paquetes de prueba, artefactos temporales o archivos que deban conservarse.
-2. Comparar \`large_blob_bytes\` con \`current_descargas_total_bytes\` sin sumarlos como si fueran magnitudes equivalentes: la primera cifra cuenta versiones de contenido únicas alcanzables en toda la historia; la segunda solo el árbol actual bajo \`descargas/\`.
-3. Usar \`git_count_objects\` como una medida complementaria del almacenamiento local del clon.
-4. Antes de limpiar, guardar una copia espejo verificable, ensayar \`git filter-repo --analyze\` y cualquier reescritura en una copia aislada, comparar ramas y etiquetas, y revisar cómo conservar las URLs raw de \`main/descargas/\`.
+2. Comparar `large_blob_bytes` con `current_descargas_total_bytes` sin sumarlos como si fueran magnitudes equivalentes: la primera cifra cuenta versiones de contenido únicas alcanzables en toda la historia; la segunda solo el árbol actual bajo `descargas/`.
+3. Usar `git_count_objects` como una medida complementaria del almacenamiento local del clon.
+4. Antes de limpiar, guardar una copia espejo verificable, ensayar `git filter-repo --analyze` y cualquier reescritura en una copia aislada, comparar ramas y etiquetas, y revisar cómo conservar las URLs raw de `main/descargas/`.
 
 Este informe es diagnóstico, no una autorización para reescribir la historia. No se debe hacer un push forzado ni pedir a otras personas que reclonen hasta acordar el impacto y el plan de recuperación.
