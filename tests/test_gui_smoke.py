@@ -131,6 +131,12 @@ def test_page_order_tiles_show_final_position_and_original_page(application):
         assert first_after_move.text() == "01 · historia.pdf\nPág. original 5"
         assert "Orden final: 1" in first_after_move.toolTip()
         assert "historia.pdf" in first_after_move.toolTip()
+
+        dialog._thumbnail_failed(1, "fallo de renderizado")
+        assert "Vista previa no disponible" in first_after_move.toolTip()
+        dialog.move_selected_down()
+        assert "Vista previa no disponible" in first_after_move.toolTip()
+        assert "La página sigue incluida en el orden" in first_after_move.toolTip()
     finally:
         _dispose_widget(dialog, application)
 
