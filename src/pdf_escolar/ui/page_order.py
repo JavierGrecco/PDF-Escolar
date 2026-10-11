@@ -166,6 +166,7 @@ class PageOrderDialog(QDialog):
         super().__init__(parent)
         self.pages = list(pages)
         self.source_labels = _source_display_labels(self.pages)
+        self.thumbnail_errors: set[int] = set()
         self.confirm_label = confirm_label
         self.tasks: set[QRunnable] = set()
         self.preview_task: PageOrderPreviewTask | None = None
@@ -434,11 +435,17 @@ class PageOrderDialog(QDialog):
                 f"{row + 1:02d} · {source_label}\n"
                 f"Pág. original {reference.page_index + 1}"
             )
-            item.setToolTip(
+            tooltip = (
                 f"Orden final: {row + 1}\n"
                 f"Archivo: {Path(reference.path).expanduser()}\n"
                 f"Página original: {reference.page_index + 1}"
             )
+            if item_id in self.thumbnail_errors:
+                tooltip += (
+                    "\nVista previa no disponible. "
+                    "La página sigue incluida en el orden."
+                )
+            item.setToolTip(tooltip)
 
     def _apply_thumbnail_size(self, *_args) -> None:
         """Change the grid density without changing the page order."""
@@ -669,12 +676,9 @@ class PageOrderDialog(QDialog):
 
     @Slot(int, str)
     def _thumbnail_failed(self, item_id: int, detail: str) -> None:
-        item = self.items_by_id.get(item_id)
-        if item is not None:
-            item.setToolTip(
-                f"{item.toolTip()}\n"
-                "Vista previa no disponible. La página sigue incluida en el orden."
-            )
+        if item_id in self.items_by_id:
+            self.thumbnail_errors.add(item_id)
+            self._refresh_item_labels()
 
     @Slot(str)
     def _task_finished(self, finished_token: str) -> None:
