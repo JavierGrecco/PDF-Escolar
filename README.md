@@ -78,10 +78,11 @@ Ya incorporé en el código principal:
 - Una vista detallada de la página seleccionada, con su posición final, el archivo de origen y el número de página original.
 - Una ventana para ampliar la página y examinarla con más detalle.
 - Una revisión interactiva del orden final antes de elegir dónde guardar el PDF.
+- Cada miniatura muestra su posición en el PDF final y el número de página original. Si varios archivos tienen el mismo nombre, se identifica también su carpeta de origen; la ruta completa queda disponible al pasar el cursor.
 - Ventanas que ajustan su tamaño al espacio disponible; «Herramientas PDF» permite desplazarse por las opciones sin perder los botones de acción.
 - Un menú **Ayuda → Licencias y componentes** para consultar las versiones y los avisos de licencia recopilados para esa compilación.
 
-Las pruebas automatizadas pasaron en Ubuntu, Windows y macOS, y los instaladores de prueba de Windows, Mac Intel y Apple Silicon se compilaron y verificaron correctamente. **Estas mejoras todavía no forman parte de la beta descargable**. Antes de publicarlas en una nueva beta, falta comprobar visualmente su comodidad con documentos reales y distintos escalados de pantalla, y revisar los avisos generados para cada plataforma.
+Las pruebas del cambio de identificación de miniaturas pasaron en Ubuntu, Windows, macOS y el entorno de macOS Intel; también se compilaron y verificaron los instaladores de Windows, Mac Intel y Apple Silicon. Las ejecuciones de validación son [Tests del PR #40](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38103933954) y [Build installers del PR #40](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38103933871). Tras integrar el cambio, las ejecuciones de `main` están volviendo a ejecutarse: [tests](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38110027412) y [compilación](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38110027394). **Estas mejoras todavía no forman parte de la beta descargable**. Antes de publicarlas en una nueva beta, falta comprobar visualmente su comodidad con documentos reales y distintos escalados de pantalla, y revisar los avisos generados para cada plataforma.
 
 Si querés probar los cambios de interfaz antes de la próxima beta, podés descargar el artefacto temporal **pdf-escolar-windows** en la sección **Artifacts** de la [compilación de validación](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38092037060). Es solo para Windows, no es una publicación oficial y caduca el 8 de enero de 2027.
 
