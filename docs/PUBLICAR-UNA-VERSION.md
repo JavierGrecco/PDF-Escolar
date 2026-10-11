@@ -22,6 +22,8 @@ Antes de publicar, el flujo exige los cuatro paquetes de la versión elegida (po
 
 El flujo **no sobrescribe una Release existente**. Si el tag ya está publicado, elegí una versión nueva en lugar de intentar reemplazar sus assets. Si el tag existe sin Release, solo se acepta cuando apunta al mismo commit que se está compilando.
 
+Antes de anunciar la versión, revisá los assets y los hashes, y actualizá los cuatro enlaces del README si deben apuntar a la nueva Release. Los enlaces públicos del README están fijados a `v0.1.0-beta.1` para no cambiar de archivo por accidente; una Release nueva no los actualiza por sí sola.
+
 ## Actualizar los enlaces directos antiguos
 
 La opción de sincronización existe únicamente para conservar la compatibilidad con enlaces raw que terceros pudieran tener guardados. Para actualizar esos binarios, ejecutá el flujo manualmente con una versión nueva en **Versión para publicar** y marcá explícitamente **Actualizar también los binarios de descargas/**. La sincronización espera a que la nueva Release se haya publicado correctamente; si la validación o publicación falla, no reemplaza `descargas/`.
@@ -53,7 +55,7 @@ Para futuras versiones, publicá la aplicación desde **Build installers** usand
 
 ## ¿Qué versión conviene publicar?
 
-- **Vista previa de prueba:** usá una versión con guion, por ejemplo `0.1.0-beta.1`. GitHub la marcará como *pre-release*. Es lo recomendado mientras la aplicación no tenga firma digital y pruebas manuales en equipos limpios.
+- **Vista previa de prueba:** usá una versión con guion que todavía no exista, por ejemplo `0.1.0-beta.2`. GitHub la marcará como *pre-release*. No vuelvas a usar `0.1.0-beta.1`, porque esa Release ya está publicada. Es lo recomendado mientras la aplicación no tenga firma digital y pruebas manuales en equipos limpios.
 - **Versión estable:** usá una versión como `0.1.0` solo después de hacer pruebas manuales en los sistemas que se anuncian como compatibles y resolver la firma/notarización si se distribuirá públicamente.
 
 ## ¿Cuánto duran los archivos?
