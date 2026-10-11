@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 VERSION_PATTERN = re.compile(
-    r"\\d+\\.\\d+\\.\\d+(-[0-9A-Za-z.-]+)?(\\+[0-9A-Za-z.-]+)?"
+    r"\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?"
 )
 
 PORTABLE_NAME = "PDF-Escolar.exe"
@@ -57,7 +57,7 @@ def write_release_manifest(
         raise ValueError(f"Versión inválida para una Release: {version!r}")
     if not commit.strip():
         raise ValueError("Falta el commit de origen.")
-    if not re.fullmatch(r"[^/\\s]+/[^/\\s]+", repository):
+    if not re.fullmatch(r"[^/\s]+/[^/\s]+", repository):
         raise ValueError(f"Nombre de repositorio inválido: {repository!r}")
     if not run_id.isdigit():
         raise ValueError(f"Identificador de ejecución inválido: {run_id!r}")
@@ -100,7 +100,7 @@ def write_release_manifest(
 
     manifest = dist_dir / "SHA256SUMS.txt"
     temporary = dist_dir / ".SHA256SUMS.txt.tmp"
-    temporary.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+    temporary.write_text("\n".join(lines) + "\n", encoding="utf-8")
     temporary.replace(manifest)
     return manifest
 
