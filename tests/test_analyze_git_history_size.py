@@ -79,6 +79,23 @@ def test_current_descargas_size_is_reported_separately(repository: Path):
     assert report["current_descargas_total_bytes"] == 1_100_000
 
 
+def test_supports_bare_mirror_repositories(repository: Path, tmp_path: Path):
+    mirror = tmp_path / "audit mirror.git"
+    subprocess.run(
+        ["git", "clone", "--mirror", str(repository), str(mirror)],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    report = AUDIT.build_report(mirror, min_size_bytes=1_000_000)
+
+    assert report["head"] is not None
+    assert report["shallow_clone"] is False
+    assert report["large_blob_count"] == 2
+    assert report["current_descargas_total_bytes"] == 1_100_000
+
+
 def test_cli_writes_json_and_prints_human_readable_report(repository: Path, tmp_path: Path):
     output = tmp_path / "history-report.json"
     result = subprocess.run(
