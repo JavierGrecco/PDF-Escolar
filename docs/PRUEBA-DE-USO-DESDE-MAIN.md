@@ -4,7 +4,7 @@ Esta guía sirve para probar las mejoras recientes de la interfaz antes de que s
 
 ## Opción recomendada: descargar la aplicación ya compilada
 
-No necesitás instalar Python ni herramientas de desarrollo.
+No necesitás instalar Python ni herramientas de desarrollo. GitHub sí exige iniciar sesión para descargar artefactos de Actions; no hace falta tener permisos de escritura en el repositorio.
 
 1. Abrí el flujo [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml).
 2. Buscá la ejecución más reciente de la rama **main** cuyo estado sea **Success**. Confirmá que sea una ejecución de \`push\` a \`main\`, no un intento de una rama o pull request.
@@ -67,7 +67,7 @@ No adjuntes PDF de estudiantes ni documentos privados. Si sirve una captura, us�
 
 ## Alternativa: descargar el código fuente
 
-Esta opción sí requiere Python y una terminal. Descargá el ZIP de la rama principal desde [Descargar el código fuente de main](https://github.com/JavierGrecco/PDF-Escolar/archive/refs/heads/main.zip), extraelo en una carpeta y abrí una terminal dentro de esa carpeta.
+Esta opción no requiere iniciar sesión en GitHub, pero sí requiere Python y una terminal. Descargá el ZIP público de la rama principal desde [Descargar el código fuente de main](https://github.com/JavierGrecco/PDF-Escolar/archive/refs/heads/main.zip), extraelo en una carpeta y abrí una terminal dentro de esa carpeta.
 
 Requisitos: Python 3.11, 3.12 o 3.13 y conexión a Internet para instalar las dependencias.
 
