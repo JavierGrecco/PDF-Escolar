@@ -846,6 +846,8 @@ class MainWindow(QMainWindow):
                     selected_count += len(parse_page_ranges(card.ranges.text(), info.page_count))
                 except ValueError:
                     has_invalid_ranges = True
+            if self.custom_page_order is not None and not has_invalid_ranges:
+                selected_count = len(self.custom_page_order)
             summary = f"{count} archivo{'s' if count != 1 else ''}"
             if has_invalid_ranges:
                 summary += " · Revisá las páginas"
@@ -905,7 +907,15 @@ class MainWindow(QMainWindow):
             )
             return
 
-        dialog = PageOrderDialog(pages, self)
+        dialog = PageOrderDialog(
+            pages,
+            self,
+            available_sources=[
+                (info.path, info.page_count)
+                for info, _card in self.documents.values()
+            ],
+            enable_page_corrections=True,
+        )
         result = dialog.exec()
         # Drain outstanding previews explicitly after exec() returns instead
         # of overriding QDialog.done() or adding slots to its finished signal.
@@ -950,7 +960,13 @@ class MainWindow(QMainWindow):
         # second dialog unless the selection or source order has changed.
         if not self.page_order_reviewed:
             dialog = PageOrderDialog(
-                pages, self, confirm_label="Continuar a guardar"
+                pages,
+                self,
+                confirm_label="Continuar a guardar",
+                available_sources=[
+                    (info.path, info.page_count)
+                    for info, _card in self.documents.values()
+                ],
             )
             result = dialog.exec()
             dialog.thumbnail_timer.stop()
