@@ -30,6 +30,9 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] La selección inicial incluye todas las páginas.
 - [ ] Escribir `3, 1` en el Libro A muestra dos páginas seleccionadas y conserva ese orden al exportar.
 - [ ] «Elegir visualmente» abre las miniaturas; al confirmar la selección, los rangos se actualizan.
+- [ ] Al seleccionar una miniatura, el panel lateral muestra una vista ampliada con el número de página y el nombre del archivo de origen.
+- [ ] «Ampliar página…» abre una ventana más grande con desplazamiento para inspeccionar texto pequeño y detalles, sin perder la selección.
+- [ ] Cambiar al grupo siguiente o anterior actualiza la vista ampliada y conserva todas las marcas anteriores.
 - [ ] Abrir y cancelar rápidamente el selector de miniaturas no cierra la aplicación ni deja la ventana bloqueada.
 - [ ] Cambiar entre grupos de miniaturas varias veces; la barra de carga corresponde al grupo actual y no desaparece antes de tiempo.
 - [ ] Las flechas cambian el orden de los documentos y deshabilitan el movimiento cuando ya están al principio o al final.
@@ -50,6 +53,10 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Pulsar «Crear PDF final» sin haber organizado antes abre la revisión interactiva antes del diálogo Guardar.
 - [ ] En la revisión final, reordenar páginas y continuar; comprobar que la secuencia exportada coincide exactamente con la confirmada.
 - [ ] En la revisión final, quitar una página del documento nuevo actualiza la cantidad y la secuencia sin tocar el original.
+- [ ] Usar «Agregar páginas…», elegir cualquiera de los PDF ya cargados y marcar páginas que se olvidaron en la selección inicial.
+- [ ] Las páginas nuevas aparecen después de la página seleccionada; se pueden ver ampliadas, mover, quitar y recuperar antes de guardar.
+- [ ] Si dos archivos tienen el mismo nombre, al agregar páginas queda claro de qué carpeta provienen.
+- [ ] Después de agregar o quitar páginas, la cantidad indicada coincide con la secuencia que efectivamente se exportará.
 - [ ] Recuperar una página quitada la devuelve a su posición original; repetir quitar/recuperar conserva la secuencia esperada.
 - [ ] La revisión final no permite quitar la última página que queda en el documento.
 - [ ] Cancelar la revisión final no crea un archivo ni modifica los originales.
