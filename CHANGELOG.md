@@ -18,6 +18,8 @@ Primera beta pública de PDF Escolar.
 - Miniaturas pequeñas, medianas y grandes en el organizador de páginas.
 - Vista detallada de la página seleccionada, con su posición en el documento final y su archivo y número de origen.
 - Ventana para ampliar la página y examinarla con más detalle.
+- Vista ampliada también durante la selección inicial, con identificación de la página y el PDF de origen.
+- Opción «Agregar páginas…» en el organizador y la revisión final para incorporar hojas olvidadas de cualquiera de los PDF cargados, reordenarlas o quitarlas antes de guardar.
 - Revisión interactiva del orden final antes de elegir dónde guardar el PDF.
 - Posibilidad de quitar páginas individuales durante la revisión final y recuperarlas antes de guardar, sin modificar los PDF originales.
 - Recordar la última carpeta en la que se guardó correctamente un PDF para facilitar exportaciones sucesivas.
