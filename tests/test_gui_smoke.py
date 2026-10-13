@@ -565,8 +565,7 @@ def test_final_review_can_remove_and_restore_multiple_pages_in_original_position
         _dispose_widget(dialog, application)
 
 
-
-def test_final_review_restores_removed_page_near_its_original_neighbors_after_reordering(application):
+def test_removed_page_restores_near_neighbors_after_reordering(application):
     references = [
         PdfPageRef("/tmp/a.pdf", 0),
         PdfPageRef("/tmp/b.pdf", 0),
@@ -593,6 +592,7 @@ def test_final_review_restores_removed_page_near_its_original_neighbors_after_re
         assert dialog.count_label.text() == "4 páginas en el documento final"
     finally:
         _dispose_widget(dialog, application)
+
 
 def test_final_review_can_add_pages_after_the_current_page(application):
     original = [
