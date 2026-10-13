@@ -754,14 +754,19 @@ class MainWindow(QMainWindow):
         if not errors and not ignored:
             return
 
-        details: list[str] = []
-        details.extend(
-            f"• {Path(path).name}: {friendly_pdf_load_error(detail)}"
-            for path, detail in errors
-        )
-        details.extend(f"• {name}: {reason}" for name, reason in ignored)
-        visible_details = details[:5]
-        remaining = len(details) - len(visible_details)
+        visible_details: list[str] = []
+        for path, detail in errors:
+            if len(visible_details) == 5:
+                break
+            visible_details.append(
+                f"• {Path(path).name}: {friendly_pdf_load_error(detail)}"
+            )
+        if len(visible_details) < 5:
+            for name, reason in ignored:
+                if len(visible_details) == 5:
+                    break
+                visible_details.append(f"• {name}: {reason}")
+        remaining = len(errors) + len(ignored) - len(visible_details)
         if remaining:
             noun = "elemento" if remaining == 1 else "elementos"
             visible_details.append(f"• Y {remaining} {noun} más.")
@@ -770,10 +775,9 @@ class MainWindow(QMainWindow):
         dialog.setIcon(QMessageBox.Icon.Warning)
         if errors and ignored:
             dialog.setWindowTitle("Algunos elementos no se pudieron agregar")
-            file_noun = "PDF" if len(errors) != 1 else "PDF"
             element_noun = "elemento" if len(ignored) == 1 else "elementos"
             dialog.setText(
-                f"No se pudieron abrir {len(errors)} {file_noun} y se ignoraron "
+                f"No se pudieron abrir {len(errors)} PDF y se ignoraron "
                 f"{len(ignored)} {element_noun}."
             )
         elif errors:
