@@ -1077,11 +1077,34 @@ class MainWindow(QMainWindow):
         dialog.setIcon(QMessageBox.Icon.Information)
         dialog.setText("¡Listo! El documento PDF se guardó correctamente.")
         dialog.setInformativeText(f"{count} páginas\n{output}")
+        open_pdf = dialog.addButton("Abrir PDF", QMessageBox.ButtonRole.ActionRole)
         open_folder = dialog.addButton("Abrir carpeta", QMessageBox.ButtonRole.ActionRole)
         dialog.addButton("Cerrar", QMessageBox.ButtonRole.AcceptRole)
+        open_pdf.clicked.connect(
+            lambda: self._open_saved_location(output, "el PDF")
+        )
+        open_folder.clicked.connect(
+            lambda: self._open_saved_location(str(Path(output).parent), "la carpeta")
+        )
+        # ActionRole buttons keep the choice explicit but should finish the notice
+        # once the requested location has been opened (or an error is explained).
+        open_pdf.clicked.connect(dialog.accept)
+        open_folder.clicked.connect(dialog.accept)
         dialog.exec()
-        if dialog.clickedButton() == open_folder:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(str(Path(output).parent)))
+
+    def _open_saved_location(self, path: str, description: str) -> None:
+        """Open a saved PDF or its containing folder, explaining OS-level failures."""
+        if QDesktopServices.openUrl(QUrl.fromLocalFile(path)):
+            return
+        show_notice(
+            self,
+            "No se pudo abrir automáticamente",
+            (
+                f"El archivo se guardó correctamente, pero no pudimos abrir {description}.\n\n"
+                f"Podés abrirlo manualmente desde el Explorador de archivos:\n{path}"
+            ),
+            icon=QMessageBox.Icon.Warning,
+        )
 
     @Slot(str)
     def _on_export_error(self, detail: str):
