@@ -82,6 +82,7 @@ Ya incorporé en el código principal:
 - Una vista detallada de la página seleccionada, con su posición final, el archivo de origen y el número de página original.
 - Una ventana para ampliar la página y examinarla con más detalle.
 - Una revisión interactiva del orden final antes de elegir dónde guardar el PDF.
+- Recordar la última carpeta donde se guardó correctamente un PDF para agilizar la próxima exportación.
 - Cada miniatura muestra su posición en el PDF final y el número de página original. Si varios archivos tienen el mismo nombre, se identifica también su carpeta de origen; la ruta completa queda disponible al pasar el cursor.
 - Ventanas que ajustan su tamaño al espacio disponible; «Herramientas PDF» permite desplazarse por las opciones sin perder los botones de acción.
 - Un menú **Ayuda → Licencias y componentes** para consultar las versiones y los avisos de licencia recopilados para esa compilación.
