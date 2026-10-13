@@ -117,6 +117,17 @@ jobs:
             throw "No se generó un instalador de Windows válido."
           }
 
+          # The portable executable is the first option recommended to end users.
+          # Launch it in CI too, rather than checking only that a large file exists.
+          $portableProcess = Start-Process -FilePath $portable.FullName -PassThru
+          Start-Sleep -Seconds 8
+          $portableProcess.Refresh()
+          if ($portableProcess.HasExited) {
+            throw "La aplicación portable de Windows se cerró inesperadamente al iniciarse."
+          }
+          Get-Process -Name "PDF-Escolar" -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep -Seconds 2
+
           $installDir = Join-Path $env:RUNNER_TEMP "PDF-Escolar-Smoke-Test"
           $installProcess = Start-Process -FilePath $installer.FullName -ArgumentList @(
             "/VERYSILENT",
