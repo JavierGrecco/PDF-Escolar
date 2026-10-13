@@ -12,7 +12,9 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 try:
     from PySide6.QtCore import QBuffer, QEvent, QIODevice, QSettings, Qt
     from PySide6.QtGui import QPixmap
-    from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView, QScrollArea
+    from PySide6.QtWidgets import (
+        QApplication, QLabel, QMessageBox, QAbstractItemView, QScrollArea
+    )
     from pdf_escolar.pdf_engine import PdfPageRef
     from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
     from pdf_escolar.ui.page_order import PageOrderDialog
@@ -374,7 +376,42 @@ def test_drop_area_compacts_after_loading_files_and_expands_when_empty(applicati
         _dispose_widget(window, application)
 
 
-def test_load_errors_are_collected_for_one_clear_summary(application):
+
+def test_unsupported_dropped_items_are_explained_in_one_notice(
+    application, tmp_path, monkeypatch
+):
+    unsupported = tmp_path / "ficha-de-matematica.docx"
+    unsupported.write_text("archivo de prueba", encoding="utf-8")
+    another = tmp_path / "foto.png"
+    another.write_bytes(b"test")
+
+    notices = []
+
+    def capture_notice(dialog):
+        notices.append(
+            (dialog.windowTitle(), dialog.text(), dialog.informativeText())
+        )
+        return 0
+
+    monkeypatch.setattr(QMessageBox, "exec", capture_notice)
+    window = MainWindow()
+    try:
+        window.add_files([str(unsupported), str(another)])
+
+        assert len(notices) == 1
+        title, text, detail = notices[0]
+        assert title == "Solo se pueden agregar archivos PDF"
+        assert "2 elementos" in text
+        assert "ficha-de-matematica.docx" in detail
+        assert "foto.png" in detail
+        assert detail.count("Solo se admiten archivos PDF.") == 2
+        assert not window.documents
+        assert not window.pending
+    finally:
+        _dispose_widget(window, application)
+
+
+def test_load_errors_are_collected_for_one_clear_summary(application, monkeypatch):
     window = MainWindow()
     path = "/tmp/protected.pdf"
     try:
