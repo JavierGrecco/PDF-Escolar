@@ -47,6 +47,9 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Si una miniatura no se puede generar, comprobar que el aviso es entendible, que la página sigue incluida y que el aviso no desaparece al moverla.
 - [ ] Pulsar «Crear PDF final» sin haber organizado antes abre la revisión interactiva antes del diálogo Guardar.
 - [ ] En la revisión final, reordenar páginas y continuar; comprobar que la secuencia exportada coincide exactamente con la confirmada.
+- [ ] En la revisión final, quitar una página del documento nuevo actualiza la cantidad y la secuencia sin tocar el original.
+- [ ] Recuperar una página quitada la devuelve a su posición original; repetir quitar/recuperar conserva la secuencia esperada.
+- [ ] La revisión final no permite quitar la última página que queda en el documento.
 - [ ] Cancelar la revisión final no crea un archivo ni modifica los originales.
 - [ ] Aplicar un orden desde «Ordenar páginas…» y luego crear el PDF no repite innecesariamente la misma pantalla de revisión.
 - [ ] Cerrar el PDF y volver a abrir el organizador; las miniaturas vuelven a cargarse correctamente sin imágenes de páginas equivocadas.
