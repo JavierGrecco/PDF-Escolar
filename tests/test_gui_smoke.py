@@ -764,3 +764,32 @@ def test_pdf_tools_dialog_exposes_optional_local_ocr(application):
         assert dialog.ocr_panel.isHidden()
     finally:
         _dispose_widget(dialog, application)
+
+def test_export_success_dialog_opens_saved_pdf_directly(
+    application, tmp_path, monkeypatch
+):
+    window = MainWindow()
+    output = tmp_path / "Material de matemática - resultado.pdf"
+    opened_paths = []
+
+    monkeypatch.setattr(
+        "pdf_escolar.ui.main_window.QDesktopServices.openUrl",
+        lambda url: opened_paths.append(url.toLocalFile()) or True,
+    )
+
+    def click_open_pdf(dialog):
+        assert dialog.windowTitle() == "PDF creado"
+        buttons = {button.text(): button for button in dialog.buttons()}
+        assert "Abrir PDF" in buttons
+        assert "Abrir carpeta" in buttons
+        buttons["Abrir PDF"].click()
+        return 0
+
+    monkeypatch.setattr(QMessageBox, "exec", click_open_pdf)
+    try:
+        window._on_export_finished(3, str(output))
+
+        assert opened_paths == [str(output)]
+        assert window.status.text() == "PDF creado correctamente: 3 páginas."
+    finally:
+        _dispose_widget(window, application)
