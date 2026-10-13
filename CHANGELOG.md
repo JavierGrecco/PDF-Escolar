@@ -22,6 +22,7 @@ Primera beta pública de PDF Escolar.
 - Opción «Agregar páginas…» en el organizador y la revisión final para incorporar hojas olvidadas de cualquiera de los PDF cargados, reordenarlas o quitarlas antes de guardar.
 - Revisión interactiva del orden final antes de elegir dónde guardar el PDF.
 - Posibilidad de quitar páginas individuales durante la revisión final y recuperarlas antes de guardar, sin modificar los PDF originales.
+- La recuperación de páginas sigue sus páginas vecinas cuando se reordena el documento durante la revisión, con una posición previa como alternativa si las referencias ya no existen.
 - Recordar la última carpeta en la que se guardó correctamente un PDF para facilitar exportaciones sucesivas.
 - Activar «Subir», «Bajar» y «Restablecer orden inicial» solo cuando esas acciones pueden cambiar el orden actual.
 - Ajuste del tamaño inicial y mínimo de las ventanas según el espacio disponible.
