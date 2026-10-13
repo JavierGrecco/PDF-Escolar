@@ -406,6 +406,7 @@ class PageOrderDialog(QDialog):
         else:
             self._load_current_preview()
         self._apply_thumbnail_size()
+        self._refresh_order_controls()
 
         self.setStyleSheet("""
             QDialog { background:#F5F7FB; color:#1F2937; }
@@ -502,16 +503,37 @@ class PageOrderDialog(QDialog):
         self, current: QListWidgetItem | None, _previous: QListWidgetItem | None
     ) -> None:
         self._load_current_preview()
+        self._refresh_order_controls()
         self._refresh_review_controls()
 
     def _items_reordered(self, *_args) -> None:
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_order_controls()
         self._refresh_review_controls()
+
+    def _refresh_order_controls(self) -> None:
+        """Disable movement actions that cannot change the current sequence."""
+        if not hasattr(self, "list_widget"):
+            return
+        row = self.list_widget.currentRow()
+        count = self.list_widget.count()
+        self.up_button.setEnabled(row > 0)
+        self.down_button.setEnabled(0 <= row < count - 1)
+        visible_ids = [
+            int(self.list_widget.item(index).data(Qt.ItemDataRole.UserRole))
+            for index in range(count)
+        ]
+        # Removed pages remain available in the final-review recovery stack,
+        # so compare only the visible sequence with its original relative order.
+        self.reset_button.setEnabled(
+            len(visible_ids) > 1 and visible_ids != sorted(visible_ids)
+        )
 
     def _refresh_review_controls(self) -> None:
         """Keep the final-review actions consistent with the visible page list."""
+        self._refresh_order_controls()
         if not self.final_review or not hasattr(self, "remove_page_button"):
             return
         count = self.list_widget.count()
@@ -538,6 +560,7 @@ class PageOrderDialog(QDialog):
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_order_controls()
         self._refresh_review_controls()
 
     def restore_last_removed_page(self) -> None:
@@ -550,6 +573,7 @@ class PageOrderDialog(QDialog):
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_order_controls()
         self._refresh_review_controls()
 
     def _refresh_preview_metadata(self) -> None:
@@ -796,6 +820,7 @@ class PageOrderDialog(QDialog):
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_order_controls()
 
     def move_selected_down(self) -> None:
         row = self.list_widget.currentRow()
@@ -807,6 +832,7 @@ class PageOrderDialog(QDialog):
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_order_controls()
 
     def restore_initial_order(self) -> None:
         current_item = self.list_widget.currentItem()
@@ -824,6 +850,7 @@ class PageOrderDialog(QDialog):
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_order_controls()
 
     def ordered_pages(self) -> list[PdfPageRef]:
         return [

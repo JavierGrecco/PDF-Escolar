@@ -37,6 +37,8 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Repetir el arrastre usando el panel táctil, sin mouse externo.
 - [ ] «Ordenar páginas…» muestra en cada miniatura la posición que ocupa en el PDF final y el número de página original.
 - [ ] Mover páginas con arrastre, Subir o Bajar actualiza la numeración visible según la nueva posición, sin cambiar el número de página original.
+- [ ] Al seleccionar la primera página, «Subir» está desactivado; al seleccionar la última, «Bajar» está desactivado.
+- [ ] «Restablecer orden inicial» se activa después de cambiar la secuencia y vuelve a desactivarse al restaurarla.
 - [ ] Con los dos `Material.pdf` de carpetas diferentes, las miniaturas y la vista previa permiten distinguir a qué archivo pertenece cada página.
 - [ ] Pasar el cursor por una miniatura muestra la ruta completa de origen en el tooltip.
 - [ ] Cambiar entre miniaturas Pequeñas, Medianas y Grandes mejora la identificación sin cambiar la selección ni el orden; volver a cambiar el tamaño no pierde las etiquetas.

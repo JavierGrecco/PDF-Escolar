@@ -98,8 +98,19 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
             == QAbstractItemView.DragDropMode.InternalMove
         )
         assert dialog.list_widget.acceptDrops()
+        # The first page cannot move up, but can move down. Restoring the
+        # initial order is unnecessary until the sequence actually changes.
+        assert not dialog.up_button.isEnabled()
+        assert dialog.down_button.isEnabled()
+        assert not dialog.reset_button.isEnabled()
+
         dialog.list_widget.setCurrentRow(2)
+        assert dialog.up_button.isEnabled()
+        assert not dialog.down_button.isEnabled()
         dialog.move_selected_up()
+        assert dialog.up_button.isEnabled()
+        assert dialog.down_button.isEnabled()
+        assert dialog.reset_button.isEnabled()
         assert dialog.ordered_pages() == [
             references[0],
             references[2],
@@ -110,8 +121,55 @@ def test_page_order_dialog_supports_drag_and_button_reordering(application):
         dialog.move_selected_down()
         assert dialog.ordered_pages() == references
         assert dialog.preview_title.text() == "Página 3 de 3 del PDF final"
+        assert dialog.up_button.isEnabled()
+        assert not dialog.down_button.isEnabled()
+        assert not dialog.reset_button.isEnabled()
+
+        dialog.list_widget.setCurrentRow(0)
+        assert not dialog.up_button.isEnabled()
+        assert dialog.down_button.isEnabled()
     finally:
         _dispose_widget(dialog, application)
+
+def test_page_order_controls_follow_drag_reordering(application):
+    references = [
+        PdfPageRef("/tmp/a.pdf", 0),
+        PdfPageRef("/tmp/b.pdf", 0),
+        PdfPageRef("/tmp/c.pdf", 0),
+    ]
+    dialog = PageOrderDialog(references)
+    try:
+        assert not dialog.reset_button.isEnabled()
+        assert not dialog.up_button.isEnabled()
+        assert dialog.down_button.isEnabled()
+
+        # Simulate a completed internal drag, then run the rowsMoved handler.
+        item = dialog.list_widget.takeItem(0)
+        dialog.list_widget.insertItem(2, item)
+        dialog.list_widget.setCurrentItem(item)
+        dialog._items_reordered()
+
+        assert dialog.ordered_pages() == [references[1], references[2], references[0]]
+        assert dialog.up_button.isEnabled()
+        assert not dialog.down_button.isEnabled()
+        assert dialog.reset_button.isEnabled()
+
+        dialog.restore_initial_order()
+        assert dialog.ordered_pages() == references
+        assert not dialog.reset_button.isEnabled()
+    finally:
+        _dispose_widget(dialog, application)
+
+
+def test_page_order_without_pages_disables_movement_controls(application):
+    dialog = PageOrderDialog([])
+    try:
+        assert not dialog.up_button.isEnabled()
+        assert not dialog.down_button.isEnabled()
+        assert not dialog.reset_button.isEnabled()
+    finally:
+        _dispose_widget(dialog, application)
+
 
 def test_page_order_tiles_show_final_position_and_original_page(application):
     references = [
