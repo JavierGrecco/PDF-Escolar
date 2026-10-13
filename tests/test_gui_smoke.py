@@ -363,6 +363,74 @@ def test_cancelled_page_picker_thumbnail_task_finishes_without_opening_a_pdf():
     assert finished == [str(id(task))]
 
 
+def test_final_review_can_remove_and_restore_multiple_pages_in_original_positions(application):
+    references = [
+        PdfPageRef("/tmp/primer.pdf", 0),
+        PdfPageRef("/tmp/segundo.pdf", 1),
+        PdfPageRef("/tmp/tercero.pdf", 2),
+        PdfPageRef("/tmp/cuarto.pdf", 3),
+    ]
+    original_references = list(references)
+    dialog = PageOrderDialog(references, confirm_label="Continuar a guardar")
+    try:
+        assert dialog.final_review
+        assert dialog.count_label.text() == "4 páginas en el documento final"
+        assert dialog.remove_page_button.isEnabled()
+        assert not dialog.restore_removed_page_button.isEnabled()
+
+        # Quitar la segunda página no debe alterar el origen ni el orden relativo
+        # de las páginas restantes.
+        dialog.list_widget.setCurrentRow(1)
+        dialog.remove_selected_page()
+        assert dialog.ordered_pages() == [references[0], references[2], references[3]]
+        assert dialog.count_label.text() == "3 páginas en el documento final"
+        assert dialog.restore_removed_page_button.isEnabled()
+
+        # Quitar otra página y recuperarlas en orden inverso debe reconstruir
+        # exactamente la secuencia original, no añadirlas al final.
+        dialog.remove_selected_page()
+        assert dialog.ordered_pages() == [references[0], references[3]]
+        assert dialog.count_label.text() == "2 páginas en el documento final"
+
+        dialog.restore_last_removed_page()
+        assert dialog.ordered_pages() == [references[0], references[2], references[3]]
+        dialog.restore_last_removed_page()
+        assert dialog.ordered_pages() == references
+        assert dialog.count_label.text() == "4 páginas en el documento final"
+        assert references == original_references
+    finally:
+        _dispose_widget(dialog, application)
+
+
+def test_final_review_never_allows_removing_the_last_page(application):
+    reference = PdfPageRef("/tmp/unica.pdf", 0)
+    dialog = PageOrderDialog([reference], confirm_label="Continuar a guardar")
+    try:
+        assert dialog.list_widget.count() == 1
+        assert not dialog.remove_page_button.isEnabled()
+
+        # Even an accidental direct invocation must preserve at least one page.
+        dialog.remove_selected_page()
+
+        assert dialog.ordered_pages() == [reference]
+        assert dialog.count_label.text() == "1 página en el documento final"
+        assert not dialog.remove_page_button.isEnabled()
+    finally:
+        _dispose_widget(dialog, application)
+
+
+def test_normal_page_organizer_does_not_show_final_review_removal_actions(application):
+    dialog = PageOrderDialog(
+        [PdfPageRef("/tmp/primero.pdf", 0), PdfPageRef("/tmp/segundo.pdf", 0)]
+    )
+    try:
+        assert not dialog.final_review
+        assert not hasattr(dialog, "remove_page_button")
+        assert not hasattr(dialog, "restore_removed_page_button")
+    finally:
+        _dispose_widget(dialog, application)
+
+
 def test_cancelled_page_order_thumbnail_task_finishes_without_opening_a_pdf():
     from pdf_escolar.ui.page_order import PageOrderThumbnailTask
     task = PageOrderThumbnailTask(
