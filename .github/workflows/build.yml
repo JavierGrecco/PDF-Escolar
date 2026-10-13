@@ -363,7 +363,14 @@ jobs:
 
   verify-artifacts:
     name: Verify generated installers
-    if: github.event_name == 'pull_request'
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (
+        github.event_name == 'workflow_dispatch' &&
+        github.ref == 'refs/heads/main' &&
+        inputs.release_version == ''
+      )
     needs: [windows, macos]
     runs-on: ubuntu-latest
     steps:
