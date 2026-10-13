@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
@@ -199,6 +200,60 @@ def test_last_open_directory_uses_a_saved_existing_folder(application, tmp_path)
             settings.remove("last_open_directory")
         else:
             settings.setValue("last_open_directory", old_value)
+
+def test_last_save_directory_uses_a_saved_existing_folder(application, tmp_path):
+    settings = QSettings()
+    old_value = settings.value("last_save_directory", None)
+    settings.setValue("last_save_directory", str(tmp_path))
+    window = MainWindow()
+    try:
+        assert window._last_save_directory() == str(tmp_path)
+    finally:
+        _dispose_widget(window, application)
+        if old_value is None:
+            settings.remove("last_save_directory")
+        else:
+            settings.setValue("last_save_directory", old_value)
+
+
+def test_last_save_directory_falls_back_when_saved_folder_is_missing(application, tmp_path):
+    settings = QSettings()
+    old_value = settings.value("last_save_directory", None)
+    missing = tmp_path / "folder-eliminada"
+    settings.setValue("last_save_directory", str(missing))
+    expected = Path.home() / "Documents"
+    if not expected.is_dir():
+        expected = Path.home()
+
+    window = MainWindow()
+    try:
+        assert window._last_save_directory() == str(expected)
+    finally:
+        _dispose_widget(window, application)
+        if old_value is None:
+            settings.remove("last_save_directory")
+        else:
+            settings.setValue("last_save_directory", old_value)
+
+
+def test_successful_export_remembers_save_directory_but_missing_folder_does_not(application, tmp_path):
+    settings = QSettings()
+    old_value = settings.value("last_save_directory", None)
+    window = MainWindow()
+    try:
+        window._remember_last_save_directory(str(tmp_path / "Material_escolar.pdf"))
+        assert window._last_save_directory() == str(tmp_path)
+
+        missing_output = tmp_path / "carpeta-inexistente" / "otro.pdf"
+        window._remember_last_save_directory(str(missing_output))
+        assert window._last_save_directory() == str(tmp_path)
+    finally:
+        _dispose_widget(window, application)
+        if old_value is None:
+            settings.remove("last_save_directory")
+        else:
+            settings.setValue("last_save_directory", old_value)
+
 
 def test_document_cards_can_be_reordered_by_drop_and_buttons(application):
     window = MainWindow()
