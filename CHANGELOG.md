@@ -19,6 +19,7 @@ Primera beta pública de PDF Escolar.
 - Vista detallada de la página seleccionada, con su posición en el documento final y su archivo y número de origen.
 - Ventana para ampliar la página y examinarla con más detalle.
 - Revisión interactiva del orden final antes de elegir dónde guardar el PDF.
+- Posibilidad de quitar páginas individuales durante la revisión final y recuperarlas antes de guardar, sin modificar los PDF originales.
 - Ajuste del tamaño inicial y mínimo de las ventanas según el espacio disponible.
 - Selector de páginas y organizador adaptables a pantallas de poca altura; contenido desplazable en «Herramientas PDF» con los botones de acción siempre visibles.
 
