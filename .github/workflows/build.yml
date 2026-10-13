@@ -288,9 +288,9 @@ jobs:
           zip_file="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*${{ matrix.arch_slug }}.zip' -print -quit)"
           test -n "$dmg"
           test -n "$zip_file"
-          # macOS runners can briefly report "Resource temporarily unavailable"
-          # immediately after hdiutil create. Retry a transient verification failure,
-          # but still fail when the image cannot be verified after three attempts.
+          # The runner can briefly report "Resource temporarily unavailable"
+          # immediately after hdiutil create. Retry, but still fail if verification
+          # consistently indicates a damaged or unreadable image.
           verify_attempt=1
           until hdiutil verify "$dmg"; do
             if [[ "$verify_attempt" -ge 3 ]]; then
