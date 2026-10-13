@@ -10,7 +10,8 @@ import pytest
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 try:
-    from PySide6.QtCore import QEvent, QSettings
+    from PySide6.QtCore import QBuffer, QEvent, QIODevice, QSettings, Qt
+    from PySide6.QtGui import QPixmap
     from PySide6.QtWidgets import QApplication, QLabel, QAbstractItemView, QScrollArea
     from pdf_escolar.pdf_engine import PdfPageRef
     from pdf_escolar.ui.main_window import DocumentCard, DocumentInfo, MainWindow
@@ -445,6 +446,55 @@ def test_main_worker_tasks_disable_qrunnable_auto_deletion(application):
     assert not export_task.autoDelete()
 
 
+def test_page_picker_offers_an_enlarged_preview_during_selection(application):
+    from pdf_escolar.ui.page_picker import PagePickerDialog
+
+    dialog = PagePickerDialog("/tmp/material.pdf", 3, "")
+    try:
+        assert dialog.preview_panel.objectName() == "selectionPreviewPanel"
+        assert dialog.list_widget.currentRow() == 0
+        assert dialog.preview_title.text() == "Página 1 de 3"
+        assert not dialog.preview_enlarge_button.isEnabled()
+        assert dialog.selected_pages == set()
+
+        # A real image payload exercises the UI callback without opening a PDF.
+        image = QPixmap(80, 120)
+        image.fill(Qt.GlobalColor.white)
+        buffer = QBuffer()
+        assert buffer.open(QIODevice.OpenModeFlag.WriteOnly)
+        assert image.save(buffer, "PNG")
+        dialog._selection_preview_ready(0, bytes(buffer.data()))
+
+        assert not dialog.preview_pixmap.isNull()
+        assert dialog.preview_pixmap.size() == image.size()
+        assert dialog.preview_enlarge_button.isEnabled()
+        assert dialog.preview_source.text() == "material.pdf"
+    finally:
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
+        dialog.pool.waitForDone()
+        _dispose_widget(dialog, application)
+
+
+def test_page_picker_can_start_with_no_pages_selected_for_add_page_flow(application):
+    from pdf_escolar.ui.page_picker import PagePickerDialog
+
+    dialog = PagePickerDialog("/tmp/material.pdf", 3, "")
+    try:
+        assert dialog.selected_pages == set()
+        assert all(
+            item.checkState() == Qt.CheckState.Unchecked
+            for item in dialog.page_indexes.values()
+        )
+    finally:
+        dialog.thumbnail_timer.stop()
+        for task in tuple(dialog.tasks):
+            task.cancel()
+        dialog.pool.waitForDone()
+        _dispose_widget(dialog, application)
+
+
 def test_page_picker_keeps_the_current_page_group_responsive(application):
     from pdf_escolar.ui.page_picker import PagePickerDialog
     dialog = PagePickerDialog("/tmp/not-opened.pdf", 65, "1, 35")
@@ -511,6 +561,55 @@ def test_final_review_can_remove_and_restore_multiple_pages_in_original_position
         assert dialog.ordered_pages() == references
         assert dialog.count_label.text() == "4 páginas en el documento final"
         assert references == original_references
+    finally:
+        _dispose_widget(dialog, application)
+
+
+def test_final_review_can_add_pages_after_the_current_page(application):
+    original = [
+        PdfPageRef("/tmp/a.pdf", 0),
+        PdfPageRef("/tmp/b.pdf", 1),
+    ]
+    added = [
+        PdfPageRef("/tmp/c.pdf", 0),
+        PdfPageRef("/tmp/c.pdf", 1),
+    ]
+    dialog = PageOrderDialog(
+        original,
+        confirm_label="Continuar a guardar",
+        available_sources=[
+            ("/tmp/a.pdf", 2),
+            ("/tmp/b.pdf", 3),
+            ("/tmp/c.pdf", 4),
+        ],
+    )
+    try:
+        assert dialog.add_pages_button.isEnabled()
+        dialog.list_widget.setCurrentRow(0)
+
+        inserted = dialog._append_pages_to_review(added)
+
+        assert inserted == 2
+        assert dialog.ordered_pages() == [original[0], *added, original[1]]
+        assert dialog.count_label.text() == "4 páginas en el documento final"
+        assert "c.pdf" in dialog.list_widget.item(1).text()
+        assert dialog.reset_button.isEnabled()
+    finally:
+        _dispose_widget(dialog, application)
+
+
+def test_normal_organizer_can_apply_corrections_without_repeating_final_review(application):
+    dialog = PageOrderDialog(
+        [PdfPageRef("/tmp/a.pdf", 0), PdfPageRef("/tmp/b.pdf", 0)],
+        available_sources=[("/tmp/a.pdf", 2), ("/tmp/b.pdf", 3)],
+        enable_page_corrections=True,
+    )
+    try:
+        assert not dialog.final_review
+        assert dialog.can_edit_pages
+        assert hasattr(dialog, "remove_page_button")
+        assert hasattr(dialog, "restore_removed_page_button")
+        assert dialog.add_pages_button.isEnabled()
     finally:
         _dispose_widget(dialog, application)
 
