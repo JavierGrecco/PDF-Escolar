@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QProgressBar,
+    QMessageBox,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -28,9 +29,10 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import PdfPageRef
 from pdf_escolar.pdf_preview import render_page_preview, render_page_thumbnail
-from pdf_escolar.ui.messages import safe_exception_detail
+from pdf_escolar.ui.messages import safe_exception_detail, show_notice
 from pdf_escolar.ui.window_geometry import fit_window_to_screen
 
 
@@ -162,13 +164,24 @@ class PageOrderDialog(QDialog):
         parent: QWidget | None = None,
         *,
         confirm_label: str = "Aplicar orden",
+        available_sources: list[tuple[str, int]] | None = None,
+        enable_page_corrections: bool = False,
     ):
         super().__init__(parent)
         self.pages = list(pages)
-        self.source_labels = _source_display_labels(self.pages)
+        self.available_sources = [
+            (str(Path(path).expanduser().resolve()), int(page_count))
+            for path, page_count in (available_sources or [])
+            if int(page_count) > 0
+        ]
+        label_sources = list(self.pages) + [
+            PdfPageRef(path, 0) for path, _page_count in self.available_sources
+        ]
+        self.source_labels = _source_display_labels(label_sources)
         self.thumbnail_errors: set[int] = set()
         self.confirm_label = confirm_label
         self.final_review = confirm_label == "Continuar a guardar"
+        self.can_edit_pages = self.final_review or enable_page_corrections
         self._removed_items: list[tuple[int, QListWidgetItem]] = []
         self.tasks: set[QRunnable] = set()
         self.preview_task: PageOrderPreviewTask | None = None
@@ -210,6 +223,11 @@ class PageOrderDialog(QDialog):
             "Elegí Pequeñas, Medianas o Grandes para reconocer mejor cada hoja; "
             "seleccioná una página para verla ampliada a un lado. " 
             "El orden de esta ventana será el del documento final."
+            + (
+                " Podés agregar páginas que faltan o quitar hojas solo del documento nuevo."
+                if self.can_edit_pages
+                else ""
+            )
             + (
                 " Al continuar, vas a elegir dónde guardar el PDF."
                 if confirm_label == "Continuar a guardar"
@@ -256,11 +274,11 @@ class PageOrderDialog(QDialog):
 
         self.count_label = QLabel(f"{len(self.pages):,} páginas")
         self.count_label.setObjectName("selectionCount")
-        if not self.final_review:
+        if not self.can_edit_pages:
             controls.addWidget(self.count_label)
         root.addLayout(controls)
 
-        if self.final_review:
+        if self.can_edit_pages:
             review_actions = QHBoxLayout()
             self.count_label.setText(
                 f"{len(self.pages):,} páginas en el documento final"
@@ -286,6 +304,15 @@ class PageOrderDialog(QDialog):
                 self.restore_last_removed_page
             )
             review_actions.addWidget(self.restore_removed_page_button)
+
+            self.add_pages_button = QPushButton("Agregar páginas…")
+            self.add_pages_button.setObjectName("secondaryButton")
+            self.add_pages_button.setToolTip(
+                "Incorporar páginas de cualquiera de los PDF cargados, aunque no se hayan seleccionado al principio."
+            )
+            self.add_pages_button.setEnabled(bool(self.available_sources))
+            self.add_pages_button.clicked.connect(self._add_pages_to_review)
+            review_actions.insertWidget(1, self.add_pages_button)
             root.addLayout(review_actions)
 
         self.list_widget = QListWidget()
@@ -534,7 +561,7 @@ class PageOrderDialog(QDialog):
     def _refresh_review_controls(self) -> None:
         """Keep the final-review actions consistent with the visible page list."""
         self._refresh_order_controls()
-        if not self.final_review or not hasattr(self, "remove_page_button"):
+        if not self.can_edit_pages or not hasattr(self, "remove_page_button"):
             return
         count = self.list_widget.count()
         noun = "página" if count == 1 else "páginas"
@@ -546,7 +573,7 @@ class PageOrderDialog(QDialog):
 
     def remove_selected_page(self) -> None:
         """Exclude the selected page from this new PDF, without changing its source."""
-        if not self.final_review or self.list_widget.count() <= 1:
+        if not self.can_edit_pages or self.list_widget.count() <= 1:
             return
         row = self.list_widget.currentRow()
         if row < 0:
@@ -565,7 +592,7 @@ class PageOrderDialog(QDialog):
 
     def restore_last_removed_page(self) -> None:
         """Reinsert the most recently excluded page at its former position."""
-        if not self.final_review or not self._removed_items:
+        if not self.can_edit_pages or not self._removed_items:
             return
         row, item = self._removed_items.pop()
         self.list_widget.insertItem(min(row, self.list_widget.count()), item)
@@ -575,6 +602,160 @@ class PageOrderDialog(QDialog):
         self._queue_visible_thumbnails()
         self._refresh_order_controls()
         self._refresh_review_controls()
+
+    def _add_pages_to_review(self) -> None:
+        """Let the user add pages from any loaded PDF without restarting review."""
+        if not self.can_edit_pages or not self.available_sources:
+            return
+
+        from pdf_escolar.ui.page_picker import PagePickerDialog
+
+        source_dialog = QDialog(self)
+        source_dialog.setWindowTitle("Agregar páginas al PDF final")
+        fit_window_to_screen(
+            source_dialog,
+            preferred_size=(600, 250),
+            minimum_size=(420, 210),
+            parent=self,
+        )
+        layout = QVBoxLayout(source_dialog)
+        title = QLabel("¿De qué archivo querés agregar páginas?")
+        title.setObjectName("dialogTitle")
+        title.setWordWrap(True)
+        layout.addWidget(title)
+        hint = QLabel(
+            "Elegí un PDF. Después vas a poder marcar las hojas que faltan."
+        )
+        hint.setObjectName("mutedText")
+        hint.setWordWrap(True)
+        layout.addWidget(hint)
+
+        selector = QComboBox()
+        selector.setObjectName("sourcePdfSelector")
+        selector.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
+        selector.setMinimumContentsLength(28)
+        for path, page_count in self.available_sources:
+            label = self.source_labels.get(
+                _resolved_source_path(path), Path(path).name
+            )
+            selector.addItem(
+                f"{label} · {page_count} páginas",
+                (path, page_count),
+            )
+        layout.addWidget(selector, 1)
+
+        buttons = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok
+            | QDialogButtonBox.StandardButton.Cancel
+        )
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setText("Elegir páginas")
+        buttons.button(QDialogButtonBox.StandardButton.Ok).setObjectName("primaryButton")
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setText("Cancelar")
+        buttons.button(QDialogButtonBox.StandardButton.Cancel).setObjectName("secondaryButton")
+        buttons.accepted.connect(source_dialog.accept)
+        buttons.rejected.connect(source_dialog.reject)
+        layout.addWidget(buttons)
+        source_dialog.setStyleSheet("""
+            QDialog { background:#F5F7FB; color:#1F2937; }
+            QLabel#dialogTitle { font-size:18px; font-weight:750; color:#172554; }
+            QLabel#mutedText { color:#53627A; font-size:13px; }
+            QComboBox {
+                background:white; color:#263754; border:1px solid #D7DFEC;
+                border-radius:7px; padding:8px 10px; min-width:260px;
+            }
+            QPushButton { border:0; border-radius:8px; padding:9px 13px; font-weight:600; }
+            QPushButton#primaryButton { background:#3157C8; color:white; padding:10px 16px; }
+            QPushButton#secondaryButton { background:#E9EEF8; color:#31466F; }
+        """)
+        if source_dialog.exec() != QDialog.DialogCode.Accepted:
+            source_dialog.deleteLater()
+            return
+
+        selected_source = selector.currentData()
+        source_dialog.deleteLater()
+        if not selected_source:
+            return
+        path, page_count = selected_source
+        picker = PagePickerDialog(path, page_count, "", self)
+        result = picker.exec()
+        picker.thumbnail_timer.stop()
+        for task in tuple(picker.tasks):
+            task.cancel()
+        picker.pool.waitForDone()
+        ranges = (
+            picker.selected_ranges()
+            if result == QDialog.DialogCode.Accepted
+            else None
+        )
+        picker.deleteLater()
+        if not ranges:
+            return
+
+        try:
+            indexes = parse_page_ranges(ranges, page_count)
+        except ValueError as exc:
+            show_notice(
+                self,
+                "Revisá las páginas",
+                str(exc),
+                icon=QMessageBox.Icon.Warning,
+            )
+            return
+
+        additions = [PdfPageRef(path, index) for index in indexes]
+        count = self._append_pages_to_review(additions)
+        if count:
+            self.preview_hint.setText(
+                f"Se agregaron {count} página{'s' if count != 1 else ''}. "
+                "Podés revisar su posición y corregir el orden antes de guardar."
+            )
+
+    def _append_pages_to_review(self, references: list[PdfPageRef]) -> int:
+        """Insert newly selected pages after the current page in the review list."""
+        if not self.can_edit_pages or not references:
+            return 0
+        current_row = self.list_widget.currentRow()
+        insert_row = current_row + 1 if current_row >= 0 else self.list_widget.count()
+        insert_row = min(insert_row, self.list_widget.count())
+
+        # Keep already removed pages recoverable when new pages are inserted
+        # before their saved positions in the composition.
+        insertion_count = len(references)
+        self._removed_items = [
+            (row + insertion_count if row >= insert_row else row, item)
+            for row, item in self._removed_items
+        ]
+
+        first_new_id = len(self.pages)
+        self.pages.extend(references)
+        label_sources = list(self.pages) + [
+            PdfPageRef(path, 0) for path, _page_count in self.available_sources
+        ]
+        self.source_labels = _source_display_labels(label_sources)
+
+        grid_size = self.list_widget.gridSize()
+        for offset, _reference in enumerate(references):
+            item_id = first_new_id + offset
+            item = QListWidgetItem()
+            item.setData(Qt.ItemDataRole.UserRole, item_id)
+            item.setSizeHint(
+                QSize(
+                    max(80, grid_size.width() - 4),
+                    max(90, grid_size.height() - 4),
+                )
+            )
+            self.items_by_id[item_id] = item
+            self.list_widget.insertItem(insert_row + offset, item)
+
+        self._refresh_item_labels()
+        self.list_widget.setCurrentRow(insert_row)
+        self._refresh_preview_metadata()
+        self._queue_visible_thumbnails()
+        self._refresh_order_controls()
+        self._refresh_review_controls()
+        return len(references)
 
     def _refresh_preview_metadata(self) -> None:
         item = self.list_widget.currentItem()
