@@ -13,7 +13,9 @@ El tamaño lógico de los blobs **no equivale** al tamaño del directorio `.git`
 
 ## Ejecutar un inventario completo
 
-Conviene usar un clon espejo nuevo, que obtenga las ramas y etiquetas anunciadas por el remoto. Así no mezclamos el resultado con un clon de desarrollo que quizá solo tenga `main`.
+El repositorio incluye el flujo manual **Audit Git history**, que hace un checkout completo y guarda el informe legible y el JSON como artefactos de GitHub Actions. Después de integrar esta herramienta, podés ejecutarlo desde la pestaña **Actions → Audit Git history → Run workflow**. El flujo es de solo lectura y no modifica referencias ni archivos versionados.
+
+También podés ejecutarlo localmente en un clon espejo nuevo, que obtenga las ramas y etiquetas anunciadas por el remoto. Así no mezclamos el resultado con un clon de desarrollo que quizá solo tenga `main`.
 
 ### macOS o Linux
 
