@@ -385,6 +385,7 @@ class MainWindow(QMainWindow):
         self.custom_page_order: list[PdfPageRef] | None = None
         self.page_order_reviewed = False
         self.load_errors: list[tuple[str, str]] = []
+        self.ignored_inputs: list[tuple[str, str]] = []
         self.pending_order_notice: str | None = None
 
         central = QWidget()
@@ -623,13 +624,23 @@ class MainWindow(QMainWindow):
     @Slot(list)
     def add_files(self, paths: list[str]):
         accepted = []
+        ignored: list[tuple[str, str]] = []
         for raw in paths:
             path = Path(raw).expanduser()
-            if not path.is_file() or path.suffix.lower() != ".pdf":
+            display_name = path.name or str(raw).strip() or "Elemento sin nombre"
+            if path.suffix.lower() != ".pdf":
+                ignored.append((display_name, "Solo se admiten archivos PDF."))
+                continue
+            if not path.is_file():
+                ignored.append(
+                    (display_name, "Elegí un archivo PDF existente, no una carpeta.")
+                )
                 continue
             resolved = str(path.resolve())
             if resolved not in self.documents and resolved not in self.pending and resolved not in accepted:
                 accepted.append(resolved)
+
+        self.ignored_inputs.extend(ignored)
         valid_pdf_paths = [
             Path(raw).expanduser().resolve()
             for raw in paths
@@ -640,6 +651,8 @@ class MainWindow(QMainWindow):
         if valid_pdf_paths:
             QSettings().setValue("last_open_directory", str(valid_pdf_paths[-1].parent))
         if not accepted:
+            if not self.pending:
+                self._show_load_feedback()
             return
         self.pending.update(accepted)
         order_was_reset = self._invalidate_custom_page_order(
@@ -728,30 +741,63 @@ class MainWindow(QMainWindow):
             self.status.setText(self.pending_order_notice)
             self.pending_order_notice = None
 
-        # Avoid a chain of modal alerts when several files cannot be opened.
-        if not self.pending and self.load_errors:
-            errors, self.load_errors = self.load_errors, []
-            count = len(errors)
-            noun = "archivo" if count == 1 else "archivos"
-            error_lines = [
+        # Aggregate unsupported inputs and unreadable PDFs into one notice.
+        if not self.pending:
+            self._show_load_feedback()
+
+    def _show_load_feedback(self) -> None:
+        """Explain ignored inputs and failed PDFs in one concise Spanish notice."""
+        if self.pending:
+            return
+        errors, self.load_errors = self.load_errors, []
+        ignored, self.ignored_inputs = self.ignored_inputs, []
+        if not errors and not ignored:
+            return
+
+        visible_details: list[str] = []
+        for path, detail in errors:
+            if len(visible_details) == 5:
+                break
+            visible_details.append(
                 f"• {Path(path).name}: {friendly_pdf_load_error(detail)}"
-                for path, detail in errors[:5]
-            ]
-            remaining = count - len(error_lines)
-            if remaining:
-                extra_noun = "archivo" if remaining == 1 else "archivos"
-                error_lines.append(f"• Y {remaining} {extra_noun} más.")
-            dialog = QMessageBox(self)
-            dialog.setIcon(QMessageBox.Icon.Warning)
-            dialog.setWindowTitle("Algunos PDF no se pudieron agregar")
-            dialog.setText(f"No se pudieron agregar {count} {noun}.")
-            dialog.setInformativeText(
-                "Revisá estos archivos:\n"
-                + "\n".join(error_lines)
-                + "\n\nLos PDF que se pudieron abrir siguen disponibles."
             )
-            dialog.addButton("Entendido", QMessageBox.ButtonRole.AcceptRole)
-            dialog.exec()
+        if len(visible_details) < 5:
+            for name, reason in ignored:
+                if len(visible_details) == 5:
+                    break
+                visible_details.append(f"• {name}: {reason}")
+        remaining = len(errors) + len(ignored) - len(visible_details)
+        if remaining:
+            noun = "elemento" if remaining == 1 else "elementos"
+            visible_details.append(f"• Y {remaining} {noun} más.")
+
+        dialog = QMessageBox(self)
+        dialog.setIcon(QMessageBox.Icon.Warning)
+        if errors and ignored:
+            dialog.setWindowTitle("Algunos elementos no se pudieron agregar")
+            element_noun = "elemento" if len(ignored) == 1 else "elementos"
+            dialog.setText(
+                f"No se pudieron abrir {len(errors)} PDF y se ignoraron "
+                f"{len(ignored)} {element_noun}."
+            )
+        elif errors:
+            noun = "archivo" if len(errors) == 1 else "archivos"
+            dialog.setWindowTitle("Algunos PDF no se pudieron agregar")
+            dialog.setText(f"No se pudieron agregar {len(errors)} {noun}.")
+        else:
+            noun = "elemento" if len(ignored) == 1 else "elementos"
+            dialog.setWindowTitle("Solo se pueden agregar archivos PDF")
+            dialog.setText(
+                f"No se agregaron {len(ignored)} {noun} porque solo se admiten "
+                "archivos PDF existentes."
+            )
+
+        message = "Revisá estos elementos:\n" + "\n".join(visible_details)
+        if self.documents:
+            message += "\n\nLos PDF que se pudieron abrir siguen disponibles."
+        dialog.setInformativeText(message)
+        dialog.addButton("Entendido", QMessageBox.ButtonRole.AcceptRole)
+        dialog.exec()
 
     @Slot(str, int)
     def move_file(self, path: str, offset: int):
