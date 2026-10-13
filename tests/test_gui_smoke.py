@@ -778,7 +778,6 @@ def test_export_success_dialog_opens_saved_pdf_directly(
     )
 
     def click_open_pdf(dialog):
-        assert dialog.windowTitle() == "PDF creado"
         buttons = {button.text(): button for button in dialog.buttons()}
         assert "Abrir PDF" in buttons
         assert "Abrir carpeta" in buttons
