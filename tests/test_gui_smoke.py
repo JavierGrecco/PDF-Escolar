@@ -788,7 +788,8 @@ def test_export_success_dialog_opens_saved_pdf_directly(
     try:
         window._on_export_finished(3, str(output))
 
-        assert opened_paths == [str(output)]
+        assert len(opened_paths) == 1
+        assert Path(opened_paths[0]).resolve() == output.resolve()
         assert window.status.text() == "PDF creado correctamente: 3 páginas."
     finally:
         _dispose_widget(window, application)
