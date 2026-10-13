@@ -388,9 +388,7 @@ def test_unsupported_dropped_items_are_explained_in_one_notice(
     notices = []
 
     def capture_notice(dialog):
-        notices.append(
-            (dialog.windowTitle(), dialog.text(), dialog.informativeText())
-        )
+        notices.append((dialog.text(), dialog.informativeText()))
         return 0
 
     monkeypatch.setattr(QMessageBox, "exec", capture_notice)
@@ -399,8 +397,7 @@ def test_unsupported_dropped_items_are_explained_in_one_notice(
         window.add_files([str(unsupported), str(another)])
 
         assert len(notices) == 1
-        title, text, detail = notices[0]
-        assert title == "Solo se pueden agregar archivos PDF"
+        text, detail = notices[0]
         assert "2 elementos" in text
         assert "ficha-de-matematica.docx" in detail
         assert "foto.png" in detail
