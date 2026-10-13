@@ -565,6 +565,35 @@ def test_final_review_can_remove_and_restore_multiple_pages_in_original_position
         _dispose_widget(dialog, application)
 
 
+def test_removed_page_restores_near_neighbors_after_reordering(application):
+    references = [
+        PdfPageRef("/tmp/a.pdf", 0),
+        PdfPageRef("/tmp/b.pdf", 0),
+        PdfPageRef("/tmp/c.pdf", 0),
+        PdfPageRef("/tmp/d.pdf", 0),
+    ]
+    dialog = PageOrderDialog(references, confirm_label="Continuar a guardar")
+    try:
+        # Remove B, then move D to the front while B is in the recovery stack.
+        dialog.list_widget.setCurrentRow(1)
+        dialog.remove_selected_page()
+        dialog.list_widget.setCurrentRow(2)
+        dialog.move_selected_up()
+        dialog.move_selected_up()
+
+        assert dialog.ordered_pages() == [references[3], references[0], references[2]]
+
+        # Undoing the removal should preserve B's relationship to A and C,
+        # rather than blindly inserting it at the stale numeric row.
+        dialog.restore_last_removed_page()
+        assert dialog.ordered_pages() == [
+            references[3], references[0], references[1], references[2]
+        ]
+        assert dialog.count_label.text() == "4 páginas en el documento final"
+    finally:
+        _dispose_widget(dialog, application)
+
+
 def test_final_review_can_add_pages_after_the_current_page(application):
     original = [
         PdfPageRef("/tmp/a.pdf", 0),

@@ -58,6 +58,7 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Si dos archivos tienen el mismo nombre, al agregar páginas queda claro de qué carpeta provienen.
 - [ ] Después de agregar o quitar páginas, la cantidad indicada coincide con la secuencia que efectivamente se exportará.
 - [ ] Recuperar una página quitada la devuelve a su posición original; repetir quitar/recuperar conserva la secuencia esperada.
+- [ ] Quitar una página, reordenar otras y recuperarla; comprobar que vuelve junto a sus páginas vecinas originales cuando siguen disponibles.
 - [ ] La revisión final no permite quitar la última página que queda en el documento.
 - [ ] Cancelar la revisión final no crea un archivo ni modifica los originales.
 - [ ] Aplicar un orden desde «Ordenar páginas…» y luego crear el PDF no repite innecesariamente la misma pantalla de revisión.
