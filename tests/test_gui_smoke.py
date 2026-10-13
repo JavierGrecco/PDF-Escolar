@@ -411,7 +411,7 @@ def test_unsupported_dropped_items_are_explained_in_one_notice(
         _dispose_widget(window, application)
 
 
-def test_load_errors_are_collected_for_one_clear_summary(application, monkeypatch):
+def test_load_errors_are_collected_for_one_clear_summary(application):
     window = MainWindow()
     path = "/tmp/protected.pdf"
     try:
