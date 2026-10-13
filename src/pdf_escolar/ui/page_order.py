@@ -601,7 +601,7 @@ class PageOrderDialog(QDialog):
         self._refresh_review_controls()
 
     def restore_last_removed_page(self) -> None:
-        """Reinsert the most recently excluded page at its former position."""
+        """Restore the last excluded page near its former position and neighbors."""
         if not self.can_edit_pages or not self._removed_items:
             return
         row, item, previous_id, next_id = self._removed_items.pop()
