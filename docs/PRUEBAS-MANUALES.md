@@ -65,7 +65,9 @@ Confirmá que los originales sigan iguales después de las pruebas.
 - [ ] Intentar usar un rango inválido, por ejemplo `1-99` en un PDF de 3 páginas, muestra un aviso y no genera un PDF incompleto.
 - [ ] Un PDF protegido con contraseña o dañado no se agrega como si fuera válido; se muestra un aviso entendible.
 - [ ] Al exportar, el PDF final se puede abrir y contiene las páginas seleccionadas, en el orden esperado.
-- [ ] Cancelar el diálogo de guardado no crea un archivo.
+- [ ] Después de guardar correctamente un PDF, la próxima exportación propone la misma carpeta.
+- [ ] Cancelar el diálogo de guardado no cambia la carpeta recordada ni crea un archivo.
+- [ ] Una exportación que falla no reemplaza la carpeta de destino recordada; una exportación exitosa en otra carpeta sí la actualiza.
 - [ ] Los originales no se modifican.
 - [ ] La aplicación sigue respondiendo mientras revisa archivos y durante la exportación.
 - [ ] Quitar un documento actualiza el resumen y el botón de exportación.
