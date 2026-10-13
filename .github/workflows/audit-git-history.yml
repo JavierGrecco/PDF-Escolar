@@ -1,0 +1,62 @@
+name: Audit Git history
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/analyze_git_history_size.py"
+      - ".github/workflows/audit-git-history.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-git-history-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  audit:
+    name: Inventory reachable Git objects
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the complete repository history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Confirm the checkout is not shallow
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$(git rev-parse --is-shallow-repository)" != "false" ]]; then
+            echo "La auditoría requiere un historial Git completo." >&2
+            exit 1
+          fi
+          git show-ref --verify --quiet refs/remotes/origin/main || {
+            echo "No se encontró la referencia remota de main." >&2
+            exit 1
+          }
+
+      - name: Generate a read-only history report
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/analyze_git_history_size.py \
+            --repo . \
+            --min-size-mib 10 \
+            --top 100 \
+            --json "$RUNNER_TEMP/history-report.json" \
+            | tee "$RUNNER_TEMP/history-report.txt"
+
+      - name: Save reports for review
+        uses: actions/upload-artifact@v7
+        with:
+          name: git-history-audit-${{ github.sha }}
+          path: |
+            ${{ runner.temp }}/history-report.json
+            ${{ runner.temp }}/history-report.txt
+          if-no-files-found: error
+          retention-days: 30
