@@ -21,6 +21,8 @@ Los artefactos de Actions son temporales y vencen después de 90 días. Si no ap
 
 **Aviso de seguridad para macOS:** los paquetes actuales no están firmados ni notarizados por Apple y el sistema puede mostrar advertencias. No desactives las protecciones del equipo. Si no te sentís cómoda con esa advertencia, no abras el paquete y avisá para buscar otra forma de prueba.
 
+**Aviso para Windows:** el ejecutable y el instalador de prueba no están firmados digitalmente; Windows puede mostrar una advertencia de SmartScreen. Descargá únicamente el artefacto de la ejecución exitosa de `main` en este repositorio. No desactives Microsoft Defender ni agregues exclusiones para poder probarlo. Si Windows bloquea la ejecución o tenés dudas sobre el archivo, detené la prueba y compartí una captura de la advertencia antes de continuar.
+
 Los paquetes creados desde \`main\` no cambian por sí mismos la Release pública ni los archivos de descarga históricos.
 
 ## Qué probar
@@ -36,6 +38,21 @@ Preferí PDF de ejemplo o copias de documentos sin información personal, nombre
 - Compará la posición en el resultado, el nombre del PDF de origen y el número de página original que muestran la miniatura y el panel de vista previa.
 - Si dos PDF tienen el mismo nombre pero están en carpetas distintas, verificá que se puedan distinguir.
 - Cambiá el orden arrastrando miniaturas y usando **Subir** / **Bajar**. Probá también **Restablecer orden inicial**.
+
+### Flujo recomendado para la usuaria principal en Windows
+
+Hacé primero esta prueba corta con copias de documentos de prueba. No hace falta probar todas las herramientas para comprobar el flujo principal.
+
+1. Prepará dos PDF con páginas fáciles de reconocer; por ejemplo, tres páginas marcadas A-UNO, A-DOS, A-TRES y dos marcadas B-UNO, B-DOS.
+2. Abrí PDF Escolar y agregá ambos archivos.
+3. Seleccioná páginas en un orden distinto del original y abrí **Ordenar páginas…**.
+4. Cambiá el orden con arrastrar, **Subir** y **Bajar**. Elegí una página y comprobá que la vista previa identifique el origen y el número de página.
+5. Quitá una página de la revisión final, mové las demás y recuperá la página quitada. Confirmá que vuelva junto a sus páginas vecinas cuando sigan disponibles.
+6. Si te olvidaste de una hoja, usá **Agregar páginas…** y seleccioná una del PDF cargado.
+7. Guardá con un nombre nuevo, abrí el resultado y comprobá la secuencia página por página.
+8. Confirmá que los PDF originales siguen en su lugar y se abren igual que antes.
+
+Si un paso falla, anotá el número del paso y qué ocurrió. No uses documentos de estudiantes ni compartas PDFs con datos personales. La prueba no se considera aprobada solo porque la aplicación abra: el archivo exportado tiene que coincidir con el orden confirmado.
 
 ### 2. Guardar y comprobar el documento final
 
