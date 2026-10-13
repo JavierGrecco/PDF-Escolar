@@ -168,6 +168,8 @@ class PageOrderDialog(QDialog):
         self.source_labels = _source_display_labels(self.pages)
         self.thumbnail_errors: set[int] = set()
         self.confirm_label = confirm_label
+        self.final_review = confirm_label == "Continuar a guardar"
+        self._removed_items: list[tuple[int, QListWidgetItem]] = []
         self.tasks: set[QRunnable] = set()
         self.preview_task: PageOrderPreviewTask | None = None
         self.current_preview_id: int | None = None
@@ -254,8 +256,37 @@ class PageOrderDialog(QDialog):
 
         self.count_label = QLabel(f"{len(self.pages):,} páginas")
         self.count_label.setObjectName("selectionCount")
-        controls.addWidget(self.count_label)
+        if not self.final_review:
+            controls.addWidget(self.count_label)
         root.addLayout(controls)
+
+        if self.final_review:
+            review_actions = QHBoxLayout()
+            self.count_label.setText(
+                f"{len(self.pages):,} páginas en el documento final"
+            )
+            review_actions.addWidget(self.count_label)
+            review_actions.addStretch(1)
+
+            self.remove_page_button = QPushButton("Quitar página")
+            self.remove_page_button.setObjectName("secondaryButton")
+            self.remove_page_button.setToolTip(
+                "Quitar esta página solo del PDF que vas a crear. "
+                "El original no cambia y el documento final debe conservar al menos una página."
+            )
+            self.remove_page_button.clicked.connect(self.remove_selected_page)
+            review_actions.addWidget(self.remove_page_button)
+
+            self.restore_removed_page_button = QPushButton("Recuperar última página")
+            self.restore_removed_page_button.setObjectName("secondaryButton")
+            self.restore_removed_page_button.setToolTip(
+                "Volver a incluir la última página que quitaste de esta revisión."
+            )
+            self.restore_removed_page_button.clicked.connect(
+                self.restore_last_removed_page
+            )
+            review_actions.addWidget(self.restore_removed_page_button)
+            root.addLayout(review_actions)
 
         self.list_widget = QListWidget()
         self.list_widget.setObjectName("pageOrderGrid")
@@ -471,11 +502,55 @@ class PageOrderDialog(QDialog):
         self, current: QListWidgetItem | None, _previous: QListWidgetItem | None
     ) -> None:
         self._load_current_preview()
+        self._refresh_review_controls()
 
     def _items_reordered(self, *_args) -> None:
         self._refresh_item_labels()
         self._refresh_preview_metadata()
         self._queue_visible_thumbnails()
+        self._refresh_review_controls()
+
+    def _refresh_review_controls(self) -> None:
+        """Keep the final-review actions consistent with the visible page list."""
+        if not self.final_review or not hasattr(self, "remove_page_button"):
+            return
+        count = self.list_widget.count()
+        noun = "página" if count == 1 else "páginas"
+        self.count_label.setText(f"{count:,} {noun} en el documento final")
+        self.remove_page_button.setEnabled(
+            self.list_widget.currentItem() is not None and count > 1
+        )
+        self.restore_removed_page_button.setEnabled(bool(self._removed_items))
+
+    def remove_selected_page(self) -> None:
+        """Exclude the selected page from this new PDF, without changing its source."""
+        if not self.final_review or self.list_widget.count() <= 1:
+            return
+        row = self.list_widget.currentRow()
+        if row < 0:
+            return
+        item = self.list_widget.takeItem(row)
+        if item is None:
+            return
+        self._removed_items.append((row, item))
+        if self.list_widget.count():
+            self.list_widget.setCurrentRow(min(row, self.list_widget.count() - 1))
+        self._refresh_item_labels()
+        self._refresh_preview_metadata()
+        self._queue_visible_thumbnails()
+        self._refresh_review_controls()
+
+    def restore_last_removed_page(self) -> None:
+        """Reinsert the most recently excluded page at its former position."""
+        if not self.final_review or not self._removed_items:
+            return
+        row, item = self._removed_items.pop()
+        self.list_widget.insertItem(min(row, self.list_widget.count()), item)
+        self.list_widget.setCurrentItem(item)
+        self._refresh_item_labels()
+        self._refresh_preview_metadata()
+        self._queue_visible_thumbnails()
+        self._refresh_review_controls()
 
     def _refresh_preview_metadata(self) -> None:
         item = self.list_widget.currentItem()
