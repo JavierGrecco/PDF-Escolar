@@ -182,7 +182,7 @@ class PageOrderDialog(QDialog):
         self.confirm_label = confirm_label
         self.final_review = confirm_label == "Continuar a guardar"
         self.can_edit_pages = self.final_review or enable_page_corrections
-        self._removed_items: list[tuple[int, QListWidgetItem]] = []
+        self._removed_items: list[tuple[int, QListWidgetItem, int | None, int | None]] = []
         self.tasks: set[QRunnable] = set()
         self.preview_task: PageOrderPreviewTask | None = None
         self.current_preview_id: int | None = None
@@ -578,10 +578,20 @@ class PageOrderDialog(QDialog):
         row = self.list_widget.currentRow()
         if row < 0:
             return
+        previous_id = (
+            int(self.list_widget.item(row - 1).data(Qt.ItemDataRole.UserRole))
+            if row > 0
+            else None
+        )
+        next_id = (
+            int(self.list_widget.item(row + 1).data(Qt.ItemDataRole.UserRole))
+            if row + 1 < self.list_widget.count()
+            else None
+        )
         item = self.list_widget.takeItem(row)
         if item is None:
             return
-        self._removed_items.append((row, item))
+        self._removed_items.append((row, item, previous_id, next_id))
         if self.list_widget.count():
             self.list_widget.setCurrentRow(min(row, self.list_widget.count() - 1))
         self._refresh_item_labels()
@@ -594,8 +604,29 @@ class PageOrderDialog(QDialog):
         """Reinsert the most recently excluded page at its former position."""
         if not self.can_edit_pages or not self._removed_items:
             return
-        row, item = self._removed_items.pop()
-        self.list_widget.insertItem(min(row, self.list_widget.count()), item)
+        row, item, previous_id, next_id = self._removed_items.pop()
+        visible_rows = {
+            int(self.list_widget.item(index).data(Qt.ItemDataRole.UserRole)): index
+            for index in range(self.list_widget.count())
+        }
+
+        previous_row = visible_rows.get(previous_id) if previous_id is not None else None
+        next_row = visible_rows.get(next_id) if next_id is not None else None
+        if previous_row is not None and next_row is not None:
+            # If the neighboring pages were reordered, prefer the next page when
+            # their order is still intact; otherwise keep the restored page after
+            # its previous neighbor.
+            insert_row = next_row if previous_row < next_row else previous_row + 1
+        elif next_row is not None:
+            insert_row = next_row
+        elif previous_row is not None:
+            insert_row = previous_row + 1
+        else:
+            # Both anchors may have been removed permanently; retain the old
+            # numeric position as a predictable fallback.
+            insert_row = min(row, self.list_widget.count())
+
+        self.list_widget.insertItem(insert_row, item)
         self.list_widget.setCurrentItem(item)
         self._refresh_item_labels()
         self._refresh_preview_metadata()
@@ -724,8 +755,13 @@ class PageOrderDialog(QDialog):
         # before their saved positions in the composition.
         insertion_count = len(references)
         self._removed_items = [
-            (row + insertion_count if row >= insert_row else row, item)
-            for row, item in self._removed_items
+            (
+                row + insertion_count if row >= insert_row else row,
+                item,
+                previous_id,
+                next_id,
+            )
+            for row, item, previous_id, next_id in self._removed_items
         ]
 
         first_new_id = len(self.pages)
