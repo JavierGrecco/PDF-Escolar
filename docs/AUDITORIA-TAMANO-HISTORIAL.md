@@ -39,3 +39,18 @@ La herramienta solo requiere Git y la biblioteca estándar de Python. El informe
 4. Antes de limpiar, guardar una copia espejo verificable, ensayar `git filter-repo --analyze` y cualquier reescritura en una copia aislada, comparar ramas y etiquetas, y revisar cómo conservar las URLs raw de `main/descargas/`.
 
 Este informe es diagnóstico, no una autorización para reescribir la historia. No se debe hacer un push forzado ni pedir a otras personas que reclonen hasta acordar el impacto y el plan de recuperación.
+
+## Medición real del historial — 2026-10-13
+
+La primera medición completa se generó desde GitHub Actions, con checkout no superficial, 47 referencias locales y el commit `f2c0b16818396a987fa99ab69a88391bae58f777`.
+
+- **Pack Git comprimido:** 704,11 MiB (`git count-objects -vH`, campo `size-pack`).
+- **Objetos alcanzables únicos:** 1.952, incluidos 469 blobs.
+- **Tamaño lógico de todos los blobs:** 1.851,65 MiB.
+- **Blobs de al menos 10 MiB:** 28, con 1.847,46 MiB de tamaño lógico.
+- **Árbol actual `descargas/`:** 264,25 MiB repartidos entre los cuatro instaladores/binarios y el archivo de metadatos.
+- Los 28 blobs grandes tienen rutas representativas en las cuatro familias de binarios de `descargas/`: son las versiones históricas de los paquetes, no 28 archivos de código fuente.
+
+**Informe reproducible:** [ejecución Audit Git history](https://github.com/JavierGrecco/PDF-Escolar/actions/runs/38423639653). El flujo guardó el texto y el JSON como artefacto durante 30 días.
+
+Estos números usan magnitudes diferentes: los tamaños lógicos de blobs no están comprimidos, mientras que el pack de Git aprovecha compresión y deltas. La conclusión práctica es que los binarios históricos explican la mayor parte del peso del historial. **Todavía no se ha reescrito ni reducido el historial.** El próximo paso es ensayar una posible limpieza en una copia espejo de respaldo, verificar qué ramas y etiquetas se conservarían y confirmar cómo mantener las descargas y Releases existentes. No hacer push forzado ni pedir que se reclonen repositorios hasta acordar el plan.
