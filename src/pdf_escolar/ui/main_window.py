@@ -593,6 +593,23 @@ class MainWindow(QMainWindow):
             return saved
         return str(Path.home())
 
+    def _last_save_directory(self) -> str:
+        """Return the last folder where a PDF was saved successfully."""
+        settings = QSettings()
+        saved = settings.value("last_save_directory", "", type=str)
+        if saved and Path(saved).is_dir():
+            return saved
+        documents = Path.home() / "Documents"
+        return str(documents if documents.is_dir() else Path.home())
+
+    def _remember_last_save_directory(self, output_path: str) -> None:
+        """Remember a destination only when an export has actually succeeded."""
+        if not output_path:
+            return
+        directory = Path(output_path).expanduser().resolve().parent
+        if directory.is_dir():
+            QSettings().setValue("last_save_directory", str(directory))
+
     def choose_files(self):
         paths, _ = QFileDialog.getOpenFileNames(
             self,
@@ -966,9 +983,7 @@ class MainWindow(QMainWindow):
                 icon=QMessageBox.Icon.Warning,
             )
             return
-        default = Path.home() / "Documents" / "Material_escolar.pdf"
-        if not default.parent.is_dir():
-            default = Path.home() / "Material_escolar.pdf"
+        default = Path(self._last_save_directory()) / "Material_escolar.pdf"
         output, _ = QFileDialog.getSaveFileName(self, "Guardar PDF final", str(default), "Documento PDF (*.pdf)")
         if not output:
             return
@@ -991,6 +1006,7 @@ class MainWindow(QMainWindow):
     @Slot(int, str)
     def _on_export_finished(self, count: int, output: str):
         self.exporting = False
+        self._remember_last_save_directory(output)
         self.progress.hide()
         self.status.setText(f"PDF creado correctamente: {count} páginas.")
         self._refresh_export_state()
