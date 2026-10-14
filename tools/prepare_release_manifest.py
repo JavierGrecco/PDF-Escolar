@@ -47,6 +47,7 @@ def write_release_manifest(
     repository: str,
     run_id: str,
     dist_dir: Path,
+    extra_assets: tuple[str, ...] = (),
 ) -> Path:
     """Validate version-specific installers and write SHA256SUMS.txt.
 
@@ -81,10 +82,27 @@ def write_release_manifest(
                 f"{matches[0]}"
             )
 
+    extra_names = tuple(extra_assets)
+    if len(set(extra_names)) != len(extra_names):
+        raise ValueError("Los artefactos adicionales no pueden repetirse.")
+    for name in extra_names:
+        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._+-]*", name):
+            raise ValueError(f"Nombre de artefacto adicional inválido: {name!r}")
+        if name in expected_set or name == "SHA256SUMS.txt":
+            raise ValueError(f"El artefacto adicional colisiona con un nombre reservado: {name}")
+        if name.startswith("LICENSE-AUDIT-EVIDENCE-") and name != f"LICENSE-AUDIT-EVIDENCE-{version}.zip":
+            raise ValueError(
+                f"El asset de auditoría debe corresponder a la versión {version}: {name}"
+            )
+
     asset_paths = [dist_dir / name for name in expected]
-    for path in asset_paths:
+    asset_paths.extend(dist_dir / name for name in extra_names)
+    for index, path in enumerate(asset_paths):
+        description = "requerido" if index < len(expected) else "adicional"
         if not path.is_file():
-            raise ValueError(f"Falta un artefacto requerido para publicar: {path.name}")
+            raise ValueError(
+                f"Falta un artefacto {description} para publicar: {path.name}"
+            )
         if path.stat().st_size <= 0:
             raise ValueError(f"El artefacto está vacío: {path.name}")
 
@@ -111,6 +129,12 @@ def main() -> int:
     parser.add_argument("--repository", required=True, help="Repositorio owner/name.")
     parser.add_argument("--run-id", required=True, help="ID de GitHub Actions.")
     parser.add_argument("--dist-dir", type=Path, default=Path("dist"))
+    parser.add_argument(
+        "--extra-asset",
+        action="append",
+        default=[],
+        help="Nombre de un asset adicional que también debe validarse y aparecer en SHA256SUMS.txt.",
+    )
     args = parser.parse_args()
 
     try:
@@ -120,6 +144,7 @@ def main() -> int:
             repository=args.repository,
             run_id=args.run_id,
             dist_dir=args.dist_dir,
+            extra_assets=tuple(args.extra_asset),
         )
     except (OSError, ValueError) as exc:
         print(f"No se puede validar la publicación: {exc}", file=sys.stderr)
