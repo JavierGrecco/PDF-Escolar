@@ -438,6 +438,7 @@ jobs:
           fetch-depth: 1
           sparse-checkout: |
             tools/prepare_release_manifest.py
+            tools/prepare_license_audit_release_bundle.py
           sparse-checkout-cone-mode: false
 
       - name: Download all generated packages
@@ -446,6 +447,13 @@ jobs:
           pattern: pdf-escolar-*
           path: dist
           merge-multiple: true
+
+      - name: Download platform-specific license audit evidence
+        uses: actions/download-artifact@v8
+        with:
+          pattern: license-audit-*
+          path: dist/license-audit-source
+          merge-multiple: false
 
       - name: Verify expected installers and disk images
         shell: bash
@@ -459,6 +467,18 @@ jobs:
           test -n "$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*-Apple-Silicon.zip' -print -quit)"
           ls -lh dist
 
+      - name: Verify license evidence bundle against generated packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          python tools/prepare_license_audit_release_bundle.py \
+            --version "0.1.0-dev.${GITHUB_RUN_NUMBER}" \
+            --commit "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" \
+            --dist-dir dist \
+            --evidence-dir dist/license-audit-source
+
       - name: Validate package version and checksum manifest
         shell: bash
         run: |
@@ -468,6 +488,7 @@ jobs:
             --commit "$GITHUB_SHA" \
             --repository "$GITHUB_REPOSITORY" \
             --run-id "$GITHUB_RUN_ID" \
+            --extra-asset "LICENSE-AUDIT-EVIDENCE-0.1.0-dev.${GITHUB_RUN_NUMBER}.zip" \
             --dist-dir dist
           (cd dist && sha256sum --check SHA256SUMS.txt)
 
