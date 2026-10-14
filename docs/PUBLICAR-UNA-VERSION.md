@@ -18,7 +18,7 @@ El flujo compila los paquetes de Windows, macOS Intel y macOS Apple Silicon y co
 3. Dejá desmarcada **Actualizar también los binarios de descargas/**, salvo que también necesites reemplazar los enlaces directos antiguos.
 4. Pulsá **Run workflow** y revisá los resultados.
 
-Antes de publicar, el flujo exige los cuatro paquetes de la versión elegida (portable Windows, instalador Windows, DMG Intel y DMG Apple Silicon), rechaza archivos ausentes, vacíos o de versiones mezcladas, y genera `SHA256SUMS.txt` con los hashes SHA-256, la versión, el commit de origen y el enlace a la compilación. Ese manifiesto se adjunta a la nueva Release.
+Antes de publicar, el flujo exige los cuatro paquetes de la versión elegida (portable Windows, instalador Windows, DMG Intel y DMG Apple Silicon), rechaza archivos ausentes, vacíos o de versiones mezcladas, valida el bundle de evidencia de licencias y genera `SHA256SUMS.txt` con los hashes de los cuatro instaladores y del bundle, además de la versión, el commit de origen y el enlace a la compilación. Ambos assets se adjuntan a la nueva Release.
 
 El flujo **no sobrescribe una Release existente**. Si el tag ya está publicado, elegí una versión nueva en lugar de intentar reemplazar sus assets. Si el tag existe sin Release, solo se acepta cuando apunta al mismo commit que se está compilando.
 
@@ -35,6 +35,12 @@ Cada compilación de prueba y cada publicación generada por **Build installers*
 El archivo LICENSE-AUDIT-METADATA.txt identifica la versión, plataforma, arquitectura, commit y ejecución; además registra el tamaño y SHA-256 del archivo THIRD-PARTY-NOTICES.txt y de cada paquete generado por esa plataforma. Los hashes pueden comprobarse con herramientas estándar y permiten detectar si un archivo se mezcló con uno de otra compilación.
 
 Los artefactos de Actions se conservan durante 90 días. Para una revisión posterior, descargalos y guardalos junto con la versión exacta antes de que venzan. Se suben con nombres separados de los paquetes pdf-escolar-* para que no interfieran con la verificación de instaladores ni con el manifiesto SHA256SUMS.txt.
+
+### Evidencia persistente en Releases oficiales
+
+Al crear una nueva Release, el flujo valida los tres artefactos de auditoría contra los instaladores exactos de esa versión y empaqueta los seis archivos de avisos/metadatos en `LICENSE-AUDIT-EVIDENCE-{versión}.zip`. El ZIP se adjunta como asset permanente de la Release y su hash se incluye en `SHA256SUMS.txt`. Los artefactos de plataforma de Actions siguen disponibles durante 90 días; la Release conserva la copia consolidada mientras mantenga sus assets.
+
+Esto aplica a publicaciones futuras: no modifica retrospectivamente `v0.1.0-beta.1` ni crea una Release por sí mismo. La revisión humana de obligaciones de redistribución sigue siendo necesaria.
 
 **Importante:** el inventario automático y estos hashes son evidencia técnica, no una conclusión legal. Antes de declarar una versión estable, todavía hay que comparar las licencias y avisos con los componentes nativos realmente redistribuidos (incluidos Qt y PDFium), revisar las obligaciones aplicables y documentar el resultado de esa revisión.
 
