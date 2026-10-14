@@ -228,11 +228,7 @@ def create_release_bundle(
         else dist / f"LICENSE-AUDIT-EVIDENCE-{version}.zip"
     )
     protected_paths = {(dist / "SHA256SUMS.txt").resolve()}
-    protected_paths.update(
-        (dist / name).resolve()
-        for _artifact_name, platform_name, architecture, _folder in PLATFORMS
-        for name in _expected_package_names(version, platform_name, architecture)
-    )
+    protected_paths.update(path.resolve() for path in dist.iterdir() if path.is_file())
     protected_paths.update(path.resolve() for _name, path in archive_files)
     if output in protected_paths:
         raise ValueError("La ruta de salida colisiona con otro artefacto.")
