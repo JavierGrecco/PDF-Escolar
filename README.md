@@ -16,7 +16,9 @@ La versión oficial disponible es **0.1.0-beta.1**. Es una beta, no una versión
 
 **Los instaladores no tienen firma digital y la aplicación para macOS no está notarizada.** Windows o macOS pueden mostrar advertencias al abrirlos. No desactives las protecciones del equipo para instalar un archivo que te genere dudas.
 
-Aclaración importante: ya incorporé mejoras en la vista previa y en la revisión del orden dentro del código de la rama principal, pero **todavía no están incluidas en la beta pública**. Más abajo explico cuáles son.
+**Importante para probar la versión de desarrollo:** la vista previa ampliable del ordenamiento y las mejoras más recientes **no están en la beta pública 0.1.0-beta.1**. Los enlaces de descarga que siguen y los archivos de `descargas/` apuntan a esa beta. Para probar el código de `main`, abrí el [flujo de compilaciones de prueba](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml), elegí la ejecución exitosa más reciente de la rama `main` y descargá el artefacto `pdf-escolar-windows` (o el paquete de macOS correspondiente). No uses los archivos de `Releases` ni `descargas/` para verificar cambios que todavía no se publicaron como versión oficial.
+
+Las compilaciones recientes muestran la versión y los primeros siete caracteres del commit en la ventana principal. Pasá el puntero sobre esa etiqueta para ver el commit completo y el enlace de la compilación; eso permite identificar exactamente qué código se está probando.
 
 ## Descargar PDF Escolar
 
