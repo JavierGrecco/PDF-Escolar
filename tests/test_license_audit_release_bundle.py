@@ -56,7 +56,7 @@ def _inputs(tmp_path: Path):
             packages.append(path)
 
         artifact_dir = evidence / artifact_name
-        artifact_dir.mkdir()
+        artifact_dir.mkdir(parents=True, exist_ok=True)
         notice_path = artifact_dir / "THIRD-PARTY-NOTICES.txt"
         notice_path.write_text(
             f"Generated notice for {platform_name}/{architecture}\n",
