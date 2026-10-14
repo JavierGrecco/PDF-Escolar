@@ -2,7 +2,10 @@
 
 import pytest
 
-from pdf_escolar.ui.window_geometry import responsive_window_sizes
+from pdf_escolar.ui.window_geometry import (
+    requires_compact_layout,
+    responsive_window_sizes,
+)
 
 
 @pytest.mark.parametrize(
@@ -46,3 +49,27 @@ def test_window_sizes_reject_invalid_screen_dimensions(screen_size):
             preferred_size=(920, 780),
             minimum_size=(720, 600),
         )
+
+@pytest.mark.parametrize(
+    ("screen_size", "preferred", "minimum", "compact"),
+    [
+        ((911, 512), (1180, 760), (880, 620), True),
+        # A 1366 × 768 display typically has only 728 logical pixels of work
+        # area after the taskbar; the old fixed 650 px threshold missed it.
+        ((1366, 728), (1180, 760), (880, 620), True),
+        # Narrow but tall screens also need compact spacing.
+        ((1024, 900), (1180, 760), (880, 620), True),
+        ((1920, 1040), (1180, 760), (880, 620), False),
+        ((480, 320), (920, 780), (720, 600), True),
+    ],
+)
+def test_compact_layout_follows_actual_screen_constraints(
+    screen_size, preferred, minimum, compact
+):
+    _minimum, fitted = responsive_window_sizes(
+        *screen_size,
+        preferred_size=preferred,
+        minimum_size=minimum,
+    )
+
+    assert requires_compact_layout(preferred, fitted) is compact
