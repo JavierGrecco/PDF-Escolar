@@ -186,6 +186,12 @@ jobs:
             throw "La desinstalación no quitó el ejecutable instalado."
           }
           Write-Host "Instalación, apertura y desinstalación verificadas."
+      - name: Create license audit metadata
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem dist -Filter "PDF-Escolar-Instalador-*-Windows.exe" -File | Select-Object -First 1
+          if ($null -eq $installer) { throw "No se encuentra el instalador de Windows para la evidencia de auditoría." }
+          python tools/write_license_audit_metadata.py --version "$env:APP_VERSION" --platform Windows --architecture x64 --commit "$env:GITHUB_SHA" --repository "$env:GITHUB_REPOSITORY" --run-id "$env:GITHUB_RUN_ID" --notice-file dist/THIRD-PARTY-NOTICES.txt --output dist/LICENSE-AUDIT-METADATA.txt --package dist/PDF-Escolar.exe --package "$($installer.FullName)"
       - name: Upload Windows downloads
         uses: actions/upload-artifact@v7
         with:
@@ -193,6 +199,16 @@ jobs:
           path: |
             dist/PDF-Escolar.exe
             dist/PDF-Escolar-Instalador-*-Windows.exe
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload Windows license audit evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: license-audit-windows
+          path: |
+            dist/THIRD-PARTY-NOTICES.txt
+            dist/LICENSE-AUDIT-METADATA.txt
           if-no-files-found: error
           retention-days: 90
 
@@ -362,6 +378,26 @@ jobs:
               ;;
           esac
           echo "El DMG se puede montar y contiene una aplicación macOS válida."
+      - name: Create license audit metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          dmg="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-Instalador-*-macOS-${{ matrix.arch_slug }}.dmg' -print -quit)"
+          zip_file="$(find dist -maxdepth 1 -type f -name 'PDF-Escolar-macOS-*${{ matrix.arch_slug }}.zip' -print -quit)"
+          test -n "$dmg"
+          test -n "$zip_file"
+          python tools/write_license_audit_metadata.py \
+            --version "$APP_VERSION" \
+            --platform macOS \
+            --architecture "${{ matrix.arch_slug }}" \
+            --commit "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" \
+            --notice-file dist/THIRD-PARTY-NOTICES.txt \
+            --output dist/LICENSE-AUDIT-METADATA.txt \
+            --package "$dmg" \
+            --package "$zip_file"
+
       - name: Upload macOS downloads
         uses: actions/upload-artifact@v7
         with:
@@ -369,6 +405,16 @@ jobs:
           path: |
             dist/PDF-Escolar-Instalador-*-macOS-${{ matrix.arch_slug }}.dmg
             dist/PDF-Escolar-macOS-*${{ matrix.arch_slug }}.zip
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload macOS license audit evidence
+        uses: actions/upload-artifact@v7
+        with:
+          name: license-audit-macos-${{ matrix.arch_slug }}
+          path: |
+            dist/THIRD-PARTY-NOTICES.txt
+            dist/LICENSE-AUDIT-METADATA.txt
           if-no-files-found: error
           retention-days: 90
 

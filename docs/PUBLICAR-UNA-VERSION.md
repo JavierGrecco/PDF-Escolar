@@ -24,6 +24,20 @@ El flujo **no sobrescribe una Release existente**. Si el tag ya está publicado,
 
 Antes de anunciar la versión, revisá los assets y los hashes, y actualizá los cuatro enlaces del README si deben apuntar a la nueva Release. Los enlaces públicos del README están fijados a `v0.1.0-beta.1` para no cambiar de archivo por accidente; una Release nueva no los actualiza por sí sola.
 
+## Evidencia independiente para revisar licencias
+
+Cada compilación de prueba y cada publicación generada por **Build installers** adjunta tres artefactos de auditoría independientes en la misma ejecución de GitHub Actions:
+
+- **license-audit-windows:** avisos de terceros y metadatos del paquete Windows x64.
+- **license-audit-macos-Intel:** avisos y metadatos de la compilación Intel.
+- **license-audit-macos-Apple-Silicon:** avisos y metadatos de la compilación Apple Silicon.
+
+El archivo LICENSE-AUDIT-METADATA.txt identifica la versión, plataforma, arquitectura, commit y ejecución; además registra el tamaño y SHA-256 del archivo THIRD-PARTY-NOTICES.txt y de cada paquete generado por esa plataforma. Los hashes pueden comprobarse con herramientas estándar y permiten detectar si un archivo se mezcló con uno de otra compilación.
+
+Los artefactos de Actions se conservan durante 90 días. Para una revisión posterior, descargalos y guardalos junto con la versión exacta antes de que venzan. Se suben con nombres separados de los paquetes pdf-escolar-* para que no interfieran con la verificación de instaladores ni con el manifiesto SHA256SUMS.txt.
+
+**Importante:** el inventario automático y estos hashes son evidencia técnica, no una conclusión legal. Antes de declarar una versión estable, todavía hay que comparar las licencias y avisos con los componentes nativos realmente redistribuidos (incluidos Qt y PDFium), revisar las obligaciones aplicables y documentar el resultado de esa revisión.
+
 ## Actualizar los enlaces directos antiguos
 
 La opción de sincronización existe únicamente para conservar la compatibilidad con enlaces raw que terceros pudieran tener guardados. Para actualizar esos binarios, ejecutá el flujo manualmente con una versión nueva en **Versión para publicar** y marcá explícitamente **Actualizar también los binarios de descargas/**. La sincronización espera a que la nueva Release se haya publicado correctamente; si la validación o publicación falla, no reemplaza `descargas/`.
