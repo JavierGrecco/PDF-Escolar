@@ -55,6 +55,52 @@ def test_release_manifest_contains_sha256_for_every_expected_asset(tmp_path):
         assert f"{sha256(asset.read_bytes()).hexdigest()}  {asset.name}" in text
 
 
+def test_release_manifest_hashes_an_optional_audit_evidence_asset(tmp_path):
+    assets = _prepare_dist(tmp_path)
+    evidence = tmp_path / "LICENSE-AUDIT-EVIDENCE-0.1.0-beta.2.zip"
+    evidence.write_bytes(b"verified license evidence bundle")
+
+    manifest = MANIFEST.write_release_manifest(
+        version="0.1.0-beta.2",
+        commit="a" * 40,
+        repository="JavierGrecco/PDF-Escolar",
+        run_id="12345",
+        dist_dir=tmp_path,
+        extra_assets=(evidence.name,),
+    )
+    text = manifest.read_text(encoding="utf-8")
+
+    assert len(assets) == 4
+    assert f"{sha256(evidence.read_bytes()).hexdigest()}  {evidence.name}" in text
+    checksum_lines = [line for line in text.splitlines() if len(line) > 66 and line[64:66] == "  "]
+    assert len(checksum_lines) == 5
+
+
+def test_release_manifest_rejects_missing_or_mismatched_version_extra_asset(tmp_path):
+    _prepare_dist(tmp_path)
+    with pytest.raises(ValueError, match="Falta un artefacto adicional"):
+        MANIFEST.write_release_manifest(
+            version="0.1.0-beta.2",
+            commit="a" * 40,
+            repository="JavierGrecco/PDF-Escolar",
+            run_id="12345",
+            dist_dir=tmp_path,
+            extra_assets=("LICENSE-AUDIT-EVIDENCE-0.1.0-beta.2.zip",),
+        )
+
+    wrong = tmp_path / "LICENSE-AUDIT-EVIDENCE-0.1.0-beta.1.zip"
+    wrong.write_bytes(b"wrong version")
+    with pytest.raises(ValueError, match="corresponder a la versión"):
+        MANIFEST.write_release_manifest(
+            version="0.1.0-beta.2",
+            commit="a" * 40,
+            repository="JavierGrecco/PDF-Escolar",
+            run_id="12345",
+            dist_dir=tmp_path,
+            extra_assets=(wrong.name,),
+        )
+
+
 def test_release_manifest_rejects_missing_asset(tmp_path):
     assets = _prepare_dist(tmp_path)
     assets[2].unlink()
