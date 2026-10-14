@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (
     QMainWindow, QMessageBox, QMenu, QPlainTextEdit, QPushButton, QProgressBar,
     QScrollArea, QSizePolicy, QVBoxLayout, QWidget
 )
-from pdf_escolar import __version__
+from pdf_escolar import __build_commit__, __build_run_url__, __version__
 from pdf_escolar.page_ranges import parse_page_ranges
 from pdf_escolar.pdf_engine import (
     PdfPageRef, PdfSource, combine_pages_in_order, combine_selected_pages, inspect_pdf
@@ -426,8 +426,20 @@ class MainWindow(QMainWindow):
         help_menu.addAction("Licencias y componentes", self.show_licenses)
         self.help_button.setMenu(help_menu)
         header.addWidget(self.help_button, 0, Qt.AlignmentFlag.AlignTop)
-        version = QLabel(f"Versión {__version__}")
+        short_commit = __build_commit__[:7] if __build_commit__ else "local"
+        version = QLabel(f"Versión {__version__} · {short_commit}")
         version.setObjectName("versionLabel")
+        version.setToolTip(
+            f"Versión: {__version__}\nCommit: {__build_commit__}\n"
+            + (
+                f"Compilación de GitHub Actions: {__build_run_url__}"
+                if __build_run_url__
+                else "Compilación local desde el código fuente."
+            )
+        )
+        version.setAccessibleName(
+            f"Versión {__version__}, commit {__build_commit__}"
+        )
         header.addWidget(version, 0, Qt.AlignmentFlag.AlignTop)
         root.addLayout(header)
 

@@ -15,7 +15,8 @@ No necesitás instalar Python ni herramientas de desarrollo. GitHub sí exige in
 4. Descomprimí el ZIP del artefacto descargado.
    - En Windows, probá primero \`PDF-Escolar.exe\` (portable), o ejecutá el instalador cuyo nombre termina en \`Windows.exe\`.
    - En macOS, abrí el archivo \`.dmg\` y arrastrá PDF Escolar a **Aplicaciones**.
-5. Conservá el nombre o enlace de la ejecución utilizada: así podremos identificar el commit y la compilación que probaste.
+5. Al abrir la aplicación, comprobá la etiqueta de versión de la ventana principal: una compilación nueva muestra `Versión … · abc1234`. Pasá el puntero sobre esa etiqueta para ver el SHA completo del commit y el enlace de GitHub Actions. Si la aplicación solo muestra `0.1.0-beta.1`, no estás usando el paquete de desarrollo de `main`.
+6. Conservá el nombre o enlace de la ejecución utilizada: así podremos identificar el commit y la compilación que probaste.
 
 Los artefactos de Actions son temporales y vencen después de 90 días. Si no aparece uno de los tres paquetes, o la ejecución más reciente no terminó correctamente, no uses un paquete parcial: probá una ejecución completa y exitosa de \`main\`.
 
