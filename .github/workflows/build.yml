@@ -492,6 +492,7 @@ jobs:
           fetch-depth: 1
           sparse-checkout: |
             tools/prepare_release_manifest.py
+            tools/prepare_license_audit_release_bundle.py
           sparse-checkout-cone-mode: false
 
       - name: Download all installer artifacts
@@ -500,6 +501,13 @@ jobs:
           pattern: pdf-escolar-*
           path: dist
           merge-multiple: true
+
+      - name: Download platform-specific license audit evidence
+        uses: actions/download-artifact@v8
+        with:
+          pattern: license-audit-*
+          path: dist/license-audit-source
+          merge-multiple: false
 
       - name: Determine release version
         id: release
@@ -568,6 +576,20 @@ jobs:
           fi
           rm -f "$error_file"
 
+      - name: Validate and prepare permanent license-audit asset
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          python tools/prepare_license_audit_release_bundle.py \
+            --version "${RELEASE_TAG#v}" \
+            --commit "$GITHUB_SHA" \
+            --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" \
+            --dist-dir dist \
+            --evidence-dir dist/license-audit-source
+
       - name: Validate versioned assets and generate SHA-256 manifest
         shell: bash
         env:
@@ -579,6 +601,7 @@ jobs:
             --commit "$GITHUB_SHA" \
             --repository "$GITHUB_REPOSITORY" \
             --run-id "$GITHUB_RUN_ID" \
+            --extra-asset "LICENSE-AUDIT-EVIDENCE-${RELEASE_TAG#v}.zip" \
             --dist-dir dist
 
       - name: Publish GitHub release
@@ -593,6 +616,7 @@ jobs:
             dist/PDF-Escolar-Instalador-*-Windows.exe
             dist/PDF-Escolar-Instalador-*-macOS-Intel.dmg
             dist/PDF-Escolar-Instalador-*-macOS-Apple-Silicon.dmg
+            dist/LICENSE-AUDIT-EVIDENCE-*.zip
             dist/SHA256SUMS.txt
           body: |
             ## Descargas
@@ -609,6 +633,12 @@ jobs:
             ### Verificación de descargas
 
             El asset `SHA256SUMS.txt` incluye la versión, el commit de origen, la ejecución de compilación y los SHA-256 de los cuatro instaladores. Compará el hash del archivo descargado antes de instalarlo.
+            ### Evidencia de auditoría de licencias
+
+            El asset `LICENSE-AUDIT-EVIDENCE-<versión>.zip` conserva los avisos de terceros y los metadatos de Windows x64, macOS Intel y macOS Apple Silicon. Antes de crear la Release, el flujo verifica que el commit, versión, avisos, instaladores y sus SHA-256 coincidan. El hash del ZIP también aparece en `SHA256SUMS.txt`.
+
+            Este material facilita una revisión manual; no es una certificación de cumplimiento legal. La beta anterior no se modifica ni recibe assets retroactivos.
+
 
             ### OCR local (beta)
 
