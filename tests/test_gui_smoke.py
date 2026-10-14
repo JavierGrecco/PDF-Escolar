@@ -78,7 +78,7 @@ def test_page_order_dialog_exposes_preview_and_enlarge_control(application):
     dialog = PageOrderDialog([PdfPageRef("/tmp/preview-source.pdf", 0)])
     try:
         assert not dialog.preview_panel.isHidden()
-        assert dialog.preview_title.text() == "Vista previa de la página"
+        assert dialog.preview_title.text() == "Página 1 de 1 del PDF final"
         assert not dialog.preview_image.isHidden()
         assert dialog.enlarge_button.text() == "Ampliar página…"
         assert not dialog.enlarge_button.isHidden()
