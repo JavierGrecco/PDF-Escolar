@@ -35,8 +35,8 @@ def _inputs(tmp_path: Path):
     run_id = "123456"
     dist = tmp_path / "dist"
     evidence = tmp_path / "evidence"
-    dist.mkdir()
-    evidence.mkdir()
+    dist.mkdir(parents=True, exist_ok=True)
+    evidence.mkdir(parents=True, exist_ok=True)
 
     for artifact_name, platform_name, architecture, _folder in BUNDLE.PLATFORMS:
         if platform_name == "Windows":
@@ -112,7 +112,8 @@ def test_release_bundle_contains_all_six_notices_and_metadata_files(tmp_path):
 def test_release_bundle_rejects_a_modified_package_hash(tmp_path):
     kwargs = _inputs(tmp_path)
     package = kwargs["dist_dir"] / "PDF-Escolar.exe"
-    package.write_bytes(b"unexpected content")
+    original_size = package.stat().st_size
+    package.write_bytes(b"X" * original_size)
 
     with pytest.raises(ValueError, match="SHA-256 difiere"):
         BUNDLE.create_release_bundle(**kwargs)
