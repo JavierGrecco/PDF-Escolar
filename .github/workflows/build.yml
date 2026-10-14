@@ -76,7 +76,13 @@ jobs:
       - name: Set application display version
         shell: pwsh
         run: |
-          Set-Content -Path src/pdf_escolar/_build_version.py -Value "__version__ = '$env:APP_VERSION'" -Encoding utf8
+          $buildRunUrl = "https://github.com/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID"
+          $metadata = @"
+          __version__ = "$env:APP_VERSION"
+          __build_commit__ = "$env:GITHUB_SHA"
+          __build_run_url__ = "$buildRunUrl"
+          "@
+          Set-Content -Path src/pdf_escolar/_build_version.py -Value $metadata -Encoding utf8
 
       - name: Install application and packager
         run: python -m pip install -e . pyinstaller
@@ -235,7 +241,12 @@ jobs:
 
       - name: Set application display version
         shell: bash
-        run: printf '__version__ = "%s"\n' "$APP_VERSION" > src/pdf_escolar/_build_version.py
+        run: |
+          printf '__version__ = "%s"\n__build_commit__ = "%s"\n__build_run_url__ = "%s"\n' \
+            "$APP_VERSION" \
+            "$GITHUB_SHA" \
+            "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            > src/pdf_escolar/_build_version.py
 
       - name: Install application and packager
         run: python -m pip install -e . pyinstaller
