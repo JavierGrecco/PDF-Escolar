@@ -153,7 +153,6 @@ def _validate_platform_evidence(
             f"Esperados: {sorted(expected_names)}; recibidos: {sorted(package_names)}."
         )
 
-    verified: list[tuple[str, Path]] = []
     for name, size, digest in package_records:
         if Path(name).name != name or "/" in name or "\\" in name:
             raise ValueError(f"{artifact_name}: nombre de paquete no permitido: {name!r}")
@@ -166,8 +165,6 @@ def _validate_platform_evidence(
         actual_hash = sha256_file(package_path)
         if actual_hash != digest:
             raise ValueError(f"{name}: el SHA-256 difiere del inventario de auditoría.")
-        verified.append((f"{_archive_folder(platform_name, architecture)}/{name}", package_path))
-
     archive_prefix = _archive_folder(platform_name, architecture)
     return [
         (f"{archive_prefix}/{NOTICE_NAME}", notice_path),
@@ -230,11 +227,15 @@ def create_release_bundle(
         if output_path is not None
         else dist / f"LICENSE-AUDIT-EVIDENCE-{version}.zip"
     )
-    if output == dist / "SHA256SUMS.txt" or output in {path for _name, path in archive_files}:
+    protected_paths = {(dist / "SHA256SUMS.txt").resolve()}
+    protected_paths.update(
+        (dist / name).resolve()
+        for _artifact_name, platform_name, architecture, _folder in PLATFORMS
+        for name in _expected_package_names(version, platform_name, architecture)
+    )
+    protected_paths.update(path.resolve() for _name, path in archive_files)
+    if output in protected_paths:
         raise ValueError("La ruta de salida colisiona con otro artefacto.")
-    for _name, package_path in archive_files:
-        if output == package_path:
-            raise ValueError("La ruta de salida no puede reemplazar un archivo de evidencia.")
     if not output.parent.is_dir():
         raise ValueError(f"No existe la carpeta de salida: {output.parent}")
 
