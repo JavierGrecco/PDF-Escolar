@@ -59,13 +59,33 @@ def _dispose_widget(widget, application):
 
 
 def test_main_window_starts_in_a_safe_empty_state(application):
+    from pdf_escolar import __build_commit__, __version__
+
     window = MainWindow()
     try:
         assert window.windowTitle() == "PDF Escolar"
         assert not window.export_button.isEnabled()
         assert "Todavía no agregaste archivos" in window.file_count.text()
+        build_label = window.findChild(QLabel, "versionLabel")
+        assert build_label is not None
+        assert build_label.text() == f"Versión {__version__} · {__build_commit__[:7]}"
+        assert __build_commit__ in build_label.toolTip()
     finally:
         _dispose_widget(window, application)
+
+
+def test_page_order_dialog_exposes_preview_and_enlarge_control(application):
+    dialog = PageOrderDialog([PdfPageRef("/tmp/preview-source.pdf", 0)])
+    try:
+        assert not dialog.preview_panel.isHidden()
+        assert dialog.preview_title.text() == "Vista previa de la página"
+        assert not dialog.preview_image.isHidden()
+        assert dialog.enlarge_button.text() == "Ampliar página…"
+        assert not dialog.enlarge_button.isHidden()
+        # The control becomes enabled only after a real preview has rendered.
+        assert not dialog.enlarge_button.isEnabled()
+    finally:
+        _dispose_widget(dialog, application)
 
 def test_document_card_displays_the_full_pdf_name_and_page_count(application):
     card = DocumentCard(
