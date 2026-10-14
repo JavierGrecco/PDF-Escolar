@@ -47,6 +47,14 @@ def responsive_window_sizes(
     return (minimum_width, minimum_height), (width, height)
 
 
+def requires_compact_layout(
+    preferred_size: tuple[int, int],
+    fitted_size: tuple[int, int],
+) -> bool:
+    """Return whether screen constraints forced either window dimension to shrink."""
+    return any(actual < preferred for preferred, actual in zip(preferred_size, fitted_size))
+
+
 def fit_window_to_screen(
     widget: QWidget,
     *,
@@ -75,4 +83,4 @@ def fit_window_to_screen(
     )
     widget.setMinimumSize(*fitted_minimum)
     widget.resize(*fitted_preferred)
-    return area.height() < 650
+    return requires_compact_layout(preferred_size, fitted_preferred)
