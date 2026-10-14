@@ -170,7 +170,7 @@ def test_ci_verifier_checks_real_platform_evidence_before_hashing_the_bundle():
     assert "path: dist/license-audit-source" in verifier
     assert "tools/prepare_license_audit_release_bundle.py" in verifier
     assert "name: Verify license evidence bundle against generated packages" in verifier
-    expected_extra_asset = '--extra-asset "LICENSE-AUDIT-EVIDENCE-0.1.0-dev.' + "chr(36)" + ' + '{GITHUB_RUN_NUMBER}.zip"'
+    expected_extra_asset = '--extra-asset "LICENSE-AUDIT-EVIDENCE-0.1.0-dev.' + chr(36) + '{GITHUB_RUN_NUMBER}.zip"'
     assert expected_extra_asset in verifier
     assert verifier.index("Verify license evidence bundle") < verifier.index(
         "Validate package version and checksum manifest"
@@ -183,6 +183,6 @@ def test_release_bundle_workflow_uploads_permanent_evidence_and_hashes_it():
     assert "name: Download platform-specific license audit evidence" in workflow
     assert "tools/prepare_license_audit_release_bundle.py" in workflow
     assert "dist/LICENSE-AUDIT-EVIDENCE-*.zip" in workflow
-    expected_extra_asset = '--extra-asset "LICENSE-AUDIT-EVIDENCE-' + "chr(36)" + ' + '{RELEASE_TAG#v}.zip"'
+    expected_extra_asset = '--extra-asset "LICENSE-AUDIT-EVIDENCE-' + chr(36) + '{RELEASE_TAG#v}.zip"'
     assert expected_extra_asset in workflow
     assert "license-audit-*" in workflow
