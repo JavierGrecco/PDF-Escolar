@@ -1,12 +1,26 @@
+<div align="center">
+
 # PDF Escolar
+
+### Armá el PDF que necesitás, página por página.
+
+Una aplicación de escritorio en español para combinar documentos, elegir páginas, cambiar el orden y generar un PDF nuevo. El procesamiento se realiza en tu computadora.
 
 [![Pruebas automatizadas](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/tests.yml/badge.svg?branch=main)](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/tests.yml)
 [![Compilación de instaladores](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-green.svg)](LICENSE)
+![Windows y macOS](https://img.shields.io/badge/Windows-macOS-4776A8?style=flat)
+![Procesamiento local](https://img.shields.io/badge/procesamiento-local-238A78?style=flat)
+
+[Descargar la beta pública](https://github.com/JavierGrecco/PDF-Escolar/releases/tag/v0.1.0-beta.1) · [Ver versiones](https://github.com/JavierGrecco/PDF-Escolar/releases) · [Código fuente](https://github.com/JavierGrecco/PDF-Escolar)
+
+</div>
+
+---
 
 **Elegí páginas de varios PDF, ordenalas y guardalas en un documento nuevo.**
 
-Soy Javier, programador, y estoy desarrollando PDF Escolar para hacer más simple una tarea concreta: armar el PDF que necesitás sin depender de herramientas complicadas. Es una aplicación gratuita, de código abierto y con la interfaz en español, para Windows y macOS.
+PDF Escolar es una aplicación gratuita, de código abierto y con la interfaz en español para Windows y macOS. Está pensada para resolver una tarea concreta sin depender de herramientas complicadas ni subir documentos a una página web.
 
 Los documentos se procesan en tu computadora. No tenés que subirlos a una página web, crear una cuenta ni instalar Python.
 
@@ -96,6 +110,12 @@ Las mejoras más recientes se integraron en [PR #52](https://github.com/JavierGr
 Para probar las mejoras de `main` antes de la próxima beta, abrí el flujo [Build installers](https://github.com/JavierGrecco/PDF-Escolar/actions/workflows/build.yml), buscá la ejecución más reciente de la rama **main** que termine en **Success** y descargá el artefacto de tu equipo. En **Artifacts** vas a encontrar `pdf-escolar-windows`, `pdf-escolar-macos-Intel` y `pdf-escolar-macos-Apple-Silicon`; no necesitás instalar Python. Seguí la [guía de prueba de uso desde `main`](docs/PRUEBA-DE-USO-DESDE-MAIN.md). Los artefactos son temporales, vencen a los 90 días y no reemplazan la beta pública `0.1.0-beta.1`.
 
 Más adelante quiero mejorar los temas claro y oscuro y desarrollar la edición visual de regiones y fragmentos de páginas. **Esas funciones todavía no están disponibles** en la aplicación.
+
+## Dirección de producto y desarrollo asistido por IA
+
+PDF Escolar es un proyecto personal que conduzco como **Product Owner y responsable del producto**. Utilizo IA generativa como apoyo para investigar, diseñar e implementar funcionalidades, pero mantengo la responsabilidad sobre la experiencia, las prioridades y la calidad final.
+
+Defino el problema y los flujos de uso, priorizo mejoras, establezco criterios de aceptación y guío las iteraciones. Después pruebo la aplicación, reviso el comportamiento con documentos reales o casos controlados, verifico los límites de privacidad y seguridad, y solicito correcciones cuando el resultado no cumple lo esperado. La beta pública y las funciones incorporadas en `main` se mantienen diferenciadas para no prometer como disponible algo que todavía no fue publicado.
 
 ## Ayuda y código fuente
 
